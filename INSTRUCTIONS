@@ -1,0 +1,99 @@
+--- INSTRUCTIONS FOR THE DATA, DLS AND SLS CLASSES ---
+
+Author:		Fabio Zanini
+Companies:	Institut Laue Langevin, Universität Tübingen
+Date:		22 Mar 2010
+Version:	1.1
+Copyright:	2009,2010 Fabio Zanini
+License:	GPLv3
+
+------------------------------------------------------
+
+Dear user,
+
+thank you for using my code. I did my best but am not a programmer, so if you have any suggestion please contact me at fabio.zanini_AT_student.uni-tuebingen.de.
+
+------------------------------------------------------
+INTRODUCTION
+------------------------------------------------------
+
+This code is meant to be a fast and powerful tool for SLS/DLS data analysis. The structure of the code is the following:
+
+1. For every sample, the user creates a "Data" class. The user must say where the LS data are located giving a so-called "path". Moreover, optional arguments (e.g. sample concentration) are possible in order to speed up the data analysis. If these arguments are not declared, "Data" will question the user about them.
+
+2. "Data" reads the files and collects both DLS and SLS data about a single sample. Some corrections about absolute calibration of SLS are performed. Correlogramms are then filtered either automatically or manually according to the user's wishes. This should reduce the problems in dusty samples.
+
+3. After many "Data" classes are created, usually through a script, the user can choose to analyse DLS, SLS or both. The user creates accordingly a single "DLS" class, a single "SLS" class, or both.
+
+4. "SLS" contains now all information about all samples (concentrations, angles, q vectors, scattering ratios, error bars). "SLS" has some functions for plotting and fitting the data. Analogously, "DLS" contains all information about correlogramms (concentrations, lag times, correlation functions, error bars). "DLS" has some functions to fit and plot the data.
+
+------------------------------------------------------
+SYNOPSIS: "Data"
+------------------------------------------------------
+To create a songle "Data" class, use the following syntax:
+
+	<classname>	=	Data	( path, 'optional_argument_1', value_1, 'optional_argument_2', value_2, ... )
+
+For instance, if our DLS data are located in '/home/user/data/test000.ASC' and so on, and we know that our sample concentration is c = 0.7 g/l, while we had put into the instrument a concentration of 1 g/l, we can write:
+
+	test		=	Data	( '/home/user/data/test', 'C', 0.7, 'C_set', 1 )
+
+NB: the path is the DLS path without .ASC and without the four numbers.
+NB: the SLS path is fixed in the actual version. If the DLS files are 'test000.ASC', 'test0001.ASC', etc., the SLS file *must* be 'test_bak.txt'. Otherwise the class will complain and ask the user about the location of the SLS file.
+
+Allowed arguments for "Data":
+
+- 'C' :			the actual sample concentration (SLS/DLS);
+
+- 'C_set' :		the concentration put into the LS instrument at the time of measuring (SLS);
+
+- 'n' :			real index of refraction of the solvent (from literature or recfractometry; SLS/DLS, is used to compute Q!);
+
+- 'Repetitions' :	number of good repetitions at every angle (SLS/DLS);
+
+- 'Runstart' :		number of the first DLS file (e.g. DLSfile_0002.ASC). This is passed directly to a low-level routine, so you can leave it away if you do not need it for your instrument;
+
+- 'Runs' :		the number of DLS data files. If you let it empty, a low-level routine is called to find it out. However, since this routine is instrument-specific, you have to write it if you are not measuring with the ALV CGS3 at ILL!
+
+------------------------------------------------------
+SYNOPSIS: "SLS"
+------------------------------------------------------
+Let us say that your "Data" classes are "Data1", "Data2", etc. Then you can create the "SLS" class with the following syntax:
+
+	<classname>	=	SLS	( [ Data1, Data2, ... ] )
+
+Alternatively, if your "Data" classes are already packed into a class array "Data_array", i.e. if your classes are Data_array(1), Data_array(2), etc., you can use:
+
+	<classname>	=	SLS	( Data_array )
+
+For a list of the possiblities of "SLS", consult the class documentation using:
+
+	doc SLS
+
+------------------------------------------------------
+SYNOPSIS: "DLS"
+------------------------------------------------------
+The same thing is valid for "DLS". So, if your "Data" array has name "Data_array", you can cast:
+
+	<classname>	=	DLS	( Data_array )
+
+For a list of the possiblities of "DLS", consult the class documentation using:
+
+	doc DLS
+
+------------------------------------------------------
+GENERAL CONSIDERATIONS
+------------------------------------------------------
+Most of the functions in "SLS" and "DLS" work as follows. They have zero or more mandatory arguments, plus some optional arguments. The syntax is the same as for the "Data" class, i.e.
+
+	DLS.method	( mandatory_argument, 'optional_argument_1', value_1, 'optional_argument_2', value_2, ... )
+
+For instance, to plot correlogramms only at 30, 50, and 100 degrees, you can use:
+
+	DLS.plot_correlations ( 'Angles', [ 30 50 100 ] )
+
+Another example. To plot Kc/R of an SLS dataset as a function of Q^2 using a blueish style, cast:
+
+	SLS.plot_KcR ( 'Color', 'Blue', 'Independent', 'Q2' )
+
+If you do not choose any input argument, some reasonable default values are chosen for you.
