@@ -6,7 +6,7 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
 % Author:	Fabio Zanini
 % Companies:	Institut Laue Langevin, Universität Tübingen
 % Date:		20 Mar 2010
-% Version:	1.0
+% Version:	1.1
 %
 % Syntax: dataclass = Data ( path, varargin )
 %
@@ -19,10 +19,13 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
 %        LSData ( path, 'option1', value1, 'option2', value2, ... )
 %
 %   Allowed options are at this moment the following:
-%   - C_set :		concentration you set in the LS instrument (SLS)
 %   - C :		real concentration (from UV; SLS/DLS)
+%   - C_set :		concentration you set in the LS instrument (SLS)
 %   - n :		real index of refraction of the solvent (from literature or
 %			recfractometry;	SLS/DLS, is used to compute Q!)
+%   ( n_set (NO!)	NOT AVAILABLE, read from raw data file			)
+%   - dndc :		increment of index of refraction with sample concentration
+%   - dndc_set :	increment of index of refraction set in the LS instrument
 %   - Repetitions :	number of good repetitions at every angle (SLS/DLS)
 %   - Runstart :	number of the first DLS file (e.g. DLSfile_0002.ASC). This
 %			is passed directly to a low-level routine, so you can leave
@@ -68,7 +71,14 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
 % - refractive index increment dn/dc
 % - concentration as measured with UV absorption
 %
-% Please look at the correction function for more information.
+% Starting from version 1.1, the class tries to be less user-invasive. If the user
+% states some of these three parameters as optional args, they are taken in. Otherwise,
+% the class tries a standard data correction according to "normal conditions", and
+% tells the user about this.
+%
+% At present, it is not possible to modify the parameters at runtime. This creates
+% quite a few problems, like double-corrections, user bothering, and the need of
+% event-aware properties. Maybe in the future...
 %
 % ----- DLS -----
 %
@@ -148,72 +158,13 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
    [ lsd.Instrument lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.load_general_data( lsd.Path, lsd.Runstart );
 
    lsd.load_static_data;						% SLS raw data
-   lsd.correct_param;							% ask for corrections
+   lsd.autocorrect_parameters( varargin );				% ask for corrections
    lsd.Q_static = lsd.compute_Q_from_angles ( lsd.Angles_static );	% calculate Q
 
    lsd.load_dyn_data;							% DLS data and correction (auto or manual)
    lsd.Q_dyn = lsd.compute_Q_from_angles ( lsd.Angles_dyn );		% calculate Q
 
   end	% constructor 
-
-  %============================================================================
-  % CORRECT PARAMETERS FOR SLS / DLS
-  %============================================================================
-  function correct_param (obj)
-  % Correct for some parameter values. Specifically:
-  % - c (UV)
-  % - n
-  % - dn/dc
-
-   % C_set is read from varargin; alternatively, ask the user
-   if isempty(obj.C_set)
-    C_set = input('What is the concentration set in the LS instrument [mg/ml]? [ no default ] ');
-    if isempty(C_set)
-     error('You HAVE to inset some concentration value, how are you to interpret the data without it?');
-    else
-     obj.C_set = C_set;
-    end
-   end
-
-   % C is read from varargin; alternatively, ask the user or use C_set
-   if isempty(obj.C)
-    C	= input(['What is the concentration of this sample after UV [mg/ml]? [', num2str(obj.C_set),'] ']);
-    if isempty(C)
-      obj.C = obj.C_set;
-    else
-      obj.C = C;
-    end
-   end
-   
-   % n is read from varargin; alternatively, ask the user or use n_set (which is read from file)
-   if isempty(obj.n)
-    n	= input(['What is the refractive index of the solvent? [', num2str(obj.n_set),'] ']);
-    if isempty(n)
-     obj.n	= obj.n_set;
-    else
-     obj.n	= n;
-    end
-   end
-
-   % dndc is read from input; alternatively, use class default
-   dndc	= input(['What is dn/dc of this sample [ml/g]? [', num2str(obj.dndc),'] ']);
-   if ~isempty(dndc)
-    obj.dndc = dndc;
-   end
-
-   % dndc_set is read from input; alternatively, use class default
-   dndc_set = input(['What is dn/dc set in the LS instrument [ml/g]? [', num2str(obj.dndc_set),'] ']);
-   if ~isempty(dndc_set)
-    obj.dndc_set = dndc_set;
-   end
-
-   % correction of values
-   correction_factor = ( ( obj.n * obj.dndc ) ^2 * obj.C ) ./ ( ( obj.n_set * obj.dndc_set ) ^2 * obj.C_set  );
-   obj.KcR	= obj.KcR * correction_factor;
-   obj.dKcR	= obj.dKcR* correction_factor;
-
-  % end of correction function
-  end
 
  end	% public methods
 
@@ -231,19 +182,87 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
    if mod(length(argvect),2)
     error('You should choose parameter names and input a values for them.');
    else
-    par	= struct(argvect{:});
+    options		= struct(argvect{:});				% read the optional args
 
-    opt_par = { 'C_set' 'C' 'n' 'Repetitions' 'Runstart' 'Runs' };			% optional parameters
-    for i = 1 : length(opt_par)
-     if isfield(par,opt_par{i}) obj.(opt_par{i}) = par.(opt_par{i}); end
+    % Repetitions
+    try
+     obj.Repetitions	= options.Repetitions;
     end
 
-    if isempty(obj.Runs)								% find the runs if necessary
-     obj.Runs	= obj.find_runs(obj.Path,obj.Runstart);
+    % Runstart
+    try
+     obj.Runstart	= options.Runstart;
+    end
+
+    % Runs
+    try
+     obj.Runs		= options.Runs;
+    catch
+     obj.Runs	= obj.find_runs(obj.Path,obj.Runstart);			% find the Runs if necessary (may be incorrect)
     end
 
    end
   end	% set_optional
+
+  %============================================================================
+  % AUTOCORRECT PARAMETERS FOR SLS / DLS
+  %============================================================================
+  function autocorrect_parameters (obj, argvect)
+  % Correct the parameters when the class is initialized, or later on if
+  % explicitely called.
+  % The protocol for every parameter is the following:
+  % 1. look for the parameter in the optional args. If found, take it into the class
+  % 2. If not found, use the fallback value of the class if present (warn the user)
+  % 3. If no fallback value is found (e.g. for C_set), ask the user.
+
+   options	= struct(argvect{:});				% read the optional args
+
+   % C_set (no fallback)
+   try
+    obj.C_set	= options.C_set;
+   catch
+    obj.C_set	= input('What is the concentration set in the LS instrument [mg/ml]? [ no default ] ');
+    if isempty(obj.C_set)
+     error('You HAVE to insert some concentration value, how are you to interpret the data without it?');
+    end
+   end
+
+   % C (fallback: C_set)
+   try
+    obj.C	= options.C;
+   catch
+    obj.C	= obj.C_set;
+    fprintf('No UV-determined concentration has been input. Falling back to C_set\n');
+   end
+
+   % n (fallback: n_set, read from raw data file)
+   try
+    obj.n	= options.n;
+   catch
+    obj.n	= obj.n_set;
+    fprintf('No corrected index of refraction for the solvent has been input. Falling back to n_set\n');
+   end
+
+   % dndc (fallback: class default)
+   try
+    obj.dndc	= options.dndc;
+   catch
+    fprintf(['No corrected dn/dc has been input. Falling back to the standard: ', num2str(obj.dndc),' ml/g\n']);
+   end
+
+   % dndc_set (fallback: class default)
+   try
+    obj.dndc_set = options.dndc_set;
+   catch
+    fprintf(['No corrected dn/dc_set has been input. Falling back to the standard: ', num2str(obj.dndc_set),' ml/g\n\n']);
+   end
+
+   % correction of values
+   correction_factor = ( ( obj.n * obj.dndc ) ^2 * obj.C ) ./ ( ( obj.n_set * obj.dndc_set ) ^2 * obj.C_set  );
+   obj.KcR	= obj.KcR * correction_factor;
+   obj.dKcR	= obj.dKcR* correction_factor;
+
+  end	% autocorrect_parameters
 
   %=========================================================================================
   % COMPUTE Q FROM ANGLES
