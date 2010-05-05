@@ -200,6 +200,11 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
      obj.Runs	= obj.find_runs(obj.Path,obj.Runstart);			% find the Runs if necessary (may be incorrect)
     end
 
+    % Instrument
+    try
+     obj.Instrument	= options.Instrument;
+    end
+
    end
 
   end	% set_optional
@@ -214,11 +219,11 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
    PATH_ALV	= [ obj.Path, '0', num2str(obj.Runstart,'%3.3u'), '.ASC'];			% this is the syntax for ALV files
    PATH_MALVERN	= obj.Path;									% this is the syntax for Malvern
  
-   if exist(PATH_ALV) == 2									% Malvern?
+   if ( exist(PATH_ALV) == 2	| regexp(obj.Instrument,'ALV') )				% Malvern?
     instrument	= 'ALV CGS3 and 7004/FAST';
     [ lambda unit_lambda n_set ] = obj.read_general_file_ALV ( obj.Path, obj.Runstart );
  
-   elseif exist(PATH_MALVERN) == 2									% ALV?
+   elseif ( exist(PATH_MALVERN) == 2	| regexp(obj.Instrument,'Malvern') )			% ALV?
     instrument	= 'Malvern Zetasizer Nano';
     [ lambda unit_lambda n_set ]	= obj.read_general_file_Malvern ( obj.Path, obj.Runstart );
  
