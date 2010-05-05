@@ -13,6 +13,13 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
 % - path is the files location, like '/home/.../BSA_200_15_sample'. A relative
 %   address can be used, but please mind your directory tree;
 %
+%   N.B.: if your instrument is the Malvern Zetasizer Nano, your filenames must be
+%         the path + '_SLS.txt' for the static file and path + '_DLS.txt' for the
+%         dynamic one.
+%         If your instrument is the ALV, your filenames must be path + 0000.ASC
+%         or any other startnumber and following for the dynamic files, and
+%         path + '_bak.txt' for the static file!
+%
 % - varargin is a syntax of MatLab which allows for a variable number of input
 %   options. The syntax is the following:
 %
@@ -155,7 +162,7 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
    lsd.set_optional ( varargin );	% optional arguments like c_set, ecc.
 
    % the first thing is to get the general information about the instrument, lambda, etc.
-   [ lsd.Instrument lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.load_general_data;
+   [ lsd.Instrument lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.load_general_data ( varargin );
 
    [ lsd.Angles_static lsd.KcR lsd.dKcR ] = lsd.load_static_data ( varargin );	% SLS data (corrected)
    lsd.Q_static = lsd.compute_Q_from_angles ( lsd.Angles_static );		% calculate Q
@@ -193,13 +200,6 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
      obj.Runstart	= options.Runstart;
     end
 
-    % Runs
-    try
-     obj.Runs		= options.Runs;
-    catch
-     obj.Runs	= obj.find_runs(obj.Path,obj.Runstart);			% find the Runs if necessary (may be incorrect)
-    end
-
     % Instrument
     try
      obj.Instrument	= options.Instrument;
@@ -212,20 +212,36 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   %=========================================================================================
   % LOAD GENERAL DATA
   %=========================================================================================
-  function [ instrument lambda unit_lambda n_set ] = load_general_data ( obj )
+  function [ instrument lambda unit_lambda n_set ] = load_general_data ( obj, argvect )
   % this is just a switch function. We have to understand which kind of instrument
   % we're using, and then call external functions accordingly
 
-   PATH_ALV	= [ obj.Path, '0', num2str(obj.Runstart,'%3.3u'), '.ASC'];			% this is the syntax for ALV files
-   PATH_MALVERN	= obj.Path;									% this is the syntax for Malvern
+   PATH_ALV		= [ obj.Path, '0', num2str(obj.Runstart,'%3.3u'), '.ASC'];			% this is the syntax for ALV files
+   PATH_MALVERN_DLS	= [ obj.Path, '_DLS.txt'];							% this is the syntax for Malvern
+   PATH_MALVERN_SLS	= [ obj.Path, '_SLS.txt'];							% this is the syntax for Malvern
  
-   if ( exist(PATH_ALV) == 2	| regexp(obj.Instrument,'ALV') )				% Malvern?
+   if ( exist(PATH_ALV) == 2	|| ( ~isempty(obj.Instrument) && regexp(obj.Instrument,'ALV') ) )				% ALV?
     instrument	= 'ALV CGS3 and 7004/FAST';
     [ lambda unit_lambda n_set ] = obj.read_general_file_ALV ( obj.Path, obj.Runstart );
+
+    % Runs
+    try
+     obj.Runs	= options.Runs;
+    catch
+     obj.Runs	= obj.find_runs(obj.Path,obj.Runstart);			% find the Runs if necessary (may be incorrect)
+    end
  
-   elseif ( exist(PATH_MALVERN) == 2	| regexp(obj.Instrument,'Malvern') )			% ALV?
+   elseif ( exist(PATH_MALVERN_SLS) == 2 || exist(PATH_MALVERN_DLS) == 2 || ( ~isempty(obj.Instrument) && regexp(obj.Instrument,'Malvern') ) )			% Malvern?
     instrument	= 'Malvern Zetasizer Nano';
-    [ lambda unit_lambda n_set ]	= obj.read_general_file_Malvern ( obj.Path, obj.Runstart );
+    [ lambda unit_lambda n_set ]	= obj.set_general_parameters_Malvern;
+
+    % Runs
+    try
+     obj.Runs	= options.Runs;
+    catch
+     obj.Runs	= 1;			% the standard for the Malvern instrument is 1
+    end
+
  
    else												% none of them?!
     fprintf('\nEh? Instrument not recognized. Are you sure that your path is correct?\n\n');
@@ -240,7 +256,29 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   % reading static data from text files and correcting for them at initialization
   
    if regexp(obj.Instrument,'Malvern')					% Malvern instrument?
-    [ angles_static kcr dkcr ] = obj.read_static_file_Malvern( obj.Path );
+
+    PATH_MALVERN_SLS	= [ obj.Path, '_SLS.txt'];					% this is the syntax for Malvern
+
+    [ angles_static kcr dkcr ] = obj.read_static_file_Malvern( PATH_MALVERN_SLS );
+
+    % C (no fallback)
+    try
+     obj.C	= options.C;
+     catch
+     obj.C	= input('What is the sample concentration after UV [mg/ml]? [ no default ] ');
+     if isempty(obj.C)
+      error('You HAVE to insert some concentration value, how are you to interpret the data without it?');
+     end
+    end
+
+    % n (fallback: n_set, from read_general_file_* )
+    try
+     obj.n	= options.n;
+    catch
+     obj.n	= obj.n_set;
+     fprintf('No corrected index of refraction for the solvent has been input. Falling back to n_set\n');
+    end
+ 
 
    elseif regexp(obj.Instrument,'ALV')					% ALV Instrument?
     [ Ang_a KcR_a dKcR_a ] = obj.read_static_file_ALV ( obj.Path );	% read raw data (with repetitions)
@@ -335,14 +373,20 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
 
    if regexp(obj.Instrument,'Malvern')					% Malvern instrument?
 
-   [ Ang_a Tau_a G_a dG_a ] = obj.read_dyn_files_Malvern( obj.Path, obj.Runstart, obj.Runs );
+   PATH_MALVERN_DLS	= [ obj.Path, '_DLS.txt'];			% this is the syntax for Malvern
+
+    [ Ang_a Tau_a G_a dG_a ] = obj.read_dyn_files_Malvern( PATH_MALVERN_DLS );
+    obj.Repetitions	= 1;						% on Malvern, we make a mean of all measurements
+
 
    elseif regexp(obj.Instrument,'ALV')					% ALV Instrument?
 
-   [ Ang_a Tau_a G_a dG_a ] = obj.read_dyn_files_ALV( obj.Path, obj.Runstart, obj.Runs );	% read raw data
+    [ Ang_a Tau_a G_a dG_a ] = obj.read_dyn_files_ALV( obj.Path, obj.Runstart, obj.Runs );	% read raw data
+  
+   end
   
    Ang_unique = unique(Ang_a);				% unique vector of angles
-  
+
    % find out the number of repetitions IF the parameter was not passed explicitely!
    if isempty(obj.Repetitions)
     for i = 1 : obj.Runs
@@ -382,6 +426,7 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   
     % if the number of candidates is equal to the number of places, do not show anything
     if length(candidates.tau) == obj.Repetitions
+
      for k = 1 : obj.Repetitions
       obj.Tau{obj.Repetitions*(i-1)+k}	= candidates.tau{k};
       obj.G{obj.Repetitions*(i-1)+k}	= candidates.g{k};
@@ -424,9 +469,11 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
       obj.G{obj.Repetitions*(i-1)+k}	= candidates.g{answer(k)};
       obj.dG{obj.Repetitions*(i-1)+k}	= candidates.dg{answer(k)};
      end
+ 
     end
   
    end
+
 
   end	% load_dyn_data 
 
@@ -439,7 +486,8 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
    % check the unit conversion ( convert lambda into angstrom )
    if strcmpi(obj.Unit_Lambda,'A')		lambda = obj.Lambda;
    elseif strcmpi(obj.Unit_Lambda,'nm')		lambda = 10 * obj.Lambda;
-   else				warning('Wavelength unit not supported.');   end
+   else				warning('Wavelength unit not supported.');
+   end
 
     q = 4 * pi * obj.n * sind( 0.5 * angles ) ./ lambda;	% compute the q vectors
   end	% compute_Q_from_angles 
@@ -454,25 +502,25 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   %=========================================================================================
   % find number of runs (separate file)
   %=========================================================================================
-  runs = find_runs (path, runstart)
+  runs = find_runs (path, runstart);
 
   %=========================================================================================
   % read_general_file (separate file)
   %=========================================================================================
   [ lambda unit_lambda n_set ] = read_general_file_ALV ( path, runstart );
-  [ lambda unit_lambda n_set ] = read_general_file_Malvern ( path, runstart );
+  [ lambda unit_lambda n_set ] = set_general_parameters_Malvern;
 
   %=========================================================================================
   % read_static_file (separate file)
   %=========================================================================================
-  [ ang kcr dkcr ] = read_static_file_ALV ( path )
-  [ ang kcr dkcr ] = read_static_file_Malvern ( path )
+  [ ang kcr dkcr ] = read_static_file_ALV ( path );
+  [ ang kcr dkcr ] = read_static_file_Malvern ( path );
 
   %=========================================================================================
   % read_dyn_files (separate file)
   %=========================================================================================
-  [ angle tau g dg ] = read_dyn_files_ALV ( path, runstart, runs )
-  [ angle tau g dg ] = read_dyn_files_Malvern ( path, runstart, runs )
+  [ angle tau g dg ] = read_dyn_files_ALV ( path, runstart, runs );
+  [ angle tau g dg ] = read_dyn_files_Malvern ( path );
 
  end	% static methods
 
