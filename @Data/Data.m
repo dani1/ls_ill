@@ -155,14 +155,13 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
    lsd.set_optional ( varargin );	% optional arguments like c_set, ecc.
 
    % the first thing is to get the general information about the instrument, lambda, etc.
-   [ lsd.Instrument lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.load_general_data( lsd.Path, lsd.Runstart );
+   [ lsd.Instrument lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.load_general_data;
 
-   lsd.load_static_data;						% SLS raw data
-   lsd.autocorrect_parameters( varargin );				% ask for corrections
-   lsd.Q_static = lsd.compute_Q_from_angles ( lsd.Angles_static );	% calculate Q
+   [ lsd.Angles_static lsd.KcR lsd.dKcR ] = lsd.load_static_data ( varargin );	% SLS data (corrected)
+   lsd.Q_static = lsd.compute_Q_from_angles ( lsd.Angles_static );		% calculate Q
 
-   lsd.load_dyn_data;							% DLS data and correction (auto or manual)
-   lsd.Q_dyn = lsd.compute_Q_from_angles ( lsd.Angles_dyn );		% calculate Q
+   lsd.load_dyn_data;								% DLS data and correction (auto or manual)
+   lsd.Q_dyn = lsd.compute_Q_from_angles ( lsd.Angles_dyn );			% calculate Q
 
   end	% constructor 
 
@@ -202,117 +201,122 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
     end
 
    end
+
   end	% set_optional
 
-  %============================================================================
-  % AUTOCORRECT PARAMETERS FOR SLS / DLS
-  %============================================================================
-  function autocorrect_parameters (obj, argvect)
-  % Correct the parameters when the class is initialized, or later on if
-  % explicitely called.
-  % The protocol for every parameter is the following:
-  % 1. look for the parameter in the optional args. If found, take it into the class
-  % 2. If not found, use the fallback value of the class if present (warn the user)
-  % 3. If no fallback value is found (e.g. for C_set), ask the user.
-
-   options	= struct(argvect{:});				% read the optional args
-
-   % C_set (no fallback)
-   try
-    obj.C_set	= options.C_set;
-   catch
-    obj.C_set	= input('What is the concentration set in the LS instrument [mg/ml]? [ no default ] ');
-    if isempty(obj.C_set)
-     error('You HAVE to insert some concentration value, how are you to interpret the data without it?');
-    end
-   end
-
-   % C (fallback: C_set)
-   try
-    obj.C	= options.C;
-   catch
-    obj.C	= obj.C_set;
-    fprintf('No UV-determined concentration has been input. Falling back to C_set\n');
-   end
-
-   % n (fallback: n_set, read from raw data file)
-   try
-    obj.n	= options.n;
-   catch
-    obj.n	= obj.n_set;
-    fprintf('No corrected index of refraction for the solvent has been input. Falling back to n_set\n');
-   end
-
-   % dndc (fallback: class default)
-   try
-    obj.dndc	= options.dndc;
-   catch
-    fprintf(['No corrected dn/dc has been input. Falling back to the standard: ', num2str(obj.dndc),' ml/g\n']);
-   end
-
-   % dndc_set (fallback: class default)
-   try
-    obj.dndc_set = options.dndc_set;
-   catch
-    fprintf(['No corrected dn/dc_set has been input. Falling back to the standard: ', num2str(obj.dndc_set),' ml/g\n\n']);
-   end
-
-   % correction of values
-   correction_factor = ( ( obj.n * obj.dndc ) ^2 * obj.C ) ./ ( ( obj.n_set * obj.dndc_set ) ^2 * obj.C_set  );
-   obj.KcR	= obj.KcR * correction_factor;
-   obj.dKcR	= obj.dKcR* correction_factor;
-
-  end	% autocorrect_parameters
-
   %=========================================================================================
-  % COMPUTE Q FROM ANGLES
+  % LOAD GENERAL DATA
   %=========================================================================================
-  function q = compute_Q_from_angles ( obj, angles )
-  % fill the Q vector with lsd.Runs entries starting from the angles (both SLS and DLS)
+  function [ instrument lambda unit_lambda n_set ] = load_general_data ( obj )
+  % this is just a switch function. We have to understand which kind of instrument
+  % we're using, and then call external functions accordingly
 
-   % check the unit conversion ( convert lambda into angstrom )
-   if strcmpi(obj.Unit_Lambda,'A')		lambda = obj.Lambda;
-   elseif strcmpi(obj.Unit_Lambda,'nm')		lambda = 10 * obj.Lambda;
-   else				warning('Wavelength unit not supported.');   end
+   PATH_ALV	= [ obj.Path, '0', num2str(obj.Runstart,'%3.3u'), '.ASC'];			% this is the syntax for ALV files
+   PATH_MALVERN	= obj.Path;									% this is the syntax for Malvern
+ 
+   if exist(PATH_ALV) == 2									% Malvern?
+    instrument	= 'ALV CGS3 and 7004/FAST';
+    [ lambda unit_lambda n_set ] = obj.read_general_file_ALV ( obj.Path, obj.Runstart );
+ 
+   elseif exist(PATH_MALVERN) == 2									% ALV?
+    instrument	= 'Malvern Zetasizer Nano';
+    [ lambda unit_lambda n_set ]	= obj.read_general_file_Malvern ( obj.Path, obj.Runstart );
+ 
+   else												% none of them?!
+    fprintf('\nEh? Instrument not recognized. Are you sure that your path is correct?\n\n');
+   end
 
-    q = 4 * pi * obj.n * sind( 0.5 * angles ) ./ lambda;	% compute the q vectors
-  end	% compute_Q_from_angles 
+  end	% load_general_data
 
   %=========================================================================================
   % LOAD STATIC DATA
   %=========================================================================================
-  function load_static_data ( obj )
-  % reading static data from text files
+  function [ angles_static kcr dkcr ] = load_static_data ( obj, argvect )
+  % reading static data from text files and correcting for them at initialization
   
-  
-   [ Ang_a KcR_a dKcR_a ] = obj.read_static_file ( obj.Path );		% read raw data (with repetitions)
-  
-   if isempty(Ang_a)
+   if regexp(obj.Instrument,'Malvern')					% Malvern instrument?
+    [ angles_static kcr dkcr ] = obj.read_static_file_Malvern( obj.Path );
 
-    fprintf('Skipping SLS data');					% print a message if skipping
+   elseif regexp(obj.Instrument,'ALV')					% ALV Instrument?
+    [ Ang_a KcR_a dKcR_a ] = obj.read_static_file_ALV ( obj.Path );	% read raw data (with repetitions)
+
+    if isempty(Ang_a)
+     fprintf('Skipping SLS data');					% print a message if skipping
+    else
+ 
+     angles_static	= unique(Ang_a);				% unique already orders the vector   
+
+     % pick out the best data point on the basis of a quality parameter ( percentual error, smallest I, etc. );
+     for i = 1 : length(angles_static)
+      candidates = struct('kcr',[],'dkcr',[]);				% create empty candidate
+      for j = 1 : length(Ang_a)
+       if Ang_a(j) == angles_static(i)
+        candidates.kcr	= [ candidates.kcr	KcR_a(j) ];
+        candidates.dkcr	= [ candidates.dkcr	dKcR_a(j)];
+       end
+      end
+     [ kcr(i) dkcr(i) ]	= filter_stddev ( candidates );			% filter stddev
+     end   
+
+     dkcr	= 0.01 .* dkcr .* kcr;					% turn relative into absolute errors
+    end
+ 
+    % Now we need to correct the parameters as specified by the user.
+    % The protocol for every parameter is the following:
+    % 1. look for the parameter in the optional args. If found, take it into the class
+    % 2. If not found, use the fallback value of the class if present (warn the user)
+    % 3. If no fallback value is found (e.g. for C_set), ask the user.
+    options	= struct(argvect{:});					% read the optional args
+  
+    % C_set (no fallback)
+    try
+     obj.C_set	= options.C_set;
+    catch
+     obj.C_set	= input('What is the concentration set in the LS instrument [mg/ml]? [ no default ] ');
+     if isempty(obj.C_set)
+      error('You HAVE to insert some concentration value, how are you to interpret the data without it?');
+     end
+    end
+ 
+    % C (fallback: C_set)
+    try
+     obj.C	= options.C;
+    catch
+     obj.C	= obj.C_set;
+     fprintf('No UV-determined concentration has been input. Falling back to C_set\n');
+    end
+ 
+    % n (fallback: n_set, from read_static_file_* )
+    try
+     obj.n	= options.n;
+    catch
+     obj.n	= obj.n_set;
+     fprintf('No corrected index of refraction for the solvent has been input. Falling back to n_set\n');
+    end
+ 
+    % dndc (fallback: class default)
+    try
+     obj.dndc	= options.dndc;
+    catch
+     fprintf(['No corrected dn/dc has been input. Falling back to the standard: ', num2str(obj.dndc),' ml/g\n']);
+    end
+ 
+    % dndc_set (fallback: class default)
+    try
+     obj.dndc_set = options.dndc_set;
+    catch
+     fprintf(['No corrected dn/dc_set has been input. Falling back to the standard: ', num2str(obj.dndc_set),' ml/g\n\n']);
+    end
+ 
+    % correction of values
+    correction_factor = ( ( obj.n * obj.dndc ) ^2 * obj.C ) ./ ( ( obj.n_set * obj.dndc_set ) ^2 * obj.C_set  );
+    obj.KcR	= obj.KcR * correction_factor;
+    obj.dKcR	= obj.dKcR* correction_factor;
 
    else
-
-    obj.Angles_static	= unique(Ang_a);				% unique already orders the vector
-  
-    % pick out the best data point on the basis of a quality parameter ( percentual error, smallest I, etc. );
-    for i = 1 : length(obj.Angles_static)
-     candidates = struct('kcr',[],'dkcr',[]);				% create empty candidate
-
-     for j = 1 : length(Ang_a)
-      if Ang_a(j) == obj.Angles_static(i)
-       candidates.kcr	= [ candidates.kcr	KcR_a(j) ];
-       candidates.dkcr	= [ candidates.dkcr	dKcR_a(j)];
-      end
-     end
-  
-    [ obj.KcR(i) obj.dKcR(i) ]	= filter_stddev ( candidates );		% filter stddev
-    end
-  
-    obj.dKcR	= 0.01 * obj.dKcR .* obj.KcR;				% relative into absolute errors
-
+    fprintf('\nInstrument not recognized!\n\n');
    end
-  
+   
   end	% load_static_data 
 
   %=========================================================================================
@@ -324,8 +328,13 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   % the user what to do. If the user does not say anything, choose the gs with the smallest
   % integral in the intermediate lagtime range (fewest aggregates).
 
-   % read raw data
-   [ Ang_a Tau_a G_a dG_a ] = obj.read_dyn_files( obj.Path, obj.Runstart, obj.Runs );
+   if regexp(obj.Instrument,'Malvern')					% Malvern instrument?
+
+   [ Ang_a Tau_a G_a dG_a ] = obj.read_dyn_files_Malvern( obj.Path, obj.Runstart, obj.Runs );
+
+   elseif regexp(obj.Instrument,'ALV')					% ALV Instrument?
+
+   [ Ang_a Tau_a G_a dG_a ] = obj.read_dyn_files_ALV( obj.Path, obj.Runstart, obj.Runs );	% read raw data
   
    Ang_unique = unique(Ang_a);				% unique vector of angles
   
@@ -376,20 +385,20 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   
     % otherwise, plot the candidates with their (new) index and filter them
     else
-     figure;									% open figure
-     hold all;
-     set( gcf, 'color', 'white' );
-     set( gca, 'box', 'on', 'xscale','log' );
-     xlabel(['\tau [ ms ]']);
-     ylabel('g_2-1/\beta [ normalised ]');
-     pl		= [];
-     leg		= [];
-   
-     for j = 1 : length(candidates.tau)
-      pl		= [ pl;  plot(candidates.tau{j},candidates.g{j}) ];	% plot
-      leg		= [ leg; ['Plot n.',num2str(j,'%2.2u')] ];		% legend
-     end
-     legend(pl,leg);
+%     figure;									% open figure
+%     hold all;
+%     set( gcf, 'color', 'white' );
+%     set( gca, 'box', 'on', 'xscale','log' );
+%     xlabel(['\tau [ ms ]']);
+%     ylabel('g_2-1/\beta [ normalised ]');
+%     pl		= [];
+%     leg		= [];
+%   
+%     for j = 1 : length(candidates.tau)
+%      pl		= [ pl;  plot(candidates.tau{j},candidates.g{j}) ];	% plot
+%      leg		= [ leg; ['Plot n.',num2str(j,'%2.2u')] ];		% legend
+%     end
+%     legend(pl,leg);
   
      % calculate the best functions based on:
 %     index = find_minimal_integrals ( candidates, obj.Repetitions );		% the minimal integral criterium
@@ -402,7 +411,7 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
       answer = index;
 %     end
   
-     close(gcf);								% close figure
+%     close(gcf);								% close figure
   
      % insert the chosen correlations
      for k = 1 : obj.Repetitions
@@ -415,6 +424,20 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
    end
 
   end	% load_dyn_data 
+
+  %=========================================================================================
+  % COMPUTE Q FROM ANGLES
+  %=========================================================================================
+  function q = compute_Q_from_angles ( obj, angles )
+  % fill the Q vector with lsd.Runs entries starting from the angles (both SLS and DLS)
+
+   % check the unit conversion ( convert lambda into angstrom )
+   if strcmpi(obj.Unit_Lambda,'A')		lambda = obj.Lambda;
+   elseif strcmpi(obj.Unit_Lambda,'nm')		lambda = 10 * obj.Lambda;
+   else				warning('Wavelength unit not supported.');   end
+
+    q = 4 * pi * obj.n * sind( 0.5 * angles ) ./ lambda;	% compute the q vectors
+  end	% compute_Q_from_angles 
 
  end	% private methods
 
@@ -429,19 +452,22 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   runs = find_runs (path, runstart)
 
   %=========================================================================================
-  % reading general data (separate file)
+  % read_general_file (separate file)
   %=========================================================================================
-  [ instrument lambda unit_lambda n_set ] = load_general_data( path, runstart );
+  [ lambda unit_lambda n_set ] = read_general_file_ALV ( path, runstart );
+  [ lambda unit_lambda n_set ] = read_general_file_Malvern ( path, runstart );
 
   %=========================================================================================
   % read_static_file (separate file)
   %=========================================================================================
-  [ ang kcr dkcr ] = read_static_file ( path )
+  [ ang kcr dkcr ] = read_static_file_ALV ( path )
+  [ ang kcr dkcr ] = read_static_file_Malvern ( path )
 
   %=========================================================================================
   % read_dyn_files (separate file)
   %=========================================================================================
-  [ angle tau g dg ] = read_dyn_files ( path, runstart, runs )
+  [ angle tau g dg ] = read_dyn_files_ALV ( path, runstart, runs )
+  [ angle tau g dg ] = read_dyn_files_Malvern ( path, runstart, runs )
 
  end	% static methods
 
