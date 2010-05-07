@@ -158,16 +158,31 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   %============================================================================
   function lsd = Data ( path, varargin )
 
-   lsd.Path = path;			% path
-   lsd.set_optional ( varargin );	% optional arguments like c_set, ecc.
+   % get the optional arguments
+   try
+    options	= struct(varargin{:});
+    try		lsd.Repetitions	= options.Repetitions;	end			% Repetitions
+    try		lsd.Runstart	= options.Runstart;	end			% Runstart
+   catch
+    error('Something is wrong in your optional arguments. Please check.');
+   end
 
-   % the first thing is to get the general information about the instrument, lambda, etc.
-   [ lsd.Instrument lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.load_general_data ( varargin );
+   [ lsd.Instrument lsd.Path f ] = lsd.find_instrument( path, lsd.Runstart );	% get the instrument and the appropriate paths and functions
 
-   [ lsd.Angles_static lsd.KcR lsd.dKcR ] = lsd.load_static_data ( varargin );	% SLS data (corrected)
+   [lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.(f.gen)( lsd.Path.GEN, lsd.Runstart	);	% general options
+   [ lsd.Angles_static lsd.KcR lsd.dKcR ] = lsd.(f.sta)	( lsd.Path.SLS, options 	);	% load SLS data
+
+   % look for the numbers of Runs
+   try
+    lsd.Runs = options.Runs;
+   catch
+    lsd.Runs = lsd.(f.fin) ( lsd.Path.DLS, lsd.Runstart );
+   end
+
+   [ Ang_a Tau_a G_a dG_a ] = lsd.(f.dyn) ( lsd.Path.DLS, lsd.Runstart, lsd.Runs 	);	% load DLS data
+   [ lsd.Angles_dyn lsd.Tau lsd.G lsd.dG ] = lsd.filter_dyn_data(Ang_a,Tau_a,G_a,dG_a	);	% filter DLS data
+
    lsd.Q_static = lsd.compute_Q_from_angles ( lsd.Angles_static );		% calculate Q
-
-   lsd.load_dyn_data;								% DLS data and correction (auto or manual)
    lsd.Q_dyn = lsd.compute_Q_from_angles ( lsd.Angles_dyn );			% calculate Q
 
   end	% constructor 
@@ -180,225 +195,25 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
  methods ( Access = private )
 
   %=========================================================================================
-  % SET OPTIONAL PARAMETERS OF THEIR DEFAULT VALUES
+  % FILTER CORRELATION DATA
   %=========================================================================================
-  function set_optional ( obj, argvect )
-  % set optional class properties read from varargin of the class itself
-
-   if mod(length(argvect),2)
-    error('You should choose parameter names and input a values for them.');
-   else
-    options		= struct(argvect{:});				% read the optional args
-
-    % Repetitions
-    try
-     obj.Repetitions	= options.Repetitions;
-    end
-
-    % Runstart
-    try
-     obj.Runstart	= options.Runstart;
-    end
-
-    % Instrument
-    try
-     obj.Instrument	= options.Instrument;
-    end
-
-   end
-
-  end	% set_optional
-
-  %=========================================================================================
-  % LOAD GENERAL DATA
-  %=========================================================================================
-  function [ instrument lambda unit_lambda n_set ] = load_general_data ( obj, argvect )
-  % this is just a switch function. We have to understand which kind of instrument
-  % we're using, and then call external functions accordingly
-
-   PATH_ALV		= [ obj.Path, '0', num2str(obj.Runstart,'%3.3u'), '.ASC'];			% this is the syntax for ALV files
-   PATH_MALVERN_DLS	= [ obj.Path, '_DLS.txt'];							% this is the syntax for Malvern
-   PATH_MALVERN_SLS	= [ obj.Path, '_SLS.txt'];							% this is the syntax for Malvern
- 
-   if ( exist(PATH_ALV) == 2	|| ( ~isempty(obj.Instrument) && regexp(obj.Instrument,'ALV') ) )				% ALV?
-    instrument	= 'ALV CGS3 and 7004/FAST';
-    [ lambda unit_lambda n_set ] = obj.read_general_file_ALV ( obj.Path, obj.Runstart );
-
-    % Runs
-    try
-     obj.Runs	= options.Runs;
-    catch
-     obj.Runs	= obj.find_runs(obj.Path,obj.Runstart);			% find the Runs if necessary (may be incorrect)
-    end
- 
-   elseif ( exist(PATH_MALVERN_SLS) == 2 || exist(PATH_MALVERN_DLS) == 2 || ( ~isempty(obj.Instrument) && regexp(obj.Instrument,'Malvern') ) )			% Malvern?
-    instrument	= 'Malvern Zetasizer Nano';
-    [ lambda unit_lambda n_set ]	= obj.set_general_parameters_Malvern;
-
-    % Runs
-    try
-     obj.Runs	= options.Runs;
-    catch
-     obj.Runs	= 1;			% the standard for the Malvern instrument is 1
-    end
-
- 
-   else												% none of them?!
-    fprintf('\nEh? Instrument not recognized. Are you sure that your path is correct?\n\n');
-   end
-
-  end	% load_general_data
-
-  %=========================================================================================
-  % LOAD STATIC DATA
-  %=========================================================================================
-  function [ angles_static kcr dkcr ] = load_static_data ( obj, argvect )
-  % reading static data from text files and correcting for them at initialization
-  
-   if regexp(obj.Instrument,'Malvern')					% Malvern instrument?
-
-    PATH_MALVERN_SLS	= [ obj.Path, '_SLS.txt'];					% this is the syntax for Malvern
-
-    [ angles_static kcr dkcr ] = obj.read_static_file_Malvern( PATH_MALVERN_SLS );
-
-    % C (no fallback)
-    try
-     obj.C	= options.C;
-     catch
-     obj.C	= input('What is the sample concentration after UV [mg/ml]? [ no default ] ');
-     if isempty(obj.C)
-      error('You HAVE to insert some concentration value, how are you to interpret the data without it?');
-     end
-    end
-
-    % n (fallback: n_set, from read_general_file_* )
-    try
-     obj.n	= options.n;
-    catch
-     obj.n	= obj.n_set;
-     fprintf('No corrected index of refraction for the solvent has been input. Falling back to n_set\n');
-    end
- 
-
-   elseif regexp(obj.Instrument,'ALV')					% ALV Instrument?
-    [ Ang_a KcR_a dKcR_a ] = obj.read_static_file_ALV ( obj.Path );	% read raw data (with repetitions)
-
-    if isempty(Ang_a)
-     fprintf('Skipping SLS data');					% print a message if skipping
-    else
- 
-     angles_static	= unique(Ang_a);				% unique already orders the vector   
-
-     % pick out the best data point on the basis of a quality parameter ( percentual error, smallest I, etc. );
-     for i = 1 : length(angles_static)
-      candidates = struct('kcr',[],'dkcr',[]);				% create empty candidate
-      for j = 1 : length(Ang_a)
-       if Ang_a(j) == angles_static(i)
-        candidates.kcr	= [ candidates.kcr	KcR_a(j) ];
-        candidates.dkcr	= [ candidates.dkcr	dKcR_a(j)];
-       end
-      end
-     [ kcr(i) dkcr(i) ]	= filter_stddev ( candidates );			% filter stddev
-     end   
-
-     dkcr	= 0.01 .* dkcr .* kcr;					% turn relative into absolute errors
-    end
- 
-    % Now we need to correct the parameters as specified by the user.
-    % The protocol for every parameter is the following:
-    % 1. look for the parameter in the optional args. If found, take it into the class
-    % 2. If not found, use the fallback value of the class if present (warn the user)
-    % 3. If no fallback value is found (e.g. for C_set), ask the user.
-    options	= struct(argvect{:});					% read the optional args
-  
-    % C_set (no fallback)
-    try
-     obj.C_set	= options.C_set;
-    catch
-     obj.C_set	= input('What is the concentration set in the LS instrument [mg/ml]? [ no default ] ');
-     if isempty(obj.C_set)
-      error('You HAVE to insert some concentration value, how are you to interpret the data without it?');
-     end
-    end
- 
-    % C (fallback: C_set)
-    try
-     obj.C	= options.C;
-    catch
-     obj.C	= obj.C_set;
-     fprintf('No UV-determined concentration has been input. Falling back to C_set\n');
-    end
- 
-    % n (fallback: n_set, from read_static_file_* )
-    try
-     obj.n	= options.n;
-    catch
-     obj.n	= obj.n_set;
-     fprintf('No corrected index of refraction for the solvent has been input. Falling back to n_set\n');
-    end
- 
-    % dndc (fallback: class default)
-    try
-     obj.dndc	= options.dndc;
-    catch
-     fprintf(['No corrected dn/dc has been input. Falling back to the standard: ', num2str(obj.dndc),' ml/g\n']);
-    end
- 
-    % dndc_set (fallback: class default)
-    try
-     obj.dndc_set = options.dndc_set;
-    catch
-     fprintf(['No corrected dn/dc_set has been input. Falling back to the standard: ', num2str(obj.dndc_set),' ml/g\n\n']);
-    end
- 
-    % correction of values
-    correction_factor = ( ( obj.n * obj.dndc ) ^2 * obj.C ) ./ ( ( obj.n_set * obj.dndc_set ) ^2 * obj.C_set  );
-    obj.KcR	= obj.KcR * correction_factor;
-    obj.dKcR	= obj.dKcR* correction_factor;
-
-   else
-    fprintf('\nInstrument not recognized!\n\n');
-   end
-   
-  end	% load_static_data 
-
-  %=========================================================================================
-  % READ CORRELATION DATA
-  %=========================================================================================
-  function load_dyn_data ( obj )
+  function [ Angles Tau G dG ] = filter_dyn_data ( obj, Ang_a, Tau_a, G_a, dG_a, options )
   % This one is tricky. You have to find all the correlation files, find out the number
   % of repetitions. Every time that for one angle there are more gs, plot them and ask
   % the user what to do. If the user does not say anything, choose the gs with the smallest
   % integral in the intermediate lagtime range (fewest aggregates).
 
-   if regexp(obj.Instrument,'Malvern')					% Malvern instrument?
-
-   PATH_MALVERN_DLS	= [ obj.Path, '_DLS.txt'];			% this is the syntax for Malvern
-
-    [ Ang_a Tau_a G_a dG_a ] = obj.read_dyn_files_Malvern( PATH_MALVERN_DLS );
-    obj.Repetitions	= 1;						% on Malvern, we make a mean of all measurements
-
-
-   elseif regexp(obj.Instrument,'ALV')					% ALV Instrument?
-
-    [ Ang_a Tau_a G_a dG_a ] = obj.read_dyn_files_ALV( obj.Path, obj.Runstart, obj.Runs );	% read raw data
-  
+   % find repetitions
+   if isempty(obj.Repetitions);
+    obj.Repetitions	= find_repetitions(Ang_a); 
    end
-  
+
    Ang_unique = unique(Ang_a);				% unique vector of angles
-
-   % find out the number of repetitions IF the parameter was not passed explicitely!
-   if isempty(obj.Repetitions)
-    for i = 1 : obj.Runs
-     rep(i) = sum(ismember(Ang_a,Ang_a(i)));
-    end
-    obj.Repetitions	= min(rep);
-   end
-  
+ 
    % fill the Angles vector using the Repetitions
    for i = 1 : length(Ang_unique)
     for k = 1 : obj.Repetitions
-     obj.Angles_dyn(obj.Repetitions*(i-1)+k)	= Ang_unique(i);
+     Angles(obj.Repetitions*(i-1)+k)	= Ang_unique(i);
     end
    end
   
@@ -428,9 +243,9 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
     if length(candidates.tau) == obj.Repetitions
 
      for k = 1 : obj.Repetitions
-      obj.Tau{obj.Repetitions*(i-1)+k}	= candidates.tau{k};
-      obj.G{obj.Repetitions*(i-1)+k}	= candidates.g{k};
-      obj.dG{obj.Repetitions*(i-1)+k}	= candidates.dg{k};
+      Tau{obj.Repetitions*(i-1)+k}	= candidates.tau{k};
+      G{obj.Repetitions*(i-1)+k}	= candidates.g{k};
+      dG{obj.Repetitions*(i-1)+k}	= candidates.dg{k};
      end
   
     % otherwise, plot the candidates with their (new) index and filter them
@@ -465,9 +280,9 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   
      % insert the chosen correlations
      for k = 1 : obj.Repetitions
-      obj.Tau{obj.Repetitions*(i-1)+k}	= candidates.tau{answer(k)};
-      obj.G{obj.Repetitions*(i-1)+k}	= candidates.g{answer(k)};
-      obj.dG{obj.Repetitions*(i-1)+k}	= candidates.dg{answer(k)};
+      Tau{obj.Repetitions*(i-1)+k}	= candidates.tau{answer(k)};
+      G{obj.Repetitions*(i-1)+k}	= candidates.g{answer(k)};
+      dG{obj.Repetitions*(i-1)+k}	= candidates.dg{answer(k)};
      end
  
     end
@@ -492,35 +307,95 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
     q = 4 * pi * obj.n * sind( 0.5 * angles ) ./ lambda;	% compute the q vectors
   end	% compute_Q_from_angles 
 
+  %=========================================================================================
+  % LOAD STATIC DATA
+  %=========================================================================================
+  [ angles_static kcr dkcr ] = load_static_data_Malvern ( obj, slspath, options )
+  [ angles_static kcr dkcr ] = load_static_data_ALV ( obj, slspath, options )
+
  end	% private methods
 
  %============================================================================
- % STATIC METHODS (private)
+ % STATIC METHODS
  %============================================================================
  methods ( Access = private, Static )
 
   %=========================================================================================
-  % find number of runs (separate file)
+  % find instrument
   %=========================================================================================
-  runs = find_runs (path, runstart);
+  function [ instrument newpath f ] = find_instrument( path, runstart );
+  % This function tries to understand what kind of instrument you have used according
+  % to some properties of your path
+  
+   % possible instruments
+   instrument1	= 'Malvern Zetasizer Nano';
+   instrument2	= 'ALV CGS3 and 7004/FAST';
+  
+   % PATHS: these can be updated with new versions of the program
+   SLS_PATH_MALVERN	= [ path, '_SLS.txt' ];
+   DLS_PATH_MALVERN	= [ path, '_DLS.txt' ];
+   SLS_PATH_ALV		= [ path, '_bak.txt' ];
+   for i = 1 : 100
+    DLS_PATH_ALV{i}	= [ path, num2str(i-1,'%4.4u'), '.ASC'];
+   end
+  
+   % check for the existence of the right files
+   if exist(SLS_PATH_MALVERN) == 2 || exist(DLS_PATH_MALVERN) == 2
+    instrument	= instrument1;
+  
+   elseif exist(SLS_PATH_ALV) == 2	|| sum(cellfun(@exist,DLS_PATH_ALV)) > 0
+    instrument	= instrument2;
+  
+   else
+    error('Instrument not found!');
+   end
+
+   % standard PATHS dependent on the instrument
+   PATH.GEN_Malvern	= '';
+   PATH.SLS_Malvern	= [ path, '_SLS.txt' ];
+   PATH.DLS_Malvern	= [ path, '_DLS.txt' ];
+   PATH.GEN_ALV		= [ path, num2str(runstart,'%4.4u'), '.ASC'];
+   PATH.SLS_ALV		= [ path, '_bak.txt' ];
+   PATH.DLS_ALV		= path;
+
+   instr		= strtok(instrument);				% short version of the instrument
+
+   % set the paths according to the instrument
+   newpath.GEN		= PATH.(['GEN_',instr]);
+   newpath.SLS		= PATH.(['SLS_',instr]);
+   newpath.DLS		= PATH.(['DLS_',instr]);
+
+   % choose the methods according to the instrument
+   f.gen	= ['read_general_file_',instr];
+   f.sta	= ['load_static_data_',instr];
+   f.fin	= ['find_runs_',instr];
+   f.dyn	= ['read_dyn_files_',instr];
+  
+  end	% find_instrument 
 
   %=========================================================================================
-  % read_general_file (separate file)
+  % find runs
   %=========================================================================================
-  [ lambda unit_lambda n_set ] = read_general_file_ALV ( path, runstart );
-  [ lambda unit_lambda n_set ] = set_general_parameters_Malvern;
+  runs	= find_runs_ALV ( dlspath, runstart )
+  runs	= find_runs_Malvern ( dlspath, runstart )
 
   %=========================================================================================
-  % read_static_file (separate file)
+  % read_general_file
   %=========================================================================================
-  [ ang kcr dkcr ] = read_static_file_ALV ( path );
-  [ ang kcr dkcr ] = read_static_file_Malvern ( path );
+  [ lambda unit_lambda n_set ] = read_general_file_ALV ( genpath, runstart )
+  [ lambda unit_lambda n_set ] = read_general_file_Malvern ( genpath, runstart )
 
   %=========================================================================================
-  % read_dyn_files (separate file)
+  % read_static_file
   %=========================================================================================
-  [ angle tau g dg ] = read_dyn_files_ALV ( path, runstart, runs );
-  [ angle tau g dg ] = read_dyn_files_Malvern ( path );
+  [ ang kcr dkcr ] = read_static_file_ALV ( slspath )
+  [ ang kcr dkcr ] = read_static_file_Malvern ( slspath )
+
+  %=========================================================================================
+  % read_dyn_files
+  %=========================================================================================
+  [ angle tau g dg ] = read_dyn_files_ALV ( path, runstart, runs )
+  [ angle tau g dg ] = read_dyn_files_Malvern ( path, runstart, runs )
 
  end	% static methods
 
@@ -532,14 +407,17 @@ end
 % LOW LEVEL ROUTINES
 %
 %=========================================================================================
-%=========================================================================================
-% filter the static data according to minimal relative standard deviation
-%=========================================================================================
-function [ kcr dkcr ] = filter_stddev ( candidates )
- [ dkcr index ]	= min(candidates.dkcr);
- kcr		= candidates.kcr(index);
-end	% filter_std_dev
 
+%=========================================================================================
+% find the number of repetitions
+%=========================================================================================
+function repetitions = find_repetitions ( ang_a )
+ for i = 1 : length(ang_a)
+  rep(i) = sum( ang_a == ang_a(i) );		% calculate how often every element is repeated
+ end
+ repetitions	= min(rep);			% take the minimum
+end	% find_repetitions
+ 
 %=========================================================================================
 % find mean correlation function between two thresholds
 %=========================================================================================

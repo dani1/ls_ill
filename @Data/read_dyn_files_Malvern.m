@@ -1,4 +1,4 @@
-function [ Angles Tau G dG ] =  read_dyn_files_Malvern ( path )
+function [ Angles Tau G dG ] =  read_dyn_files_Malvern ( path, runstart, runs )
 % read text files to get DLS data
 % aaaaah, the Malvern output format is mad mad mad mad!
  dynamic_file	= path;

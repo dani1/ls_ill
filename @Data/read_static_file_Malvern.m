@@ -1,4 +1,4 @@
-function [ ang kcr dkcr ] = read_static_file_Malvern ( path )
+function [ ang kcr dkcr ] = read_slspath_Malvern ( slspath )
 % read SLS data from files for the Malvern Zetasizer Nano in Tuebingen
 
   % initialize to void, if the function outputs void then skip SLS
@@ -11,17 +11,16 @@ function [ ang kcr dkcr ] = read_static_file_Malvern ( path )
   solv	= [];
   samp	= [];
  
- static_file= [path];							% create static file
- if exist(static_file,'file') ~= 2					% check for existance
-  static_file = input([static_file, ...
+ if exist(slspath,'file') ~= 2					% check for existance
+  slspath = input([slspath, ...
 	' not found. Please enter the full path of the static file or let empty for skipping: '],...
 			's');
  end
 
  % check whether the new file exists
- if exist(static_file,'file') == 2
+ if exist(slspath,'file') == 2
 
-  fid	 = fopen(static_file);						% open the file
+  fid	 = fopen(slspath);						% open the file
 
   while ~feof(fid)							% go down the whole file and do the following
 
@@ -69,4 +68,4 @@ function [ ang kcr dkcr ] = read_static_file_Malvern ( path )
  kcr	= 1 / I;							% INCOMPLETE!
  dkcr	= dI / I * kcr;							% INCOMPLETE!
 
-end	% read_static_file_Malvern
+end	% read_slspath_Malvern

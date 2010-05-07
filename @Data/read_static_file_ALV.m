@@ -1,4 +1,4 @@
-function [ ang kcr dkcr ] = read_static_file_ALV ( path )
+function [ ang kcr dkcr ] = read_static_file_ALV ( slspath )
 % read SLS data from files for the ALV CGS3 goniometer at ILL, Grenoble
 
   % initialize to void, if the function outputs void then skip SLS
@@ -6,21 +6,19 @@ function [ ang kcr dkcr ] = read_static_file_ALV ( path )
   kcr	= [];
   dkcr	= [];
  
- static_file= [path,'_bak.txt'];				% create static file
- if exist(static_file,'file') ~= 2				% check for existance
-  static_file = input([static_file, ...
+ if exist(slspath,'file') ~= 2				% check for existance
+  slspath = input([slspath, ...
 	' not found. Please enter the full path of the static file or let empty for skipping: '],...
 			's');
  end
 
- % check whether the new file exists
- if exist(static_file,'file') == 2
+ if exist(slspath,'file') == 2				% check whether the new file exists
 
-  fid = fopen(static_file);	% open the file
+  fid = fopen(slspath);					% open the file
  
   while ~feof(fid)
    str = fgetl(fid);
-   if str(1) ~= 'A'		% check whether this is a header or a useful line
+   if str(1) ~= 'A'					% check whether this is a header or a useful line
 
     % get the data about angles, kcr and dkcr
     [ ang_t tmp tmp tmp tmp tmp tmp tmp kcr_t dkcr_t tmp tmp ] = strread(str, '%f %f %f %f %f %f %f %f %f %f %s %s');
@@ -36,4 +34,4 @@ function [ ang kcr dkcr ] = read_static_file_ALV ( path )
 
  end
 
-end	% read_static_file
+end	% read_slspath

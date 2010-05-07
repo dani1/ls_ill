@@ -2,15 +2,13 @@
 % low-level routine for reading general data from autocorrelation files
 % the first file is opened and info about instrument and lambda are retrieved
 %=========================================================================================
-function [ lambda unit_lambda n_set ] = read_general_file_ALV ( path, runstart )
+function [ lambda unit_lambda n_set ] = read_general_file_ALV ( genpath, runstart )
  
- first_file = [path,'00',num2str(runstart,'%2.2u'),'.ASC'];
-
- fid = fopen( first_file );	% open the file
+ fid = fopen( genpath );								% open the file
  
- while ~feof(fid)
+ while ~feof(fid)									% till the end of file, do the following
 
-  str = fgetl(fid);
+  str = fgetl(fid);									% read every line
   if strfind(str,'Refractive') [ tmp tmp n_set ] = strread(str, '%s %s %f');	end	% n_set
   if strfind(str,'Wavelength')								% wavelength
    [ tmp ul tmp lambda ] = strread(str, '%s %s %s %f');
@@ -22,6 +20,6 @@ function [ lambda unit_lambda n_set ] = read_general_file_ALV ( path, runstart )
 
  end
  
- fclose(fid);			% close the file
+ fclose(fid);										% close the file
 
 end	% read_general_file_ALV
