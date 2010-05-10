@@ -41,6 +41,7 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
 %			level routine is called to find it out. However, since this
 %			routine is instrument-specific, you have to write it if you
 %			are not measuring with the ALV CGS3 at ILL!
+%   - T :		the temperature of the measurement
 %
 % ---- Rationale of the class ----
 %
@@ -119,6 +120,7 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   dndc		= 0.1850;	% usual value in Tuebingen
   dndc_set	= 0.1820;	% usual value at ILL
   Unit_dndc	= 'ml/g'
+  T		= 22-LIT.T0;	% temperature (default: 22°C)
 
   % SLS
   Angles_static
@@ -163,6 +165,15 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
     options	= struct(varargin{:});
     try		lsd.Repetitions	= options.Repetitions;	end			% Repetitions
     try		lsd.Runstart	= options.Runstart;	end			% Runstart
+
+    try
+     lsd.T	= options.T;							% temperature
+     if lsd.T < 150	lsd.T = lsd.T-LIT.T0;	end				% check for °C input temperatures
+    catch									% fall back to 22°C
+     fprintf(['Temperature not set. Falling back to ',...
+					num2str(lsd.T+LIT.T0),'°C.\n']);
+    end
+
    catch
     error('Something is wrong in your optional arguments. Please check.');
    end

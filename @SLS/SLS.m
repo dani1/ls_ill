@@ -48,14 +48,15 @@ classdef SLS < dynamicprops
  properties ( Access = public )
 
   % general parameters
-  C
-  Unit_C
-  Angles
-  Q
-  Unit_Q
-  Q2
-  Unit_Q2
-  Unit_KcR
+  C										% protein concentration
+  Unit_C									% units
+  Angles									% angles for SLS
+  Q										% corresponding Q vectors
+  Unit_Q									% units (A^{-1})
+  Q2										% squared scattering vectors
+  Unit_Q2									% units (A^{-2})
+  Unit_KcR									% units ( Da^{-1})
+  T										% temperature ( K )
 
   % N.B.: some dynamic properties could be called later on
 
@@ -81,11 +82,12 @@ classdef SLS < dynamicprops
   %============================================================================
   function sls = SLS ( dataclasses )
 
-   % eat the strings
+   % eat the common strings from the first Data class
    sls.Unit_KcR		= dataclasses(1).Unit_KcR;
    sls.Unit_C		= dataclasses(1).Unit_C;
    sls.Unit_Q		= dataclasses(1).Unit_Q;
    sls.Unit_Q2		= regexprep(sls.Unit_Q,'\^\{*-1\}*','\^\{-2\}');
+   sls.T		= dataclasses(1).T;
 
    % here I try to introduce a structure similar to the class DLS, in order to
    % control the data flux through logical operators for index arrays, rather
@@ -146,28 +148,64 @@ classdef SLS < dynamicprops
     switch p.Average
      case 'no'
       for j = 1 : length(obj.(p.Parameter))
-       colo		= colos.(p.Color);											% color stuff
-       inde		= obj.Data.(p.Parameter) == obj.(p.Parameter)(j);							% find the right data to plot
+       colo		= colos.(p.Color);									% color stuff
+       inde		= obj.Data.(p.Parameter) == obj.(p.Parameter)(j);					% find the right data to plot
        plo(j)		= errorbar(obj.Data.(p.Independent)(inde),obj.Data.KcR(inde),obj.Data.dKcR(inde),...
-								'o-','Color',colo(j,:),'MarkerSize',10,'LineWidth',4);		% plot
-       legend_names{j}	= [p.Parameter,' = ',num2str(obj.(p.Parameter)(j),1),' ',obj.(['Unit_',p.Parameter])];			% legend names
+							'o-','Color',colo(j,:),'MarkerSize',10,'LineWidth',4);	% plot
+       legend_names{j}	= [p.Parameter,' = ',num2str(obj.(p.Parameter)(j),1),' ',...
+										obj.(['Unit_',p.Parameter])];	% legend names
       end
-      legend(plo,legend_names,'Location','NorthWest');										% plot legend
+      legend(plo,legend_names,'Location','NorthWest');								% plot legend
 
      case 'yes'
       for i = 1 : length(obj.(p.Independent))
-       inde		= obj.Data.(p.Independent) == obj.(p.Independent)(i);							% find the right data to plot
-       datax(i)		= obj.(p.Independent)(i);
-       datay(i)		= mean ( obj.Data.KcR ( inde ) );
-       datady(i)	= mean ( obj.Data.dKcR ( inde ) );
+       inde		= obj.Data.(p.Independent) == obj.(p.Independent)(i);					% find the right data to plot
+       x(i)		= obj.(p.Independent)(i);
+       KcR(i)		= mean ( obj.Data.KcR ( inde ) );
+       dKcR(i)		= mean ( obj.Data.dKcR ( inde ) );
       end
-      colo		= colos.(p.Color)(1,:);											% color stuff
-      plo		= errorbar(datax,datay,datady,'o-','Color',colo,'MarkerSize',10,'LineWidth',4);				% plot
+      colo		= colos.(p.Color)(1,:);									% color stuff
+      plo		= errorbar(x,KcR,dKcR,'o-','Color',colo,'MarkerSize',10,'LineWidth',4);			% plot
 
     end
 
   end % plot_KcR
     
+  %============================================================================
+  % PLOT OSMOTIC COMPRESSIBILITY VERSUS CONCENTRATION OR IONIC STRENGTH
+  %============================================================================
+  function plot_compressibility ( obj, varargin )
+  % the osmotic isothermal compressibility is related to the structure factor at
+  % vanishing Q by the following formula:
+  %
+  %	X := ( dc / dP )_T = N_A / [ M kT * S(c, q -> 0) ] = N_A / [ kT  (Kc/R) ]
+  %
+  % where X is the compressibility, c is the concentration in mass/volume, N_A is
+  % Avogadro's number and S(c,q) is the static structure factor.
+  %
+  % Please note that X(c) is independent on Q and on M.
+
+   try options = struct(varargin{:}); end									% try to interpret input options
+
+   try	independent	= options.Independent;	catch	independent	= 'C';	end				% default independent is C
+
+   for i = 1 : length(obj.(independent))
+    KcR(i)	= mean ( obj.Data.KcR ( obj.Data.(independent) == obj.(independent)(i) ) );			% mean of the scattering ratios at that concentration
+    dKcR(i)	= mean ( obj.Data.dKcR ( obj.Data.(independent) == obj.(independent)(i) ) );			% INCORRECT!
+    X(i)	= LIT.Na / ( LIT.kb * obj.T * KcR(i) );								% set compressibility
+    dX(i)	= X(i) * dKcR(i) / KcR(i);									% set error
+   end
+
+   try fig	= options.Figure;										% try using existing figure...
+   catch
+    fig	= obj.fig_KcR_c;											% ...or create one
+    ylabel(['Compressibility [ Da J^{-1} ]']);								% modify the label if creating a new figure
+   end
+
+   errorbar(obj.(independent),X,dX,'o-','LineWidth',3,'MarkerSize',10);						% plot!
+
+  end	% plot_compressibility
+
   %============================================================================
   % FIT SCATTERING RATIO VS CONCENTRATION (A2) ETC.
   %============================================================================
