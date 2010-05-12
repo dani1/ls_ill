@@ -1,13 +1,13 @@
-classdef SLS < dynamicprops
+classdef SLS < dynamicprops & Graphics
 %============================================================================
 %
 % SLS class for plotting, fitting, showing static light scattering data
-% taken from one LSData class or from a *cell array* of classes.
+% taken from one Data class or from a vector of classes.
 %
 % Author:	Fabio Zanini
 % Companies:	Institut Laue Langevin, Universität Tübingen
-% Date:		22 Mar 2010
-% Version:	1.1
+% Date:		12 May 2010
+% Version:	1.2
 % Copyright:	2009,2010 Fabio Zanini
 % License:	GPLv3
 %
@@ -82,6 +82,9 @@ classdef SLS < dynamicprops
   %============================================================================
   function sls = SLS ( dataclasses )
 
+  % import methods from the Graphics class
+  sls = sls@Graphics;
+
    % eat the common strings from the first Data class
    sls.Unit_KcR		= dataclasses(1).Unit_KcR;
    sls.Unit_C		= dataclasses(1).Unit_C;
@@ -120,7 +123,7 @@ classdef SLS < dynamicprops
   %============================================================================
   % PLOT KC/R VERSUS CONCENTRATION, ANGLE, OR IONIC STRENGTH
   %============================================================================
-  function plot_KcR ( obj, varargin )
+  function plot_KcR ( self, varargin )
   % plot Kc/R in a parametric fashion
   %
   % if no optional argument is given, the x axis is the concentration, and
@@ -132,40 +135,59 @@ classdef SLS < dynamicprops
   % - 'Color', <c> where <c> can be 'blue','green','red','pink'
   % - 'Figure',<f> where <f> must be a figure handle (e.g. gcf)
 
-   % understand which parameters are selected, create the figure if requested
-   p = struct(varargin{:});
-   p = obj.check_plot( p );
+   options = struct(varargin{:});								% get the optional arguments
 
-   % create colors
-   colos = struct('Green',[],'Red',[],'Blue',[],'Pink',[]);
-   for j = 1 : length(obj.(p.Parameter))
-    colos.Green(j,:)	= [ 0.1 j/length(obj.(p.Parameter)) 0.2 ];
-    colos.Red(j,:)	= [ 0.8 j/length(obj.(p.Parameter)) 0.2 ];
-    colos.Blue(j,:)	= [ 0.1 j/length(obj.(p.Parameter)) 0.8 ];
-    colos.Pink(j,:)	= [ 0.7 j/length(obj.(p.Parameter)) 0.6 ];
+   try	independent	= options.Independent;	catch	independent	= 'C';	end		% default independent is C
+   try	average		= options.Average;	catch	average	= 'yes';	end		% average if not prohibited
+   try	color		= options.Color;	catch	color	= 'Green';	end		% default color is green
+
+   try	fig		= options.Figure;							% try using existing figure...
+   catch
+    fig	= self.create_figure;									% ...or create one
+    xlabel(self.set_xlabel(independent));							% choose x label
+    ylabel(['Kc/R [ ',self.Unit_KcR,' ]']);							% y axis is always the scattering ratio
    end
 
-    switch p.Average
-     case 'no'
-      for j = 1 : length(obj.(p.Parameter))
-       colo		= colos.(p.Color);									% color stuff
-       inde		= obj.Data.(p.Parameter) == obj.(p.Parameter)(j);					% find the right data to plot
-       plo(j)		= errorbar(obj.Data.(p.Independent)(inde),obj.Data.KcR(inde),obj.Data.dKcR(inde),...
-							'o-','Color',colo(j,:),'MarkerSize',10,'LineWidth',4);	% plot
-       legend_names{j}	= [p.Parameter,' = ',num2str(obj.(p.Parameter)(j),1),' ',...
-										obj.(['Unit_',p.Parameter])];	% legend names
-      end
-      legend(plo,legend_names,'Location','NorthWest');								% plot legend
+   colos = struct('Green',[],'Red',[],'Blue',[],'Pink',[]);					% colors
 
-     case 'yes'
-      for i = 1 : length(obj.(p.Independent))
-       inde		= obj.Data.(p.Independent) == obj.(p.Independent)(i);					% find the right data to plot
-       x(i)		= obj.(p.Independent)(i);
-       KcR(i)		= mean ( obj.Data.KcR ( inde ) );
-       dKcR(i)		= mean ( obj.Data.dKcR ( inde ) );
+    switch average
+
+     case 'no'											% if no averaging is chosen...
+
+      try	parameter	= options.Parameter;						% ...try to read parameter or...
+      catch	parameter	= self.set_parameter(independent);				% ...fallback parameter
       end
-      colo		= colos.(p.Color)(1,:);									% color stuff
-      plo		= errorbar(x,KcR,dKcR,'o-','Color',colo,'MarkerSize',10,'LineWidth',4);			% plot
+
+      nuances	= self.get_color(color,length(self.(parameter)));				% get the colors for the plot
+
+      for j = 1 : length(self.(parameter))
+       inde	= self.Data.(parameter) == self.(parameter)(j);					% find the right data to plot
+       x	= self.Data.(independent)	(inde);
+       KcR	= self.Data.KcR			(inde);
+       dKcR	= self.Data.dKcR		(inde);
+
+       plo(j)	= errorbar( x, KcR, dKcR,	'o-','Color',nuances(j,:),		...
+						'MarkerSize',	self.MarkerSize,	...
+						'LineWidth',	self.LineWidth		);	% plot
+       legend_names{j}	= [parameter,' = ',num2str(self.(parameter)(j),1),' ',...
+								self.(['Unit_',parameter])];	% legend names
+      end
+      legend(plo,legend_names,'Location','NorthWest');						% plot legend
+
+     case 'yes'											% if averaging is chosen...
+
+      nuances	= self.get_color(color,1);							% get the colors for the plot
+
+      for i = 1 : length(self.(independent))
+       inde	= self.Data.(independent) == self.(independent)(i);				% find the right data to plot
+       x(i)	= self.(independent)(i);
+       KcR(i)	= mean ( self.Data.KcR ( inde ) );
+       dKcR(i)	= mean ( self.Data.dKcR ( inde ) );						% INCORRECT!
+      end
+
+      plo	= errorbar( x, KcR, dKcR,	'o-','Color',nuances,			...
+						'MarkerSize',	self.MarkerSize,	...
+						'LineWidth',	self.LineWidth		);	% plot
 
     end
 
@@ -174,7 +196,7 @@ classdef SLS < dynamicprops
   %============================================================================
   % PLOT OSMOTIC COMPRESSIBILITY VERSUS CONCENTRATION OR IONIC STRENGTH
   %============================================================================
-  function plot_compressibility ( obj, varargin )
+  function plot_compressibility ( self, varargin )
   % the osmotic isothermal compressibility is related to the structure factor at
   % vanishing Q by the following formula:
   %
@@ -185,24 +207,31 @@ classdef SLS < dynamicprops
   %
   % Please note that X(c) is independent on Q and on M.
 
-   try options = struct(varargin{:}); end									% try to interpret input options
+   options = struct(varargin{:});								% try to interpret input options
 
-   try	independent	= options.Independent;	catch	independent	= 'C';	end				% default independent is C
+   try	independent	= options.Independent;	catch	independent	= 'C';	end		% default independent is C
+   try	color		= options.Color;	catch	color	= 'Green';	end		% default color is green
 
-   for i = 1 : length(obj.(independent))
-    KcR(i)	= mean ( obj.Data.KcR ( obj.Data.(independent) == obj.(independent)(i) ) );			% mean of the scattering ratios at that concentration
-    dKcR(i)	= mean ( obj.Data.dKcR ( obj.Data.(independent) == obj.(independent)(i) ) );			% INCORRECT!
-    X(i)	= LIT.Na / ( LIT.kb * obj.T * KcR(i) );								% set compressibility
-    dX(i)	= X(i) * dKcR(i) / KcR(i);									% set error
+   for i = 1 : length(self.(independent))
+    KcR(i)	= mean ( self.Data.KcR ( self.Data.(independent) == self.(independent)(i) ) );	% mean of the scattering ratios at that concentration
+    dKcR(i)	= mean ( self.Data.dKcR ( self.Data.(independent) == self.(independent)(i) ) );	% INCORRECT!
+    X(i)	= LIT.Na / ( LIT.kb * self.T * KcR(i) );					% set compressibility
+    dX(i)	= X(i) * dKcR(i) / KcR(i);							% set error
    end
 
-   try fig	= options.Figure;										% try using existing figure...
+   try fig	= options.Figure;								% try using existing figure...
    catch
-    fig	= obj.fig_KcR_c;											% ...or create one
-    ylabel(['Compressibility [ Da J^{-1} ]']);								% modify the label if creating a new figure
+    fig	= self.create_figure;									% ...or create one
+    xlabel(self.set_xlabel(independent));							% choose the x label
+    ylabel(['Compressibility [ Da J^{-1} ]']);							% choose the y label
    end
 
-   errorbar(obj.(independent),X,dX,'o-','LineWidth',3,'MarkerSize',10);						% plot!
+   nuances	= self.get_color(color,1);							% get the colors for the plot
+
+   errorbar(self.(independent),X,dX,	'o-', 				...
+					'Color',	nuances,	...
+					'LineWidth',	self.LineWidth,	...
+					'MarkerSize',	self.MarkerSize	);			% plot!
 
   end	% plot_compressibility
 
@@ -329,69 +358,46 @@ classdef SLS < dynamicprops
  methods ( Access = private )
 
   %============================================================================
-  % create a figure for Kc/R
+  % set xlabel according to independent
   %============================================================================
-  function fig = fig_KcR_c ( obj )
-   
-   fig = figure;
-   hold all;
-   set( gcf, 'color', 'white' );
-   set( gca,	'box', 'on', 						...
-		'FontSize',36,'FontName','Courier','FontWeight','bold',	...
-		'XMinorTick','on', 'YMinorTick','on');
-   ylabel(['Kc/R [ ',obj.Unit_KcR,' ]']);
+  function xl = set_xlabel ( self, independent )
 
-  end	% fig_KcR_c
-  
-  %============================================================================
-  % check the parameters for plots
-  %============================================================================
-  function par = check_plot( obj, par )
+   switch independent
+    case 'C'							% concentration
+     xl = ['Protein concentration [ ',self.Unit_C,' ]'];
 
-   % set the figure and add the property to the class
-   if ~isfield(par,'Figure')
-    fig = obj.fig_KcR_c;
-    par=setfield(par,'Figure',fig);
-    obj.check_add_prop('Figure',par.Figure);
-   end
+    case 'I'							% ionic strength
+     xl = ['ionic strength [ ',self.Unit_I,' ]'];
 
-   % choose the independent, the x axis (default: C)
-   if ~isfield(par,'Independent')
-    par = setfield(par,'Independent','C');
-   end
-   switch par.Independent
-    case 'C'
-     xlabel(['Protein concentration [ ',obj.Unit_C,' ]']);
-     if ~isfield(par,'Parameter')
-      par = setfield(par,'Parameter','Q2');
-     end
-     if ~isfield(par,'Average')
-      par = setfield(par,'Average','no');
-     end
-    case 'I'
-     xlabel(['ionic strength [ ',obj.Unit_I,' ]']);
-     par = setfield(par,'Parameter','Q2');
-    case 'Q2'
-     xlabel(['Q^2 [ ',obj.Unit_Q2,' ]']);
-     if ~isfield(par,'Parameter')
-      par = setfield(par,'Parameter','C');
-     end
-     if ~isfield(par,'Average')
-      par = setfield(par,'Average','no');
-     end
-    otherwise
+    case 'Q2'							% Q squared
+     xl = ['Q^2 [ ',self.Unit_Q2,' ]'];
+
+    otherwise							% not recognized?!
      error('Independent not recognized!');
    end
 
-   % title
-   title(['Scattering ratio as a function of ',par.Independent]);
+  end	% set_xlabel
 
-   % here various colors
-   if ~isfield(par,'Color') 
-    par = setfield(par,'Color','Green');
+  %============================================================================
+  % set parameter from independent
+  %============================================================================
+  function parameter = set_parameter ( self, independent )
+
+   switch independent
+    case 'C'							% concentration
+     parameter = 'Q2';
+
+    case 'I'							% ionic strength
+     parameter = 'Q2';
+
+    case 'Q2'							% Q squared
+     parameter = 'C';
+
+    otherwise							% not recognized?!
+     error('Independent not recognized!');
    end
 
-  end	% check_plot
+  end	% set_parameter
 
   %============================================================================
   % check the parameters for fits
