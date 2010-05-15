@@ -1,6 +1,11 @@
 %============================================================================
 %
 % Utils class for common utility functions for the LS classes
+%
+% Author:	Fabio Zanini
+% Companies:	Institut Laue Langevin, Universität Tübingen
+% Date:		15 May 2010
+% Version:	1.3
 % 
 % The idea is to collect some functions useful across all LS classes,
 % which become subclasses of this one and inherit the methods
@@ -17,6 +22,7 @@ classdef Utils < handle
   % MONITOR PROPERTIES
   %==========================================================================
   function monitorprop ( self, varargin )
+  % monitor selected properties through listeners
 
    props	= varargin;
 

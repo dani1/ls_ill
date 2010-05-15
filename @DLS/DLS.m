@@ -6,8 +6,8 @@ classdef DLS < dynamicprops & Graphics & Utils
 %
 % Author:	Fabio Zanini
 % Companies:	Institut Laue Langevin, Universität Tübingen
-% Date:		22 Mar 2010
-% Version:	1.1
+% Date:		15 May 2010
+% Version:	1.3
 %
 % Syntax: dlsclass = DLS( input_data_classes )
 %
@@ -63,9 +63,6 @@ classdef DLS < dynamicprops & Graphics & Utils
   % flexible and the best way to store things (remember dynamic field get-set
   % methods, etc.)
   %
-  % In principle, all other props of DLS could be recovered from the Data struct
-  % using some unique() function, but this is not immediate for the user. So it
-  % is better. If one wants to tamper with the data, one realizes it!
 
   MinimalLagtime	= 1e-6		% ms
   MaximalLagtime	= 1e4		% ms

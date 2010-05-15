@@ -48,12 +48,8 @@ classdef SLS < dynamicprops & Graphics & Utils
  properties ( Access = public )
 
   % general parameters
-  C										% protein concentration
   Unit_C									% units
-  Angles									% angles for SLS
-  Q										% corresponding Q vectors
   Unit_Q									% units (A^{-1})
-  Q2										% squared scattering vectors
   Unit_Q2									% units (A^{-2})
   Unit_KcR									% units ( Da^{-1})
   T										% temperature ( K )
@@ -63,14 +59,28 @@ classdef SLS < dynamicprops & Graphics & Utils
  end	% public properties
 
  %============================================================================
- % PUBLIC PROPERTIES (READ-ONLY)
+ % OBSERVED PUBLIC PROPERTIES
  %============================================================================
- properties ( SetAccess = private )
+ properties ( Access = public, SetObservable, AbortSet )
+ % These are useful for triggering events after change in a property value
+ % In this class, the Data struct is changed according to changes in Q and C
 
-  % data struct
+  C
+  Angles
+  Q
+  Q2
+
+ end	% observed public properties
+
+
+ %============================================================================
+ % HIDDEN PUBLIC PROPERTIES
+ %============================================================================
+ properties ( Access = public, Hidden)
   Data
+  % Data is a struct with all the data stored as fields (vectors or cell arrays)
 
- end	% public properties
+ end	% hidden public properties
 
  %============================================================================
  % PUBLIC METHODS
