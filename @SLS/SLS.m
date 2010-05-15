@@ -1,4 +1,4 @@
-classdef SLS < dynamicprops & Graphics
+classdef SLS < dynamicprops & Graphics & Utils
 %============================================================================
 %
 % SLS class for plotting, fitting, showing static light scattering data
@@ -82,9 +82,6 @@ classdef SLS < dynamicprops & Graphics
   %============================================================================
   function sls = SLS ( dataclasses )
 
-  % import methods from the Graphics class
-  sls = sls@Graphics;
-
    % eat the common strings from the first Data class
    sls.Unit_KcR		= dataclasses(1).Unit_KcR;
    sls.Unit_C		= dataclasses(1).Unit_C;
@@ -112,11 +109,11 @@ classdef SLS < dynamicprops & Graphics
    min_relerr		= 1e-4; % mol/g	
    sls.Data.dKcR	= max(horzcat(dataclasses.dKcR),min_relerr*horzcat(dataclasses.KcR));
 
-   % eat concentrations, q, angles
-   sls.C		= unique(sls.Data.C);
-   sls.Angles		= unique(sls.Data.Angles);
-   sls.Q		= unique(sls.Data.Q);
-   sls.Q2		= sls.Q .^2;
+   % create unique properties with the update_uniques function in the Utils class
+   sls.update_uniques('C','Q','Q2','Angles');
+
+   % monitor properties with listeners in the Utils class
+   sls.monitorprop('C','Q','Q2','Angles');
 
   end	% constructor
 

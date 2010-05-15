@@ -1,4 +1,4 @@
-classdef DLS < dynamicprops
+classdef DLS < dynamicprops & Graphics & Utils
 %============================================================================
 %
 % DLS class for plotting, fitting, showing dynamic light scattering data
@@ -26,22 +26,32 @@ classdef DLS < dynamicprops
  properties (Access=public)
  % N.B.: some dynamic properties could be called later on, like Gamma, D, etc.
 
-  C
   Unit_C
-  Angles
-  Q
   Unit_Q
   % both Angles and Q are the unique reduction (union) of all their partners
   % in the input Data classes
   Unit_Tau
+  T
 
- end	% properties
+ end	% public properties
+ 
+ %============================================================================
+ % OBSERVED PUBLIC PROPERTIES
+ %============================================================================
+ properties ( Access = public, SetObservable, AbortSet )
+ % These are useful for triggering events after change in a property value
+ % In this class, the Data struct is changed according to changes in Q and C
+
+  C
+  Angles
+  Q
+
+ end	% observed public properties
 
  %============================================================================
- % PUBLIC PROPERTIES (READ-ONLY)
+ % HIDDEN PUBLIC PROPERTIES
  %============================================================================
- properties ( SetAccess = private )
-
+ properties ( Access = public, Hidden)
   Data
   % Data is a struct with all the data stored as fields (vectors or cell arrays)
   % For instance, all correlations are stored in dls.Data.G
@@ -57,12 +67,17 @@ classdef DLS < dynamicprops
   % using some unique() function, but this is not immediate for the user. So it
   % is better. If one wants to tamper with the data, one realizes it!
 
+  MinimalLagtime	= 1e-6		% ms
+  MaximalLagtime	= 1e4		% ms
+  MinimalG		= -0.05
+  MaximalG		= 1.2
+
  end	% properties
 
  %============================================================================
  % PUBLIC METHODS
  %============================================================================
- methods ( Access=public )
+ methods ( Access = public )
 
   %============================================================================
   % CONSTRUCTOR
@@ -74,6 +89,7 @@ classdef DLS < dynamicprops
    dls.Unit_Q	= dataclasses(1).Unit_Q;
    dls.Unit_C	= dataclasses(1).Unit_C;
    dls.Unit_Tau	= dataclasses(1).Unit_Tau;
+   dls.T	= dataclasses(1).T;
 
    % write the data as a structure (easier to manage)
    conc = [];
@@ -90,17 +106,18 @@ classdef DLS < dynamicprops
    dls.Data.G		= horzcat(dataclasses.G);
    dls.Data.dG		= horzcat(dataclasses.dG);
 
-   % eat concentrations, q, angles
-   dls.C	= unique(dls.Data.C);
-   dls.Angles	= unique(dls.Data.Angles);
-   dls.Q	= unique(dls.Data.Q);
+   % create unique properties with the update_uniques function in the Utils class
+   dls.update_uniques('C','Q','Angles');
+
+   % monitor properties with listeners in the Utils class
+   dls.monitorprop('C','Q','Angles');
 
   end % constructor
 
   %============================================================================
   % PLOT CORRELATIONS
   %============================================================================
-  function plot_correlations ( obj, varargin )
+  function plot_correlations ( self, varargin )
   % plot the autocorrelation data
   %
   % varargin allows the user to choose some details of the plot. The syntax is
@@ -115,43 +132,46 @@ classdef DLS < dynamicprops
 
    options = struct(varargin{:});						% eat the optional arguments as a struct
 
-   try										% concentrations
-    options.C;
-   catch
-    options	= setfield(options,'C',obj.C);
-   end
+   try	C = options.C;			catch	C = self.C;		end	% concentrations
+   try	angles = options.Angles;	catch	angles = self.Angles;	end	% angles
 
-   try										% angles
-    options.Angles;
-   catch
-    angles	= obj.Angles;
-    options	= setfield(options,'Angles',angles);
-    clear angles;
-   end
+   try	color = options.Color;		catch   color	= 'Green';	end	% color
+   nuances	= self.get_color(color,length(C));				% nuances for plot colors
 
-   try										% colors
-    options.color;
-   catch
-    color	= rand(length(obj.C),3);
-    options	= setfield(options,'color',color);
-   end
    
    % create the figures and plot the data
-   for j = 1 : length(options.Angles)
-    % create the figure
-    fig(j)		= obj.figure_corr_linlog;
-    title(get(fig(j),'CurrentAxes'),['Correlogramms at ',num2str(options.Angles(j)),'°'],'FontSize',14);
-    legend_names{j}	= {};
-    legend_group{j}	= [];
+   for j = 1 : length(angles)							% for every angle...
 
-    for l = 1 : length(obj.Data.Tau)
-     % check whether both angle and concentration are in the desired range
-     if ( obj.Data.Angles(l) == options.Angles(j) && ismember(obj.Data.C(l),options.C) )
+    % create the figure
+    fig(j)		= self.create_figure;					% ...create the figure...
+    ax(j)		= get(fig(j),'CurrentAxes');				% ...get the axis...
+
+    set(gca, 'xscale','log');							% ...set the log scale...
+    axis([ 	self.MinimalLagtime	self.MaximalLagtime	...
+		self.MinimalG		self.MaximalG 		]);		% ...set the limits for the plot...
+
+    xlabel(['\tau [ ',self.Unit_Tau,' ]']);					% ...set the x label...
+    ylabel('g_1 [ normalised ]');						% ...set the y label...
+    title(['Correlogramms at ',num2str(angles(j)),'°']);			% ...set a title...
+
+    legend_names{j}	= {};	legend_group{j}	= [];				% ...and prepare legends
+
+    for l = 1 : length(self.Data.Tau)						% look for data to be plotted...
+
+     if ( self.Data.Angles(l) == angles(j) && ismember(self.Data.C(l),C) )	% ...look the right indices
  
-      % if yes, plot the data
-      colo	= options.color(obj.Data.C(l)==obj.C,:);
-      plo	= errorbar(get(fig(j),'CurrentAxes'),obj.Data.Tau{l},obj.Data.G{l},obj.Data.dG{l},'-o','Color',colo,'LineWidth',1.5);
-      legen	= ['Protein conc = ',num2str(obj.Data.C(l),1),' ',obj.Unit_C];
+      x		= self.Data.Tau{l};						% ...rename the data
+      y		= self.Data.G{l};
+      dy	= self.Data.dG{l};
+
+      nuance	= nuances( self.Data.C(l) == C, :);				% select the nuance for the plot
+
+      plo	= errorbar(ax(j), x, y, dy, 		'-o',		...
+					'Color',	nuance,		...
+					'LineWidth', 0.1*self.LineWidth,...
+					'MarkerSize',0.3*self.MarkerSize );	% plot
+
+      legen	=['Protein conc = ',num2str(self.Data.C(l),1),' ',self.Unit_C];	% legend
 
       % create legend arrays
       if ~ismember({legen},legend_names{j})
@@ -162,8 +182,7 @@ classdef DLS < dynamicprops
      end
     end
 
-    % show the legend for every figure
-    legend(get(fig(j),'CurrentAxes'),legend_group{j},legend_names{j},'FontSize',14);
+    legend(get(fig(j),'CurrentAxes'),legend_group{j},legend_names{j},'FontSize',14);	% show the legend for every figure
 
    end
 
@@ -571,6 +590,40 @@ classdef DLS < dynamicprops
   end	% plot_H
 
   %============================================================================
+  % CORRELATE GAMMA
+  %============================================================================
+  function correlate_gamma ( self, gamma1, gamma2, varargin )
+
+   options	= struct(varargin{:});					% get optional parameters
+
+   try color = options.Color;	catch	color = 'Green'; end		% color
+   nuance = self.get_color(color,1);					% nuance for plot
+
+   try		self.(gamma1);	self.(gamma2);				% check for existence of the gammas
+   catch	error('Something is wrong with your gammas.');
+   end
+
+   D1_a		= 1e-6 * self.(gamma1) ./ ( self.Data.Q.^2 );			% get the data from the class
+   D2_a		= 1e-6 * self.(gamma2) ./ ( self.Data.Q.^2 );
+   dD1_a	= 1e-6 * self.(['d',gamma1]) ./ ( self.Data.Q.^2 );
+   dD2_a	= 1e-6 * self.(['d',gamma2]) ./ ( self.Data.Q.^2 );
+
+   try fig = options.Figure;
+   catch
+    fig = self.create_figure;						% create the figure
+    xlabel('Faster diffusion [ A^2 / ns ]');				% x label
+    ylabel('Slower diffusion [ A^2 / ns ]');				% y label
+   
+   end
+   ax = get(fig,'CurrentAxes');
+
+   plot(ax, D1_a, D2_a,	'*',					...
+			'Color',	nuance,			...
+			'MarkerSize',	0.6*self.MarkerSize	);	% plot
+
+  end	% correlate gamma
+
+  %============================================================================
   % LOG LIN TOGGLE
   %============================================================================
   function loglin_toggle ( obj, angle, axes)
@@ -624,20 +677,6 @@ classdef DLS < dynamicprops
 
    end 
   end	% check_add_prop
-
-  %============================================================================
-  % create a figure for correlation functions
-  %============================================================================
-  function fig = figure_corr_linlog ( obj )
-   
-   fig = figure;
-   hold all;
-   set( gcf, 'color', 'white' );
-   set( gca, 'box', 'on', 'xscale','log','FontSize',18 );
-   xlabel(['\tau [ ',obj.Unit_Tau,' ]'],'FontSize',18);
-   ylabel('g_2-1/\beta [ normalised ]','FontSize',18);
- 
-  end	% end of figure function
 
   %============================================================================
   % create a figure for gamma vs q2

@@ -8,7 +8,10 @@
 %============================================================================
 
 classdef Graphics < handle
- properties ( Access = protected )						% subclasses inherit these
+ %===========================================================================
+ % PUBLIC PROPERTIES
+ %===========================================================================
+ properties ( Access = public, Hidden )						% subclasses inherit these
 
   Fontsize	= 36
   FontName	= 'Courier'
@@ -24,15 +27,16 @@ classdef Graphics < handle
  %===========================================================================
  % METHODS
  %===========================================================================
- methods ( Access = protected )							% subclasses inherit the methods
+ methods ( Access = public )							% subclasses inherit the methods
 
   %==========================================================================
   % CREATE FIGURE
   %==========================================================================
-  function fig = create_figure ( self )
+  function [ fig ax ] = create_figure ( self )
   % This function creates a figure without axes
    
-   fig = figure;								% create the figure
+   fig	= figure;								% create the figure
+   ax	= gca;									% get the axes
    hold all;									% hold the axes for plots
    set( gcf, 'color', 'white' );						% background
    set( gca,	'box', 'on', 				...
@@ -42,7 +46,7 @@ classdef Graphics < handle
 		'XMinorTick',	self.XMinorTick,	...
 		'YMinorTick',	self.YMinorTick		);
 
-  end	% create
+  end	% create_figure
 
   %==========================================================================
   % GET COLOR FOR PLOTS
@@ -51,39 +55,41 @@ classdef Graphics < handle
   % function to give the nuances of colors for the plots as a function of the
   % color itself and the number of nuances
 
-  R = zeros(1,len);
-  G = zeros(1,len);
-  B = zeros(1,len);
+   R = zeros(1,len);
+   G = zeros(1,len);
+   B = zeros(1,len);
+ 
+   switch color
+    case 'Green'			% Green
+     R(:) = 0.1;
+     G = [1:len]/(len+1);
+     B(:) = 0.2;
+ 
+    case 'Red'				% Red/Yellow
+     R(:) = 0.8;
+     G = [1:len]/(len+1);
+     B(:) = 0.2;
+ 
+    case 'Blue'				% Blue
+     R(:) = 0.1;
+     G = [1:len]/(len+1);
+     B(:) = 0.8;
+ 
+    case 'Pink'				% Pink/Lime
+     R(:) = 0.7;
+     G = [1:len]/(len+1);
+     B(:) = 0.6;
+ 
+    case 'Gray'				% Grayscale
+     R = [1:len]/(len+1);
+     G = [1:len]/(len+1);
+     B = [1:len]/(len+1);
 
-  switch color
-   case 'Green'				% Green
-    R(:) = 0.1;
-    G = [1:len]/(len+1);
-    B(:) = 0.2;
-
-   case 'Red'				% Red/Yellow
-    R(:) = 0.8;
-    G = [1:len]/(len+1);
-    B(:) = 0.2;
-
-   case 'Blue'				% Blue
-    R(:) = 0.1;
-    G = [1:len]/(len+1);
-    B(:) = 0.8;
-
-   case 'Pink'				% Pink/Lime
-    R(:) = 0.7;
-    G = [1:len]/(len+1);
-    B(:) = 0.6;
-
-   case 'Gray'				% Grayscale
-    R = [1:len]/(len+1);
-    G = [1:len]/(len+1);
-    B = [1:len]/(len+1);
-
-  end
-
-  nuances	= [ R' G' B' ];
+    otherwise
+     error('Color not recognized!');
+   end
+ 
+   nuances	= [ R' G' B' ];
 
   end	% get_color
 
