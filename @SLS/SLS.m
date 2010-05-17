@@ -207,7 +207,8 @@ classdef SLS < dynamicprops & Graphics & Utils
   % the osmotic isothermal compressibility is related to the structure factor at
   % vanishing Q by the following formula:
   %
-  %	X := ( dc / dP )_T = N_A / [ M kT * S(c, q -> 0) ] = N_A / [ kT  (Kc/R) ]
+  %	X :=	1/c * ( dc / dP )_T	= 1 / [ Na * kT * c * M * S(c, q -> 0)	]
+  %					= 1 / [ Na * kT * c * 	(Kc/R) 		]
   %
   % where X is the compressibility, c is the concentration in mass/volume, N_A is
   % Avogadro's number and S(c,q) is the static structure factor.
@@ -220,22 +221,32 @@ classdef SLS < dynamicprops & Graphics & Utils
    try	color		= options.Color;	catch	color	= 'Green';	end		% default color is green
 
    for i = 1 : length(self.(independent))
-    KcR(i)	= mean ( self.Data.KcR ( self.Data.(independent) == self.(independent)(i) ) );	% mean of the scattering ratios at that concentration
-    dKcR(i)	= mean ( self.Data.dKcR ( self.Data.(independent) == self.(independent)(i) ) );	% INCORRECT!
-    X(i)	= LIT.Na / ( LIT.kb * self.T * KcR(i) );					% set compressibility
-    dX(i)	= X(i) * dKcR(i) / KcR(i);							% set error
+    index	= self.Data.(independent) == self.(independent)(i);				% choose the Data
+
+    weights_a	= 1 ./ ( self.Data.dKcR(index).^2 );						% Gaussian errors TODO: C has no error!!
+    KcR_a	= self.Data.KcR	(index);
+    C_a		= self.Data.C	(index);
+
+    cKcR(i)	= sum( weights_a .* KcR_a .* C_a ) / sum(weights_a);				% weighed sum, proportional to 1/X(i)
+    dcKcR(i)	= sum( sqrt(weights_a) ) / sum(weights_a);					% weighed error
+
+    X_T(i)	= 1 / ( LIT.Na * LIT.kb * self.T * cKcR(i) );					% set compressibility
+    dX_T(i)	= X_T(i) * dcKcR(i) / cKcR(i);							% set error
    end
+
+   self.check_add_prop('X_T',X_T,'dX_T',dX_T);							% add compressibility to the class
 
    try fig	= options.Figure;								% try using existing figure...
    catch
     fig	= self.create_figure;									% ...or create one
     xlabel(self.set_xlabel(independent));							% choose the x label
     ylabel(['Compressibility [ Da J^{-1} ]']);							% choose the y label
+    set(gca,'XScale','log','YScale','log');
    end
 
    nuances	= self.get_color(color,1);							% get the colors for the plot
 
-   errorbar(self.(independent),X,dX,	'o-', 				...
+   errorbar(self.(independent),X_T,dX_T,'o-', 				...
 					'Color',	nuances,	...
 					'LineWidth',	self.LineWidth,	...
 					'MarkerSize',	self.MarkerSize	);			% plot!
@@ -336,26 +347,13 @@ classdef SLS < dynamicprops & Graphics & Utils
   end	% fit_KcR
 
   %============================================================================
-  % check whether a certain property is already in the class or not,
-  % and add it if requested
+  % FIT COMPRESSIBILITY
   %============================================================================
-  function check_add_prop ( obj, varargin )
-   if mod(length(varargin),2)
-    error('You should choose parameter names and input a values for them.');
-   else
- 
-    props = struct(varargin{:});		% create the struct
-    f = fieldnames(props);			% find out the fieldnames
+  function fit_compressiblity ( self, varargin )
 
-    for i = 1 : length(f)
-     if ~ismember(f{i},properties(obj))		% add the prop if necessary
-      obj.addprop(f{i});
-     end
-     obj.(f{i}) = props.(f{i});			% fill the prop
-    end
+   fprintf('\n\nHello world!\n\n');						% TODO: write function!
 
-   end 
-  end	% check_add_prop
+  end	% fit_compressibility
 
  end	% public methods
 

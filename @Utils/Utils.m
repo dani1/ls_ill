@@ -127,6 +127,60 @@ classdef Utils < handle
 
   end	% update_uniques
 
+  %==========================================================================
+  % UPDATE OR ADD DYNAMIC PROPERTIES
+  %==========================================================================
+  function check_add_prop ( self, varargin )
+  % check whether a certain property is already in the class or not,
+  % and add it if requested
+
+   try		props = struct(varargin{:});			% get the properties
+   catch
+    error('There is some problem with your input syntax.');
+   end
+ 
+   f = fieldnames(props);					% find out the fieldnames
+
+   for i = 1 : length(f)
+    if ~ismember(f{i},properties(self))				% add the prop if necessary
+     self.addprop(f{i});
+    end
+    self.(f{i}) = props.(f{i});					% fill the prop
+   end
+
+  end	% check_add_prop
+
+  %==========================================================================
+  % SAVE VARIABLES AS A COLUMN-SEPARATED ASCII FILE
+  %==========================================================================
+  function save_ascii ( self, filename, varargin )
+  % save some variables as a matrix (column-separated) in an ascii text file
+  % N.B.: the input vars MUST be column vectors!
+  %
+  % The file begins with a header line, describing the vars
+
+   args		= struct(varargin{:});				% get the variables
+   M		= [];						% initialize the matrix
+   argnames	= fieldnames(args);						% initialize the name array
+   filepath	= ['~/Desktop/',filename];			% default folder: Desktop
+   headerline = '#';
+
+
+   for i = 1 : length(argnames)
+    M		= [ M		args.(argnames{i})	];	% fill the matrix
+    headerline	= [ headerline	'\t' argnames{i} 	];	% fill the header line
+   end
+
+   headerline = [headerline, '\n'];				% go to newline
+
+   fid	= fopen(filepath,'w');					% open file
+    fprintf(fid,headerline);					% Header line
+   fclose(fid);
+
+   save(filepath,'M','-ascii','-append');			% save the data
+
+  end	% save ascii
+
  end	% methods
 
 end	% Utils class

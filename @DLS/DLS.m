@@ -590,17 +590,25 @@ classdef DLS < dynamicprops & Graphics & Utils
   % CORRELATE GAMMA
   %============================================================================
   function correlate_gamma ( self, gamma1, gamma2, varargin )
+  % this function plots gamma1 vs gamma2, to look for correlations
+  % moreover, it calculates the cross-correlation and shows it
 
    options	= struct(varargin{:});					% get optional parameters
 
-   try color = options.Color;	catch	color = 'Green'; end		% color
-   nuance = self.get_color(color,1);					% nuance for plot
+   try color = options.Color;	catch	color = 'Green'; end		% color...
+   try parameter = options.Parameter; catch parameter = 'C'; end	% ...get the parameter for color nuances...
+
+   nuances = self.get_color(color,length(self.(parameter)));		% ...nuances for plot
+   for i = 1 : length(self.Data.(parameter))
+    nuance_a(i,:) = nuances( self.(parameter) == self.Data.(parameter)(i) ,:);
+   end
+
 
    try		self.(gamma1);	self.(gamma2);				% check for existence of the gammas
    catch	error('Something is wrong with your gammas.');
    end
 
-   D1_a		= 1e-6 * self.(gamma1) ./ ( self.Data.Q.^2 );			% get the data from the class
+   D1_a		= 1e-6 * self.(gamma1) ./ ( self.Data.Q.^2 );		% get the data from the class
    D2_a		= 1e-6 * self.(gamma2) ./ ( self.Data.Q.^2 );
    dD1_a	= 1e-6 * self.(['d',gamma1]) ./ ( self.Data.Q.^2 );
    dD2_a	= 1e-6 * self.(['d',gamma2]) ./ ( self.Data.Q.^2 );
@@ -614,9 +622,20 @@ classdef DLS < dynamicprops & Graphics & Utils
    end
    ax = get(fig,'CurrentAxes');
 
-   plot(ax, D1_a, D2_a,	'*',					...
-			'Color',	nuance,			...
+   for i = 1 : length(D1_a)
+    plot(ax, D1_a(i), D2_a(i),	'*',				...
+			'Color',	nuance_a(i,:),		...
 			'MarkerSize',	0.6*self.MarkerSize	);	% plot
+   end
+
+   CC	= ( mean(D1_a .* D2_a) / ( mean(D1_a) * mean(D2_a) )  ) - 1;
+
+   text('Units','normalized','Position',[0.05 0.9],		...
+	'FontSize',	self.FontSize,				... 
+	'FontName',	self.FontName,				...
+	'FontWeight',	self.FontWeight,				...
+	'String',['g_1 ( ',gamma1,', ',gamma2,' )',	...
+		' = ',num2str(CC,3)]);					% show cross-correlation
 
   end	% correlate gamma
 
@@ -652,28 +671,6 @@ classdef DLS < dynamicprops & Graphics & Utils
  % PRIVATE METHODS
  %============================================================================
  methods ( Access=private )
-
-  %============================================================================
-  % check whether a certain property is already in the class or not,
-  % and add it if requested
-  %============================================================================
-  function check_add_prop ( obj, varargin )
-   if mod(length(varargin),2)
-    error('You should choose parameter names and input a values for them.');
-   else
- 
-    props = struct(varargin{:});		% create the struct
-    f = fieldnames(props);			% find out the fieldnames
-
-    for i = 1 : length(f)
-     if ~ismember(f{i},properties(obj))		% add the prop if necessary
-      obj.addprop(f{i});
-     end
-     obj.(f{i}) = props.(f{i});			% fill the prop
-    end
-
-   end 
-  end	% check_add_prop
 
   %============================================================================
   % create a figure for gamma vs q2
