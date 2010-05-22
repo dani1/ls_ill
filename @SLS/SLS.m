@@ -53,6 +53,9 @@ classdef SLS < dynamicprops & Graphics & Utils
   Unit_Q2									% units (A^{-2})
   Unit_KcR									% units ( Da^{-1})
   T										% temperature ( K )
+  X_T										% osmotic compressibility
+  dX_T										% error on X_T
+  Unit_X_T									% units for compressibility
 
   % N.B.: some dynamic properties could be called later on
 
@@ -119,6 +122,8 @@ classdef SLS < dynamicprops & Graphics & Utils
    min_relerr		= 1e-4; % mol/g	
    sls.Data.dKcR	= max(horzcat(dataclasses.dKcR),min_relerr*horzcat(dataclasses.KcR));
 
+   [ sls.X_T sls.dX_T sls.Unit_X_T ] = sls.calculate_compressibility;		% calculate the compressibility
+
    % create unique properties with the update_uniques function in the Utils class
    sls.update_uniques('C','Q','Q2','Angles');
 
@@ -128,82 +133,9 @@ classdef SLS < dynamicprops & Graphics & Utils
   end	% constructor
 
   %============================================================================
-  % PLOT KC/R VERSUS CONCENTRATION, ANGLE, OR IONIC STRENGTH
+  % CALCULATE OSMOTIC COMPRESSIBILITY
   %============================================================================
-  function plot_KcR ( self, varargin )
-  % plot Kc/R in a parametric fashion
-  %
-  % if no optional argument is given, the x axis is the concentration, and
-  % all angles are plotted together in one figure
-  %
-  % allowed arguments are the following:
-  % - 'Independent',<x> where <x> can be 'C','I','Q2'
-  % - 'Parameter', <p> where <p> can be 'C','I','Q2' (plot of C vs I not allowed)
-  % - 'Color', <c> where <c> can be 'blue','green','red','pink'
-  % - 'Figure',<f> where <f> must be a figure handle (e.g. gcf)
-
-   options = struct(varargin{:});								% get the optional arguments
-
-   try	independent	= options.Independent;	catch	independent	= 'C';	end		% default independent is C
-   try	average		= options.Average;	catch	average	= 'yes';	end		% average if not prohibited
-   try	color		= options.Color;	catch	color	= 'Green';	end		% default color is green
-
-   try	fig		= options.Figure;							% try using existing figure...
-   catch
-    fig	= self.create_figure;									% ...or create one
-    xlabel(self.set_xlabel(independent));							% choose x label
-    ylabel(['Kc/R [ ',self.Unit_KcR,' ]']);							% y axis is always the scattering ratio
-   end
-
-   colos = struct('Green',[],'Red',[],'Blue',[],'Pink',[]);					% colors
-
-    switch average
-
-     case 'no'											% if no averaging is chosen...
-
-      try	parameter	= options.Parameter;						% ...try to read parameter or...
-      catch	parameter	= self.set_parameter(independent);				% ...fallback parameter
-      end
-
-      nuances	= self.get_color(color,length(self.(parameter)));				% get the colors for the plot
-
-      for j = 1 : length(self.(parameter))
-       inde	= self.Data.(parameter) == self.(parameter)(j);					% find the right data to plot
-       x	= self.Data.(independent)	(inde);
-       KcR	= self.Data.KcR			(inde);
-       dKcR	= self.Data.dKcR		(inde);
-
-       plo(j)	= errorbar( x, KcR, dKcR,	'o-','Color',nuances(j,:),		...
-						'MarkerSize',	self.MarkerSize,	...
-						'LineWidth',	self.LineWidth		);	% plot
-       legend_names{j}	= [parameter,' = ',num2str(self.(parameter)(j),1),' ',...
-								self.(['Unit_',parameter])];	% legend names
-      end
-      legend(plo,legend_names,'Location','NorthWest');						% plot legend
-
-     case 'yes'											% if averaging is chosen...
-
-      nuances	= self.get_color(color,1);							% get the colors for the plot
-
-      for i = 1 : length(self.(independent))
-       inde	= self.Data.(independent) == self.(independent)(i);				% find the right data to plot
-       x(i)	= self.(independent)(i);
-       KcR(i)	= mean ( self.Data.KcR ( inde ) );
-       dKcR(i)	= mean ( self.Data.dKcR ( inde ) );						% INCORRECT!
-      end
-
-      plo	= errorbar( x, KcR, dKcR,	'o-','Color',nuances,			...
-						'MarkerSize',	self.MarkerSize,	...
-						'LineWidth',	self.LineWidth		);	% plot
-
-    end
-
-  end % plot_KcR
-    
-  %============================================================================
-  % PLOT OSMOTIC COMPRESSIBILITY VERSUS CONCENTRATION OR IONIC STRENGTH
-  %============================================================================
-  function plot_compressibility ( self, varargin )
+  function [ X dX Unit_X ] = calculate_compressibility ( self )
   % the osmotic isothermal compressibility is related to the structure factor at
   % vanishing Q by the following formula:
   %
@@ -215,43 +147,11 @@ classdef SLS < dynamicprops & Graphics & Utils
   %
   % Please note that X(c) is independent on Q and on M.
 
-   options = struct(varargin{:});								% try to interpret input options
+   X	= 1 ./ ( LIT.Na .* LIT.kb .* self.T .* self.Data.C .* self.Data.KcR );	% calculate X_T
+   dX	= X .* self.Data.dKcR ./ self.Data.KcR;					% propagate errors
+   Unit_X = 'l * J^{-1}';
 
-   try	independent	= options.Independent;	catch	independent	= 'C';	end		% default independent is C
-   try	color		= options.Color;	catch	color	= 'Green';	end		% default color is green
-
-   for i = 1 : length(self.(independent))
-    index	= self.Data.(independent) == self.(independent)(i);				% choose the Data
-
-    weights_a	= 1 ./ ( self.Data.dKcR(index).^2 );						% Gaussian errors TODO: C has no error!!
-    KcR_a	= self.Data.KcR	(index);
-    C_a		= self.Data.C	(index);
-
-    cKcR(i)	= sum( weights_a .* KcR_a .* C_a ) / sum(weights_a);				% weighed sum, proportional to 1/X(i)
-    dcKcR(i)	= sum( sqrt(weights_a) ) / sum(weights_a);					% weighed error
-
-    X_T(i)	= 1 / ( LIT.Na * LIT.kb * self.T * cKcR(i) );					% set compressibility
-    dX_T(i)	= X_T(i) * dcKcR(i) / cKcR(i);							% set error
-   end
-
-   self.check_add_prop('X_T',X_T,'dX_T',dX_T);							% add compressibility to the class
-
-   try fig	= options.Figure;								% try using existing figure...
-   catch
-    fig	= self.create_figure;									% ...or create one
-    xlabel(self.set_xlabel(independent));							% choose the x label
-    ylabel(['Compressibility [ Da J^{-1} ]']);							% choose the y label
-    set(gca,'XScale','log','YScale','log');
-   end
-
-   nuances	= self.get_color(color,1);							% get the colors for the plot
-
-   errorbar(self.(independent),X_T,dX_T,'o-', 				...
-					'Color',	nuances,	...
-					'LineWidth',	self.LineWidth,	...
-					'MarkerSize',	self.MarkerSize	);			% plot!
-
-  end	% plot_compressibility
+  end	% calculate_compressibility
 
   %============================================================================
   % FIT SCATTERING RATIO VS CONCENTRATION (A2) ETC.
@@ -349,9 +249,59 @@ classdef SLS < dynamicprops & Graphics & Utils
   %============================================================================
   % FIT COMPRESSIBILITY
   %============================================================================
-  function fit_compressiblity ( self, varargin )
+  function fit_compressibility ( self, varargin )
+  % fit the compressibility according to some nonlinear model
 
-   fprintf('\n\nHello world!\n\n');						% TODO: write function!
+   options = struct(varargin{:});						% eat the optional arguments as a struct
+
+   try N = options.N;	catch N = length(self.C); end				% how many points to use for the fit
+
+   try
+    x	= self.C	(1:N);								% x vector
+    y	= self.X_T	(1:N);								% y vector
+    dy	= self.dX_T	(1:N);								% dy vector
+   catch
+    error('Does X_T exist?');
+   end
+
+    weights =  1 ./ dy' .^ 2;							% set the weights for the fit
+
+    fit_function	= 'BKG + beta * C ^ ( - eta )';
+    coefficients	= {'BKG'	'beta'	'eta'	};
+    lowerbond		= [ 0		0	0	];			% eta is between 0 (no C dependence)...
+    upperbond		= [ +inf	+inf	2	];			% ...and 2 (finite potential at r-->oo)
+    startpoint		= [ 1		1	1.5	];
+
+    % set other fit options
+    fit_options = fitoptions( 'Method','NonLinearLeastSquares',...
+       		'Weights', weights,			...
+       		'MaxFunEvals',100000, 			...
+       		'Lower',lowerbond, 			...
+       		'Upper',upperbond, 			...
+       		'Startpoint',startpoint				);
+    
+    fit_type = fittype(fit_function, 'independent','C', ...
+       		'options', fit_options,			...
+       		'coefficients',	coefficients			);
+
+    % perform the numerical fit
+    [ cf gof ] = fit( x', y', fit_type );
+
+    % get fit result
+    par = coeffvalues (cf); 
+    confidence = confint(cf,0.95);
+    dpar =  0.5*(confidence(2,:)-confidence(1,:));  
+
+    % export the fit values
+    BKG		= par(1);
+    beta	= par(2);
+    eta		= par(3)
+    deta	= dpar(3)
+
+    self.plot_compressibility;
+    plot(x, BKG + beta .* x.^( -eta ), 'LineWidth', self.LineWidth );
+
+    self.check_add_prop('Eta',eta,'dEta',deta);
 
   end	% fit_compressibility
 
@@ -361,48 +311,6 @@ classdef SLS < dynamicprops & Graphics & Utils
  % PRIVATE METHODS
  %============================================================================
  methods ( Access = private )
-
-  %============================================================================
-  % set xlabel according to independent
-  %============================================================================
-  function xl = set_xlabel ( self, independent )
-
-   switch independent
-    case 'C'							% concentration
-     xl = ['Protein concentration [ ',self.Unit_C,' ]'];
-
-    case 'I'							% ionic strength
-     xl = ['ionic strength [ ',self.Unit_I,' ]'];
-
-    case 'Q2'							% Q squared
-     xl = ['Q^2 [ ',self.Unit_Q2,' ]'];
-
-    otherwise							% not recognized?!
-     error('Independent not recognized!');
-   end
-
-  end	% set_xlabel
-
-  %============================================================================
-  % set parameter from independent
-  %============================================================================
-  function parameter = set_parameter ( self, independent )
-
-   switch independent
-    case 'C'							% concentration
-     parameter = 'Q2';
-
-    case 'I'							% ionic strength
-     parameter = 'Q2';
-
-    case 'Q2'							% Q squared
-     parameter = 'C';
-
-    otherwise							% not recognized?!
-     error('Independent not recognized!');
-   end
-
-  end	% set_parameter
 
   %============================================================================
   % check the parameters for fits

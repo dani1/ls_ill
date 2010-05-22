@@ -28,6 +28,7 @@ classdef DLS < dynamicprops & Graphics & Utils
 
   Unit_C
   Unit_Q
+  Unit_Q2
   % both Angles and Q are the unique reduction (union) of all their partners
   % in the input Data classes
   Unit_Tau
@@ -45,6 +46,7 @@ classdef DLS < dynamicprops & Graphics & Utils
   C
   Angles
   Q
+  Q2
 
  end	% observed public properties
 
@@ -63,6 +65,10 @@ classdef DLS < dynamicprops & Graphics & Utils
   % flexible and the best way to store things (remember dynamic field get-set
   % methods, etc.)
   %
+  Minimal_D1		= 1		% A^2 / ns
+  Maximal_D1		= 100		% A^2 / ns
+  Minimal_D2		= 0		% A^2 / ns
+  Maximal_D2		= 2.5		% A^2 / ns
 
   MinimalLagtime	= 1e-6		% ms
   MaximalLagtime	= 1e4		% ms
@@ -84,6 +90,7 @@ classdef DLS < dynamicprops & Graphics & Utils
 
    % eat the strings
    dls.Unit_Q	= dataclasses(1).Unit_Q;
+   dls.Unit_Q2	= regexprep(dls.Unit_Q,'\^\{*-1\}*','\^\{-2\}');
    dls.Unit_C	= dataclasses(1).Unit_C;
    dls.Unit_Tau	= dataclasses(1).Unit_Tau;
    dls.T	= dataclasses(1).T;
@@ -99,15 +106,16 @@ classdef DLS < dynamicprops & Graphics & Utils
    dls.Data.C		= conc;
    dls.Data.Angles	= horzcat(dataclasses.Angles_dyn);
    dls.Data.Q		= horzcat(dataclasses.Q_dyn);
+   dls.Data.Q2		= horzcat(dataclasses.Q_dyn).^2;
    dls.Data.Tau		= horzcat(dataclasses.Tau);
    dls.Data.G		= horzcat(dataclasses.G);
    dls.Data.dG		= horzcat(dataclasses.dG);
 
    % create unique properties with the update_uniques function in the Utils class
-   dls.update_uniques('C','Q','Angles');
+   dls.update_uniques('C','Q','Q2','Angles');
 
    % monitor properties with listeners in the Utils class
-   dls.monitorprop('C','Q','Angles');
+   dls.monitorprop('C','Q','Q2','Angles');
 
   end % constructor
 
@@ -199,75 +207,27 @@ classdef DLS < dynamicprops & Graphics & Utils
   %
   % accepted optional arguments: 'fit_gamma_q2' ('yes' or 'no')
 
-   try
-    method;
-   catch
-    method = 'Double';
-   end
+   if nargin == 1	method = 'Double';   end		% default method: double exponential
  
-   % interpret the optional arguments
-   options = struct(varargin{:});
+   options = struct(varargin{:});				% interpret the optional arguments
 
-   % perform the gamma vs q^2 fit if not prohibited by the user
-   try
-    options.fit_gamma_q2;
-   catch
-    options = setfield(options,'Fit_gamma_q2','yes');
-   end
-
-   % set the fit parameters, according to the fit method chosen
-   % general parameters (background)
-   fit_common	= 'BKG';
-   coeff_common	= {'BKG'};
-   lower_common	= 0;
-   upper_common	= 1e-1;
-   start_common	= 1e-3;
- 
-   switch method
- 
-    case 'Single'
-     fit_function	= [ fit_common,'+ A * exp( - 2 * Gamma * t )'	];
-     coefficients	= [ coeff_common	{'A'}	{'Gamma'}	];
-     lowerbond		= [ lower_common	0.8	1e-2		];
-     upperbond		= [ upper_common	1.2	1e5		];
-     startpoint		= [ start_common	1.1	1e1		];
- 
-    case 'Double'
-     fit_function	= [ fit_common,'+ ( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2'	];
-     coefficients	= [ coeff_common	{'A1'}	{'Gamma1'}	{'A2'}	{'Gamma2'}		];
-     lowerbond		= [ lower_common	0	1e-1		0	1e-3			];
-     upperbond		= [ upper_common	1	1e9		1	1e2			];
-     startpoint		= [ start_common	0.3	1e2		0.3	1e-1			];
- 
-    case 'Single+Streched'
-     fit_function	= [ fit_common,'+ ( Ae * exp( - Gammae * t ) + As * exp(-( Gammas *t).^b )) .^2'];
-     coefficients	= [ coeff_common	{'Ae'}	{'Gammae'}	{'As'}	{'Gammas'}	{'b'}	];
-     lowerbond		= [ lower_common	0	1e-1		0	1e-3		0	];
-     upperbond		= [ upper_common	1	1e9		1	1e2		1	];
-     startpoint		= [ start_common	0.3	1e2		0.3	1e-1		0.8	];
- 
-    otherwise
-     error('Method not recognized!');
-   end
- 
-   % fit for all data
-   for l = 1 : length(obj.Data.Tau)
+   for l = 1 : length(obj.Data.Tau)				% fit for all data
  
      % select which range of data to use for the fit. The problem is mainly
      % that for long lag times I'm fitting background, whereas for very short
      % lag times it is afterpulse noise of the APDs
-% TO DO: control the behaviour of the correlations at 100 times higher than the
-%        first decay time. If there is still something important, do not fit
-%        the data and impose NaN for both Gamma and dGamma. One can not live with
-%        scorpions is his bed!
-     inde	= obj.Data.Tau{l} > 50e-6 & 1;
+     inde	= obj.Data.Tau{l} > 50e-6 & obj.Data.Tau{l} < 1e2;
      tau	= obj.Data.Tau{l}(inde);
      g		= obj.Data.G{l}(inde);
      dg		= obj.Data.dG{l}(inde);
 
+     weights =  1 ./ dg .^ 2;					% set the weights for the fit
 
-     % set the weights for the fit
-     weights =  1 ./ dg .^ 2;
+     [	fit_function,	...
+        coefficients,	...
+        lowerbond,	...
+	upperbond,	...
+	startpoint  	] = obj.fit_parameters( method, l );	% find the limits for the fit parameter
 
      % set other fit options
      fit_options = fitoptions( 'Method','NonLinearLeastSquares',...
@@ -297,15 +257,28 @@ classdef DLS < dynamicprops & Graphics & Utils
 
    end
 
-   % add the parameters to the class
-   for k = 1 : length(coefficients)
+   % TODO: control the behaviour of the correlations at 100 times higher than the
+   %        first decay time. If there is still something important, do not fit
+   %        the data and impose NaN for both Gamma and dGamma. One can not live with
+   %        scorpions is his bed!
+
+
+   obj.check_add_prop('Unit_Gamma',	[ obj.Unit_Tau,'^{-1}']);			% add Unit_Tau to the class
+   obj.check_add_prop('Unit_D',		'A^2/ns');					% add Unit_D to the class
+   for k = 1 : length(coefficients)							% add other coefficients
     obj.check_add_prop(coefficients{k},coout(k,:));
     obj.check_add_prop(['d',coefficients{k}],dcoout(k,:));
-   end
-   obj.check_add_prop('Unit_Gamma',[ obj.Unit_Tau,'^{-1}']);
 
-   % if the option fit_gamma_q2 is 'yes' (default), fit linearly gamma to Q^2
-   if strcmp(options.Fit_gamma_q2,'yes');
+    if regexp(coefficients{k},'Gamma')							% add diffusion constants...
+     obj.check_add_prop(['D',coefficients{k}(6),'_a'], ...
+					1e-6 .* coout(k,:) ./ obj.Data.Q.^2 );		% ...as Gamma/Q^2 and...
+     obj.check_add_prop(['dD',coefficients{k}(6),'_a'], ...
+					1e-6 .* dcoout(k,:) ./ obj.Data.Q.^2 );		% ...as dGamma/Q^2
+    end
+   end
+
+   try	fitgammas = options.Fit_Gamma_Q2;   catch	fitgammas = 'no';   end		% default: do not perform the gamma fit
+   if strcmp(fitgammas,'yes');								% if requested, fit the gammas
 
      % fit all gammas
      for k = 1 : length(coefficients)
@@ -317,6 +290,57 @@ classdef DLS < dynamicprops & Graphics & Utils
    end
 
   end	% fit_correlations
+
+  %============================================================================
+  % FIND LIMITS FOR CORRELATION FIT
+  %============================================================================
+  function [ fit_function coefficients lowerbond upperbond startpoint ] = fit_parameters ( self, method, i )
+  % set the lower and upper limits for the correletion fit according to Q^2 and the class props
+  % the startpoint is taken as D0 for the faster D, and 0.1*D0 for the slower one
+
+   % set the fit parameters, according to the fit method chosen
+   % general parameters (background)
+   fit_common	= 'BKG';
+   coeff_common	= {'BKG'};
+   lower_common	= 0;
+   upper_common	= 1e-1;
+   start_common	= 1e-3;
+
+   switch method
+ 
+    case 'Single'
+     fit_function	= [ fit_common,'+ Ae * exp( - 2 * Gammae * t )'			];
+     coefficients	= [ coeff_common	{'Ae'}	{'Gammae'}			];
+     lowerbond		= [ lower_common	0.8	1e6*self.Minimal_D1*self.Data.Q2(i)	];
+     upperbond		= [ upper_common	1.2	1e6*self.Maximal_D1*self.Data.Q2(i)	];
+     startpoint		= [ start_common	1.0	1e6*LIT.BSA.D0*self.Data.Q2(i)		];
+
+     case 'Streched'
+     fit_function	= [ fit_common,'+ As * exp( - 2 * (Gammas * t)^b )'	];
+     coefficients	= [ coeff_common	{'As'}	{'Gammas'}				{'b'}	];
+     lowerbond		= [ lower_common	0.8	1e6*self.Minimal_D1*self.Data.Q2(i)	0	];
+     upperbond		= [ upper_common	1.2	1e6*self.Maximal_D1*self.Data.Q2(i)	1	];
+     startpoint		= [ start_common	1.1	1e6*LIT.BSA.D0*self.Data.Q2(i)		0.8	];
+ 
+    case 'Double'
+     fit_function	= [ fit_common,'+ ( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2'	];
+     coefficients	= [ coeff_common	{'A1'}	{'Gamma1'}				{'A2'}	{'Gamma2'}				];
+     lowerbond		= [ lower_common	0.5	1e6*self.Minimal_D1*self.Data.Q2(i)	0	1e6*self.Minimal_D2*self.Data.Q2(i)	];
+     upperbond		= [ upper_common	1	1e6*self.Maximal_D1*self.Data.Q2(i)	0.5	1e6*self.Maximal_D2*self.Data.Q2(i) 	];
+     startpoint		= [ start_common	0.9	1e6*LIT.BSA.D0*self.Data.Q2(i)		0.1	1e5*LIT.BSA.D0*self.Data.Q2(i)		];
+ 
+    case 'Single+Streched'
+     fit_function	= [ fit_common,'+ ( Ae * exp( - Gammae * t ) + As * exp(-( Gammas *t).^b )) .^2'];
+     coefficients	= [ coeff_common	{'Ae'}	{'Gammae'}				{'As'}	{'Gammas'}				{'b'}	];
+     lowerbond		= [ lower_common	0.5	1e6*self.Minimal_D1*self.Data.Q2(i)	0	1e6*self.Minimal_D2*self.Data.Q2(i)	0	];
+     upperbond		= [ upper_common	1	1e6*self.Maximal_D1*self.Data.Q2(i)	0.5	1e6*self.Maximal_D2*self.Data.Q2(i)	1	];
+     startpoint		= [ start_common	0.9	1e6*LIT.BSA.D0*self.Data.Q2(i)		0.1	1e5*LIT.BSA.D0*self.Data.Q2(i)		0.8	];
+
+    otherwise
+     error('Method not recognized!');
+   end
+
+  end	% find_limits_for_fit
   
   %============================================================================
   % FIT CUMULANT (DEAD)
@@ -364,6 +388,7 @@ classdef DLS < dynamicprops & Graphics & Utils
    % give some names to the output parameters
    Dname	= ['D',prop_suff];
    dDname	= ['dD',prop_suff];
+   Unit_Dname	= ['Unit_D',prop_suff];
    Aname	= ['A',prop_suff];
    A_avname	= ['A',prop_suff,'m'];
    dA_avname	= ['dA',prop_suff,'m'];
@@ -432,10 +457,10 @@ classdef DLS < dynamicprops & Graphics & Utils
    end
  
    % add the D, dD and Unit_D prop to the class
-   obj.check_add_prop(Dname,D,dDname,dD,'Unit_D','A^2/ns',A_avname,A,dA_avname,dA);
+   obj.check_add_prop(Dname,D,dDname,dD,Unit_Dname,'A^2/ns',A_avname,A,dA_avname,dA);
 
    % print the diffusion constants
-   fprintf(['The diffusion constants are: ', Dname, ' ', mat2str(obj.(Dname),2),' ',obj.Unit_D,'\n']);
+   fprintf(['The diffusion constants are: ', Dname, ' ', mat2str(obj.(Dname),2),' ',obj.(Unit_Dname),'\n']);
 
    % plot fit results if the option is positive
    if strcmp(options.Plot,'yes')
@@ -445,146 +470,40 @@ classdef DLS < dynamicprops & Graphics & Utils
   end	% fit_gamma_q2
 
   %============================================================================
-  % PLOT GAMMA vs Q^2
+  % CALCULATE HYDRODYNAMIC RATIO
   %============================================================================
-  function plot_gamma_q2 ( obj, gammaname, varargin )
-  % plot the Gammas from the fit against Q^2 and, if found, the corresponding diffusion function
-  % accepted optional arguments: C, 
-
-   try
-    gammaname;
-   catch
-    error('please select a Gamma you want to fit against q^2 (e.g. Gamma, Gamma1, Gamma2)');
-   end
-
-   options	= struct(varargin{:});						% eat the optional arguments as a struct
-
-   try										% concentrations
-    options.C;
-   catch
-    options	= setfield(options,'C',obj.C);
-   end
-
-   for i = 1 : length(options.C)
-
-    % this is subtle: I'm using elementwise logical operators and dynamic structure fields
-    % In the end we get an array of 1 or 0 indicating us which elements of, say, Gamma1
-    % are to be fitted now. I exclude NaN values (bad fits of the correlogramms).
-    inde = obj.Data.C == options.C(i) & ~isnan(obj.(gammaname)) & ~isnan(obj.(['d',gammaname]));
-
-    % prepare the vectors for the fit
-    q = obj.Data.Q(inde);
-    gamma = obj.(gammaname)(inde);
-    dgamma = obj.(['d',gammaname])(inde);
-
-    obj.figure_gamma_q2;							% create the figure
- 
-    % title
-    titlename = ['Plot of ', char(gammaname),' from the fit at cp = ', num2str(options.C(i)),' againt q^2'];
-    title(titlename,'FontSize',14);
-
-    % plot with error bars
-    errorbar (q .^2 , gamma, dgamma, 'o','MarkerSize', 10 );
-
-    % check if the right diffusion constant has been fitted, and if yes plot it
-    try
-     % find the kind of gamma and label the diffusion constant accordingly
-     switch gammaname
-        case 'Gamma'
-       prop_suff = '';
-      case {'Gamma1','Gamma2','Gammae','Gammas'}
-       prop_suff = gammaname(6);
-      case {'K1','k1'}
-       prop_suff = '_K1';
-      otherwise
-       error('Gamma not recognized!');
-       end
-  
-     % give some names to the output parameters
-     Dname	= ['D',prop_suff];
-     D		= obj.(Dname)(obj.C == options.C(i));
-     % this is the actual try
-     Dplo = plot(q .^2, 1e6 * q .^2 * D, '-', 'LineWidth', 2 );
-     
-     legend(Dplo,[Dname,' = ',num2str(D,2),' ',obj.Unit_D],'Location','NorthWest');
-    end
-
-   end
-
-  end	% plot_gamma_q2
-
-  %============================================================================
-  % PLOT D vs C
-  %============================================================================
-  function plot_D ( obj, Dname, varargin )
-  % accepted optional arguments: Figure
-
-   try
-    Dname;
-   catch
-    error('Please select which diffusion constant to plot.');
-   end
-
-   % interpret optional arguments
-   options = struct(varargin{:});
-
-   % if a figure is specified, use it instead of a new one
-   try
-    fig = options.Figure;
-   catch
-    fig = obj.figure_D_C;
-%    title([Dname,' versus protein concentration'],'FontSize',14);
-   end
-
-   % plot with errorbars
-   plot_options = { '-o','LineWidth',4,'MarkerSize',10 };
-
-   % add color to plot_options if chosen by the user
-   try
-    plot_options = [ plot_options, 'Color', options.Color ];
-   end
-
-   errorbar(get(fig,'CurrentAxes'),obj.C,obj.(Dname),obj.(['d',Dname]), plot_options{:});
-
-  end	% plot_D
-
-  %============================================================================
-  % PLOT H
-  %============================================================================
-  function plot_H ( obj, Dname, sls )
-  % this function plots the H function (in this version, only something proportional to it)
-  % from SLS and DLS results, using the following formula:
+  function calculate_H ( self, Dname, sls )
+  % this function calculates the H function from SLS and DLS results, using the following formula:
   %
-  %	H := D1 * S(q) / D0	( in this version, H:= D1 / Kc/R * M_lit / D1(1) )
+  %	H := D1 * S(q) / D0,	in this version, H:= D1 / ( Kc/R * LIT.M * LIT.D0 )
   %
   % Input parameters:
   % - Dname:	the name of the diffusion constant you want to plot
   % - sls:	this is the SLS class from which one takes the Kc/R values.
 
-  % check that both the diffusion constant exists and sls is a valid SLS class
-  if ( strcmp(class(sls),'SLS') && ismember(Dname,properties(obj)) )
-
-   % mean over the Q values for the SLS results
-   for i = 1 : length(obj.C)
-    inde	= sls.Data.C==obj.C(i);
-    H(i)	= obj.(Dname)(i) / ( sum( sls.Data.KcR(inde) ./ ( sls.Data.dKcR(inde) .^2 ) )	/ sum ( 1 ./ sls.Data.dKcR(inde) .^2 ) ) / 67000 / obj.(Dname)(1);
-    dH(i)	= obj.(Dname)(i) / ( sum( sls.Data.dKcR(inde) ./ ( sls.Data.dKcR(inde) .^2 ) )	/ sum ( 1 ./ sls.Data.dKcR(inde) .^2 ) ) / 67000 / obj.(Dname)(1);
+   % check that both the diffusion constant exists and sls is a valid SLS class
+   try assert( strcmp(class(sls),'SLS') && ismember(Dname,properties(self)) )
+   catch error('Your diffusion constant does not exist, or your SLS class is not valid.');
    end
  
-   fig = figure;
-   hold all;
-   set( gcf, 'color', 'white' );
-   set( gca,	'box', 'on',						...
-		'FontSize',36,'FontName','Courier','FontWeight','bold',	...
-		'XMinorTick','on', 'YMinorTick','on');
-   xlabel(['Protein concentration [ ',obj.Unit_C,' ]'],'FontSize',36);
-   ylabel(['H [ a.u. ]'],'FontSize',36);
+   % calculate H ( long vector )
+   for i = 1 : length(self.C)
+    index_dls	= ( self.Data.C == self.C(i) );				% calculate the dls index
+    index_sls	= ( sls.Data.C == self.C(i) );				% calculate the sls index
 
-   plot(obj.C,H,'o-','LineWidth',4);
+    D		= mean( self.(Dname)		(index_dls) );		% calculate D TODO: INCORRECT!
+    dD		= mean( self.(['d',Dname])	(index_dls) );		% calculate dD TODO: INCORRECT!
+    KcR		= mean( sls.Data.KcR		(index_sls) );		% calculate KcR TODO: INCORRECT!
+    dKcR	= mean( sls.Data.dKcR		(index_sls) );		% calculate dKCR TODO: INCORRECT!
 
-  end
+    H(i)	= D / ( KcR * LIT.BSA.M * LIT.BSA.D0 );			% calculate H
+    dH(i)	= H(i) * sqrt( ( dD / D )^2 + ( dKcR / KcR )^2 );	% Gaussian error propagation
+   end
 
-  end	% plot_H
+   self.check_add_prop(	'H',	H,	...
+			'dH',	dH,	...
+			'Unit_H','no units');				% add H to the class
+   end	% plot_H
 
   %============================================================================
   % CORRELATE GAMMA
@@ -592,21 +511,26 @@ classdef DLS < dynamicprops & Graphics & Utils
   function correlate_gamma ( self, gamma1, gamma2, varargin )
   % this function plots gamma1 vs gamma2, to look for correlations
   % moreover, it calculates the cross-correlation and shows it
+  % Accepted optional arguments:
+  % - Color:	Base color for nuances, such as Green, Red, etc.
+  % - Figure:	Use existing figure or create new one
+  % - Type:	type of plot, such as Fill, Points, Lines
 
-   options	= struct(varargin{:});					% get optional parameters
-
-   try color = options.Color;	catch	color = 'Green'; end		% color...
-   try parameter = options.Parameter; catch parameter = 'C'; end	% ...get the parameter for color nuances...
-
-   nuances = self.get_color(color,length(self.(parameter)));		% ...nuances for plot
-   for i = 1 : length(self.Data.(parameter))
-    nuance_a(i,:) = nuances( self.(parameter) == self.Data.(parameter)(i) ,:);
+   if nargin == 1							% fallback gammas: Gamma1 and Gamma2
+    gamma1 = 'Gamma1';	gamma2 = 'Gamma2';
    end
-
 
    try		self.(gamma1);	self.(gamma2);				% check for existence of the gammas
    catch	error('Something is wrong with your gammas.');
    end
+
+   options	= struct(varargin{:});					% get optional parameters
+
+   try color = options.Color;	catch	color = 'Green'; end		% color...
+   try type = options.Type;	catch	type = 'Fill'; end		% ...type of plot...
+
+   try parameter = options.Parameter; catch parameter = 'C'; end	% ...get the parameter for color nuances...
+   nuances = self.get_color(color,length(self.(parameter)));		% ...nuances for plot
 
    D1_a		= 1e-6 * self.(gamma1) ./ ( self.Data.Q.^2 );		% get the data from the class
    D2_a		= 1e-6 * self.(gamma2) ./ ( self.Data.Q.^2 );
@@ -622,20 +546,43 @@ classdef DLS < dynamicprops & Graphics & Utils
    end
    ax = get(fig,'CurrentAxes');
 
-   for i = 1 : length(D1_a)
-    plot(ax, D1_a(i), D2_a(i),	'*',				...
-			'Color',	nuance_a(i,:),		...
-			'MarkerSize',	0.6*self.MarkerSize	);	% plot
+   for i = 1 : length(self.(parameter))					% group the points for colors, convhull etc.
+    D1{i}	= D1_a( self.Data.(parameter)	== self.(parameter)(i) );
+    D2{i}	= D2_a(	self.Data.(parameter)	== self.(parameter)(i) );
+    dD1{i}	= dD1_a(self.Data.(parameter)	== self.(parameter)(i) );
+    dD2{i}	= dD2_a(self.Data.(parameter)	== self.(parameter)(i) );
+
+    switch type								% plot differently according to type
+     case 'Points'							% only the fit points
+      plot(ax, D1{i}, D2{i},	'*',				...
+			'Color',	nuances(i,:),		...
+			'MarkerSize',	0.6*self.MarkerSize	);
+
+     case 'Lines'							% only the convex hull
+      K	= convhull(D1{i},D2{i});					% calculate the convex hull
+      plot(ax, D1{i}(K), D2{i}(K),	'-',			...
+			'Color',	nuances(i,:),		...
+			'LineWidth',	self.LineWidth		);
+
+     case 'Fill'							% only the area inside the convex hull
+      K	= convhull(D1{i},D2{i});					% calculate the convex hull
+      p = patch( D1{i}(K), D2{i}(K), nuances(i,:) );			% plot filled area of convex hull	
+      set(p,'FaceAlpha',.7,'EdgeAlpha',.5);				% set transparency
+
+     otherwise
+      error('Plot type not understood!');
+    end
+
    end
 
    CC	= ( mean(D1_a .* D2_a) / ( mean(D1_a) * mean(D2_a) )  ) - 1;
 
-   text('Units','normalized','Position',[0.05 0.9],		...
+   text('Units','normalized','Position',[0.67 0.05],		...
 	'FontSize',	self.FontSize,				... 
 	'FontName',	self.FontName,				...
 	'FontWeight',	self.FontWeight,				...
-	'String',['g_1 ( ',gamma1,', ',gamma2,' )',	...
-		' = ',num2str(CC,3)]);					% show cross-correlation
+	'String',['g_1(\',gamma1,',\',gamma2,')',	...
+		'=',num2str(CC,3)]);					% show cross-correlation
 
   end	% correlate gamma
 
@@ -671,38 +618,6 @@ classdef DLS < dynamicprops & Graphics & Utils
  % PRIVATE METHODS
  %============================================================================
  methods ( Access=private )
-
-  %============================================================================
-  % create a figure for gamma vs q2
-  %============================================================================
-  function fig = figure_gamma_q2 ( obj )
-   
-   fig = figure;
-   hold all;
-   set( gcf, 'color', 'white' );
-   set( gca,	'box', 'on',						...
-		'FontName','Courier','FontSize',36,'FontWeight','bold',	...
-		'XMinorTick','on', 'YMinorTick','on');
-   xlabel(['Q^2 [ ',obj.Unit_Q,'^2 ]'],'FontSize',36);
-   ylabel(['\Gamma [ ',obj.Unit_Tau,'^{-1} ]'],'FontSize',36);
- 
-  end	% end of figure function
-
-  %============================================================================
-  % create a figure for D vs C
-  %============================================================================
-  function fig = figure_D_C ( obj )
-   
-   fig = figure;
-   hold all;
-   set( gcf, 'color', 'white' );
-   set( gca,	'box', 'on',						...
-		'FontSize',36,'FontName','Courier','FontWeight','bold',	...
-		'XMinorTick','on', 'YMinorTick','on');
-   xlabel(['Protein concentration [ ',obj.Unit_C,' ]'],'FontSize',36);
-   ylabel(['Diffusion constant [ ',obj.Unit_D,' ]'],'FontSize',36);
- 
-  end	% end of figure function
 
  end	% end of private methods
 end	% end of class

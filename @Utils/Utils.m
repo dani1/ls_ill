@@ -181,6 +181,48 @@ classdef Utils < handle
 
   end	% save ascii
 
+  %============================================================================
+  % SET XLABEL ACCORDING TO INDEPENDENT
+  %============================================================================
+  function xl = set_xlabel ( self, independent )
+
+   switch independent
+    case 'C'							% concentration
+     xl = ['Protein concentration [ ',self.Unit_C,' ]'];
+
+    case 'I'							% ionic strength
+     xl = ['ionic strength [ ',self.Unit_I,' ]'];
+
+    case 'Q2'							% Q squared
+     xl = ['Q^2 [ ',self.Unit_Q2,' ]'];
+
+    otherwise							% not recognized?!
+     error('Independent not recognized!');
+   end
+
+  end	% set_xlabel
+
+  %============================================================================
+  % SET PARAMETER FROM INDEPENDENT
+  %============================================================================
+  function parameter = set_parameter ( self, independent )
+
+   switch independent
+    case 'C'							% concentration
+     parameter = 'Q2';
+
+    case 'I'							% ionic strength
+     parameter = 'Q2';
+
+    case 'Q2'							% Q squared
+     parameter = 'C';
+
+    otherwise							% not recognized?!
+     error('Independent not recognized!');
+   end
+
+  end	% set_parameter
+
  end	% methods
 
 end	% Utils class
