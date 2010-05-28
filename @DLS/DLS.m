@@ -65,11 +65,6 @@ classdef DLS < dynamicprops & Graphics & Utils
   % flexible and the best way to store things (remember dynamic field get-set
   % methods, etc.)
   %
-  Minimal_D1		= 1		% A^2 / ns
-  Maximal_D1		= 100		% A^2 / ns
-  Minimal_D2		= 0		% A^2 / ns
-  Maximal_D2		= 2.5		% A^2 / ns
-
   MinimalLagtime	= 1e-6		% ms
   MaximalLagtime	= 1e4		% ms
   MinimalG		= -0.05
@@ -123,7 +118,7 @@ classdef DLS < dynamicprops & Graphics & Utils
   % PLOT CORRELATIONS
   %============================================================================
   function plot_correlations ( self, varargin )
-  % plot the autocorrelation data
+  % plot the autocorrelation data or its laplace transform
   %
   % varargin allows the user to choose some details of the plot. The syntax is
   % e.g. the following:
@@ -134,6 +129,7 @@ classdef DLS < dynamicprops & Graphics & Utils
   % - figure (new figures)
   % - Angles (all angles)
   % - C (all concentrations)
+  % - Type ('real'):		this can be 'real' or 'Laplace'
 
    options = struct(varargin{:});						% eat the optional arguments as a struct
 
@@ -143,35 +139,25 @@ classdef DLS < dynamicprops & Graphics & Utils
    try	color = options.Color;		catch   color	= 'Green';	end	% color
    nuances	= self.get_color(color,length(C));				% nuances for plot colors
 
+   try	type = options.Type;		catch	type	= 'real';	end	% type ('real' or 'laplace' )
    
    % create the figures and plot the data
    for j = 1 : length(angles)							% for every angle...
 
-    % create the figure
-    fig(j)		= self.create_figure;					% ...create the figure...
-    ax(j)		= get(fig(j),'CurrentAxes');				% ...get the axis...
-
-    set(gca, 'xscale','log');							% ...set the log scale...
-    axis([ 	self.MinimalLagtime	self.MaximalLagtime	...
-		self.MinimalG		self.MaximalG 		]);		% ...set the limits for the plot...
-
-    xlabel(['\tau [ ',self.Unit_Tau,' ]']);					% ...set the x label...
-    ylabel('g_1 [ normalised ]');						% ...set the y label...
-    title(['Correlogramms at ',num2str(angles(j)),'°']);			% ...set a title...
+    [ ax(j), indep, dep ] = self.prepare_plot_correlations ( angles(j), type );	% prepare plots
 
     legend_names{j}	= {};	legend_group{j}	= [];				% ...and prepare legends
 
-    for l = 1 : length(self.Data.Tau)						% look for data to be plotted...
+    for l = 1 : length(self.Data.C)						% look for data to be plotted...
 
      if ( self.Data.Angles(l) == angles(j) && ismember(self.Data.C(l),C) )	% ...look the right indices
  
-      x		= self.Data.Tau{l};						% ...rename the data
-      y		= self.Data.G{l};
-      dy	= self.Data.dG{l};
+      try x = self.Data.(indep){l};	catch x = self.(indep){l};	end	% ...rename the data
+      try y = self.Data.(dep){l};	catch y = self.(dep){l};	end	% ...rename the data
 
       nuance	= nuances( self.Data.C(l) == C, :);				% select the nuance for the plot
 
-      plo	= errorbar(ax(j), x, y, dy, 		'-o',		...
+      plo	= plot(ax(j), x, y, 	'-o',				...
 					'Color',	nuance,		...
 					'LineWidth', 0.1*self.LineWidth,...
 					'MarkerSize',0.3*self.MarkerSize );	% plot
@@ -187,16 +173,89 @@ classdef DLS < dynamicprops & Graphics & Utils
      end
     end
 
-    legend(get(fig(j),'CurrentAxes'),legend_group{j},legend_names{j},'FontSize',14);	% show the legend for every figure
+    legend(ax(j),legend_group{j},legend_names{j},'FontSize',14);	% show the legend for every figure
 
    end
 
   end	% end of plot function
 
+
+  %============================================================================
+  % PREPARE PLOT FOR CORRELOGRAMMS (IN REAL OR LAPLACE SPACE)
+  %============================================================================
+  function [ ax indep dep ] = prepare_plot_correlations ( self, angle, type )
+
+   % create the figure
+   fig		= self.create_figure;						% ...create the figure...
+   ax		= get(fig,'CurrentAxes');					% ...get the axis...
+
+   set(gca, 'xscale','log');							% ...set the log scale...
+
+   switch type
+    case 'real'
+     indep	= 'Tau';								% independent name
+     dep	= 'G';								% dependent name
+
+     axis([ 	self.MinimalLagtime	self.MaximalLagtime	...
+		self.MinimalG		self.MaximalG 		]);		% ...set the limits for the plot...
+
+     xlabel(['\tau [ ',self.Unit_Tau,' ]']);					% ...set the x label...
+     ylabel('g_1^2 [ normalised ]');						% ...set the y label...
+     title(['Correlogramms at ',num2str(angle),'°']);				% ...set a title
+
+    case 'Laplace'
+     indep	= 'LP_D';								% independent name
+     dep	= 'LP_Dist';							% dependent name
+
+     xlabel(['D [ ',self.Unit_D,' ]']);						% ...set the x label...
+     ylabel('distr [ normalised ]');						% ...set the y label...
+     title(['Laplace Inverted correlogramms at ',num2str(angle),'°']);		% ...set a title
+   end
+
+  end	% prepare_plot_correlations
+
+  %============================================================================
+  % PLOT CORRELOGRAMMS IN 3D
+  %============================================================================
+  function plot3D ( self );
+  % TODO: complete function
+
+   xname	= 'C';
+   yname	= 'LP_D';
+   zname	= 'LP_Dist';
+
+   x		= self.(xname);
+   y		= unique(horzcat(self.(yname){:}));
+
+   for i = 1 : length(self.(yname))
+
+    zz{i}	= interp1( self.(yname){i}, self.(zname){i}, y );
+
+   end
+
+   zzM	= cell2mat(zz');
+
+   for i = 1 : length(x)
+
+    index	= ( self.Data.(xname) == self.(xname)(i) );
+    z(:,i)	= mean(zzM(index,:))';
+
+   end
+
+   surf(x,y,z);
+
+   set(gca,'Yscale','log');
+   xlabel(['C [ ',self.(['Unit_',xname]), ' ]']);
+   ylabel(['D [ ', self.Unit_D, ' ]']);
+   zlabel('Dist [a.u.]');
+   rotate3d;
+
+  end	% plot3D
+
   %============================================================================
   % FIT CORRELATIONS
   %============================================================================
-  function fit_correlations ( obj , method, varargin )
+  function fit_correlations ( self , method, varargin )
   % This functions fits all the correlogramms of the class. Method is one of the following:
   % - 'Single': single exponential;
   % - 'Double'(default): double exponential;
@@ -204,144 +263,77 @@ classdef DLS < dynamicprops & Graphics & Utils
   % Not in use but easy to implement:
   % - 'Cumulant2', cumulant second order (see Koppel et al.);
   % - 'Cumulant3', cumulant third order.
-  %
-  % accepted optional arguments: 'fit_gamma_q2' ('yes' or 'no')
 
    if nargin == 1	method = 'Double';   end		% default method: double exponential
  
    options = struct(varargin{:});				% interpret the optional arguments
 
-   for l = 1 : length(obj.Data.Tau)				% fit for all data
+   try system = options.system;	catch try system = self.system; catch system = 'BSA'; end; end;		% try to read the system from opt args
+
+   for l = 1 : length(self.Data.Tau)				% fit for all data
  
-     % select which range of data to use for the fit. The problem is mainly
-     % that for long lag times I'm fitting background, whereas for very short
-     % lag times it is afterpulse noise of the APDs
-     inde	= obj.Data.Tau{l} > 50e-6 & obj.Data.Tau{l} < 1e2;
-     tau	= obj.Data.Tau{l}(inde);
-     g		= obj.Data.G{l}(inde);
-     dg		= obj.Data.dG{l}(inde);
+    % select which range of data to use for the fit. The problem is mainly
+    % that for long lag times I'm fitting background, whereas for very short
+    % lag times it is afterpulse noise of the APDs
+    inde	= self.Data.Tau{l} > 1e-6 & self.Data.Tau{l} < 1e2;
+    t		= self.Data.Tau{l}(inde);
+    g		= self.Data.G{l}(inde);
+    dg		= self.Data.dG{l}(inde);
+    q		= self.Data.Q(l);
 
-     weights =  1 ./ dg .^ 2;					% set the weights for the fit
+    switch method
+     case {'Single', 'Streched', 'Double', 'Single+Streched'}					% in case we fit discrete decays...
+      [ coeffnames coeffval dcoeffval ] = self.fit_discrete (t, g, dg, method, q, system);	% ...perform the fit
 
-     [	fit_function,	...
-        coefficients,	...
-        lowerbond,	...
-	upperbond,	...
-	startpoint  	] = obj.fit_parameters( method, l );	% find the limits for the fit parameter
+      % group the output coefficients from every correlogramm
+      for i = 1 : length(coeffnames)
+       fitoutput.(coeffnames{i})(l)	= coeffval(i);
+       dfitoutput.(coeffnames{i})(l)	= dcoeffval(i);
+      end
 
-     % set other fit options
-     fit_options = fitoptions( 'Method','NonLinearLeastSquares',...
-			'Weights', weights,			...
-			'MaxFunEvals',100000, 			...
-        		'Lower',lowerbond, 			...
-			'Upper',upperbond, 			...
-			'Startpoint',startpoint				);
-     
-     fit_type = fittype(fit_function, 'independent','t', 	...
-			'options', fit_options,			...
-        		'coefficients',	coefficients			);
+     case 'Laplace'
+      [ coeffnames coeffval dcoeffval ] = self.fit_discrete (t, g, dg, 'Double', q, system);	% discrete fit to get the guess distribution...
+      index1	= strcmp(coeffnames,'Gamma1');
+      index2	= strcmp(coeffnames,'Gamma2');
 
-     % perform the numerical fit
-     [ cf gof ] = fit( tau, g, fit_type );
+      gamma1	= coeffval(index1);
+      gamma2	= coeffval(index2);
 
-     % get fit result
-     par = coeffvalues (cf); 
-     confidence = confint(cf,0.95);
-     dpar =  0.5*(confidence(2,:)-confidence(1,:));  
+      try alpha	= options.Alpha;	catch alpha	= 1e-2;		end			% default alpha: 1e-2
+      try cycles= options.Cycles;	catch cycles	= 1;		end			% default cycles: 2
 
-     % output all coefficients using dynamic variable names
-     for k = 1 : length(coefficients) 
-      coout(k,l)	= par(k);
-      dcoout(k,l)	= dpar(k);
-     end
+      [ LP_Gamma LP_D LP_Dist ] = self.invert_laplace ( t, g, q, gamma1, gamma2, alpha, cycles );
+
+      % group the output coefficients
+      coeffnames		= {'LP_Gamma' 'LP_D' 'LP_Dist'};
+      fitoutput.LP_Gamma{l}	= LP_Gamma;
+      fitoutput.LP_D{l}		= LP_D;
+      fitoutput.LP_Dist{l}	= LP_Dist;
+      
+     otherwise											% if the method is not recognized...
+      error('Fit method not recognized!');							% ...print an error
+    end
 
    end
 
-   % TODO: control the behaviour of the correlations at 100 times higher than the
-   %        first decay time. If there is still something important, do not fit
-   %        the data and impose NaN for both Gamma and dGamma. One can not live with
-   %        scorpions is his bed!
-
-
-   obj.check_add_prop('Unit_Gamma',	[ obj.Unit_Tau,'^{-1}']);			% add Unit_Tau to the class
-   obj.check_add_prop('Unit_D',		'A^2/ns');					% add Unit_D to the class
-   for k = 1 : length(coefficients)							% add other coefficients
-    obj.check_add_prop(coefficients{k},coout(k,:));
-    obj.check_add_prop(['d',coefficients{k}],dcoout(k,:));
-
-    if regexp(coefficients{k},'Gamma')							% add diffusion constants...
-     obj.check_add_prop(['D',coefficients{k}(6),'_a'], ...
-					1e-6 .* coout(k,:) ./ obj.Data.Q.^2 );		% ...as Gamma/Q^2 and...
-     obj.check_add_prop(['dD',coefficients{k}(6),'_a'], ...
-					1e-6 .* dcoout(k,:) ./ obj.Data.Q.^2 );		% ...as dGamma/Q^2
+   % if the fields are cell arrays, add an abstract layer (STUPID MATLAB!)
+   for i = 1 : length(coeffnames)
+    if iscell(fitoutput.(coeffnames{i}))
+     fitoutput.(coeffnames{i}) = {fitoutput.(coeffnames{i})};
     end
    end
 
-   try	fitgammas = options.Fit_Gamma_Q2;   catch	fitgammas = 'no';   end		% default: do not perform the gamma fit
-   if strcmp(fitgammas,'yes');								% if requested, fit the gammas
-
-     % fit all gammas
-     for k = 1 : length(coefficients)
-      if regexp(coefficients{k},'Gamma')
-       obj.fit_gamma_q2(coefficients{k});
-      end
-     end
-
+   % add the coefficients as class properties
+   for i = 1 : length(coeffnames)
+    self.check_add_prop(	coeffnames{i},		fitoutput.(coeffnames{i})	);
+    try self.check_add_prop(	['d',coeffnames{i}],	dfitoutput.(coeffnames{i})	); end	% CONTIN does not give any errors!
    end
+
+   self.check_add_prop('Unit_Gamma',	[ self.Unit_Tau,'^{-1}']);	% add Unit_Gamma to the class
+   self.check_add_prop('Unit_D',	'A^2/ns');			% add Unit_D to the class
 
   end	% fit_correlations
 
-  %============================================================================
-  % FIND LIMITS FOR CORRELATION FIT
-  %============================================================================
-  function [ fit_function coefficients lowerbond upperbond startpoint ] = fit_parameters ( self, method, i )
-  % set the lower and upper limits for the correletion fit according to Q^2 and the class props
-  % the startpoint is taken as D0 for the faster D, and 0.1*D0 for the slower one
-
-   % set the fit parameters, according to the fit method chosen
-   % general parameters (background)
-   fit_common	= 'BKG';
-   coeff_common	= {'BKG'};
-   lower_common	= 0;
-   upper_common	= 1e-1;
-   start_common	= 1e-3;
-
-   switch method
- 
-    case 'Single'
-     fit_function	= [ fit_common,'+ Ae * exp( - 2 * Gammae * t )'			];
-     coefficients	= [ coeff_common	{'Ae'}	{'Gammae'}			];
-     lowerbond		= [ lower_common	0.8	1e6*self.Minimal_D1*self.Data.Q2(i)	];
-     upperbond		= [ upper_common	1.2	1e6*self.Maximal_D1*self.Data.Q2(i)	];
-     startpoint		= [ start_common	1.0	1e6*LIT.BSA.D0*self.Data.Q2(i)		];
-
-     case 'Streched'
-     fit_function	= [ fit_common,'+ As * exp( - 2 * (Gammas * t)^b )'	];
-     coefficients	= [ coeff_common	{'As'}	{'Gammas'}				{'b'}	];
-     lowerbond		= [ lower_common	0.8	1e6*self.Minimal_D1*self.Data.Q2(i)	0	];
-     upperbond		= [ upper_common	1.2	1e6*self.Maximal_D1*self.Data.Q2(i)	1	];
-     startpoint		= [ start_common	1.1	1e6*LIT.BSA.D0*self.Data.Q2(i)		0.8	];
- 
-    case 'Double'
-     fit_function	= [ fit_common,'+ ( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2'	];
-     coefficients	= [ coeff_common	{'A1'}	{'Gamma1'}				{'A2'}	{'Gamma2'}				];
-     lowerbond		= [ lower_common	0.5	1e6*self.Minimal_D1*self.Data.Q2(i)	0	1e6*self.Minimal_D2*self.Data.Q2(i)	];
-     upperbond		= [ upper_common	1	1e6*self.Maximal_D1*self.Data.Q2(i)	0.5	1e6*self.Maximal_D2*self.Data.Q2(i) 	];
-     startpoint		= [ start_common	0.9	1e6*LIT.BSA.D0*self.Data.Q2(i)		0.1	1e5*LIT.BSA.D0*self.Data.Q2(i)		];
- 
-    case 'Single+Streched'
-     fit_function	= [ fit_common,'+ ( Ae * exp( - Gammae * t ) + As * exp(-( Gammas *t).^b )) .^2'];
-     coefficients	= [ coeff_common	{'Ae'}	{'Gammae'}				{'As'}	{'Gammas'}				{'b'}	];
-     lowerbond		= [ lower_common	0.5	1e6*self.Minimal_D1*self.Data.Q2(i)	0	1e6*self.Minimal_D2*self.Data.Q2(i)	0	];
-     upperbond		= [ upper_common	1	1e6*self.Maximal_D1*self.Data.Q2(i)	0.5	1e6*self.Maximal_D2*self.Data.Q2(i)	1	];
-     startpoint		= [ start_common	0.9	1e6*LIT.BSA.D0*self.Data.Q2(i)		0.1	1e5*LIT.BSA.D0*self.Data.Q2(i)		0.8	];
-
-    otherwise
-     error('Method not recognized!');
-   end
-
-  end	% find_limits_for_fit
-  
   %============================================================================
   % FIT CUMULANT (DEAD)
   %============================================================================
@@ -612,12 +604,72 @@ classdef DLS < dynamicprops & Graphics & Utils
 
   end	% end of function
 
+  %==========================================================================
+  % PLOT (OVERLOADED METHOD)
+  %==========================================================================
+  function plot ( self, name, varargin )
+  % function for plotting every kind of property quickly
+  % first we look in the Data struct. Otherwise, the property is searched for directly
+  % Accepted optional arguments:
+  % - Independent:	name of the independent
+  % - Average:		averaging over some kind of parameter?
+  % - Parameter:	what is the parameter ( in case of parametric plots)
+  % - Color:		what color nuances to use
+  %
+  % N.B.: this function can be overloaded by subclass methods, and should be considered
+  % a fallback method
+
+   optargs	= varargin;								% get the optional arguments
+
+   switch name										% act differently according to the property
+
+    case 'G'										% use a specific plot function for correlogramms
+     self.plot_correlations ( optargs{:} );
+
+    case {'LD_D' 'LD_Gamma' 'Laplace'}							% use a specific plot function for laplace correlogramms
+     self.plot_correlations ( 'Type', 'Laplace', optargs{:} );
+
+    otherwise										% use fallback methods for other props
+     [ ax, x, y, color ] = self.prepare_plot ( name, optargs{:} );			% prepare the plot ( get_units is overloaded!)
+     self.make_plot ( ax, x, y, color );						% make the plot
+
+   end
+
+  end % plot
+
+  %==========================================================================
+  % GET AXES UNITS
+  %==========================================================================
+  function [ xunit yunit ] = get_units( self, independent, dependent )
+  % this function eats the axes names and outputs the units for labels
+  % NB: this method can be overloaded by subclasses
+
+   xunit	= self.(['Unit_',independent]);						% try to get the units of x axis...
+
+   try		yunit	= self.(['Unit_',name]);					% try to set the units for y axis...
+   catch
+    if ~isempty(regexp(name,'Gamma')) yunit = self.Unit_Gamma;				% ...otherwise, look whether it is a gamma...
+    elseif ~isempty(regexp(name,'D')) yunit = self.Unit_D; end				% ...or a diffusion constant
+   end
+
+  end	% get_units
+
  end	% end of public methods
  
  %============================================================================
- % PRIVATE METHODS
+ % STATIC METHODS
  %============================================================================
- methods ( Access=private )
+ methods ( Static )
 
- end	% end of private methods
+  %============================================================================
+  % FIT DISCRETE DECAYS
+  %============================================================================
+  [ coeffnames coeffval dcoeffval ] = fit_discrete ( t, g, dg, method, q, varargin)
+
+  %============================================================================
+  % INVERSE LAPLACE TRANSFORM (CONTIN)
+  %============================================================================
+  [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, gamma1, gamma2, alpha, cycles )
+
+ end	% end of static methods
 end	% end of class

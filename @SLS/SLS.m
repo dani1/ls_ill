@@ -305,6 +305,58 @@ classdef SLS < dynamicprops & Graphics & Utils
 
   end	% fit_compressibility
 
+  %==========================================================================
+  % ERRORBAR (OVERLOADED METHOD)
+  %==========================================================================
+  function errorbar ( self, name, varargin )
+  % function for plotting every kind of property quickly
+  % first we look in the Data struct. Otherwise, the property is searched for directly
+  % Accepted optional arguments:
+  % - Independent:	name of the independent
+  % - Average:		averaging over some kind of parameter?
+  % - Parameter:	what is the parameter ( in case of parametric plots)
+  % - Color:		what color nuances to use
+  %
+  % N.B.: this function can be overloaded by subclass methods, and should be considered
+  % a fallback method
+
+   optargs	= varargin;								% get the optional arguments
+
+   [ ax, x, y, color ] = self.prepare_plot ( name, 'Type', 'errorbar', optargs{:} );	% prepare the plot
+
+   if strcmp(name,'X_T')     set(ax,'XScale','log','YScale','log');		end	% set loglog for compressibility
+
+   self.make_errorbar ( ax, x, y, dy, color );						% make the plot
+
+  end % errorbar
+
+
+  %==========================================================================
+  % PLOT (OVERLOADED METHOD)
+  %==========================================================================
+  function plot ( self, name, varargin )
+  % function for plotting every kind of property quickly
+  % first we look in the Data struct. Otherwise, the property is searched for directly
+  % Accepted optional arguments:
+  % - Independent:	name of the independent
+  % - Average:		averaging over some kind of parameter?
+  % - Parameter:	what is the parameter ( in case of parametric plots)
+  % - Color:		what color nuances to use
+  %
+  % N.B.: this function can be overloaded by subclass methods, and should be considered
+  % a fallback method
+
+   optargs	= varargin;								% get the optional arguments
+
+   [ ax, x, y, color ] = self.prepare_plot ( name, optargs{:} );			% prepare the plot
+
+   if strcmp(name,'X_T')     set(ax,'XScale','log','YScale','log');		end	% set loglog for compressibility
+
+   self.make_plot ( ax, x, y, color );							% make the plot
+
+  end % plot
+
+
  end	% public methods
 
  %============================================================================

@@ -28,7 +28,7 @@ classdef Utils < handle
 
    % add listeners (use anonymous functions...!)
    for i = 1 : length(props)
-    try addlistener(self,props{i},'PostSet',@(src,evnt)prop_list(self,src,evnt) ); end	% monitor C
+    try addlistener(self,props{i},'PostSet',@(src,evnt)prop_list(self,src,evnt) ); end	% monitor
    end
 
   end	% monitorprop
@@ -76,7 +76,7 @@ classdef Utils < handle
    self.Data	= self.correct_Data_fields ( index );		% correct the fields in Data
    self.correct_Datalike_properties(index, len_before);		% correct Gammas, etc.
 
-   self.update_uniques('Q','Angles');				% update unique props
+   self.update_uniques('C','Q','Q2','Angles');			% update unique props
 
   end	% prop_list
 
