@@ -93,6 +93,30 @@ classdef Graphics < handle
 
   end	% get_color
 
+  %============================================================================
+  % SET XLABEL ACCORDING TO INDEPENDENT
+  %============================================================================
+  function xl = set_xlabel ( self, independent )
+
+   switch independent
+    case 'C'							% concentration
+     xl = ['Protein concentration [ ',self.Unit_C,' ]'];
+
+    case 'Phi'							% volume fraction
+     xl	= ['\Phi'];
+
+    case 'I'							% ionic strength
+     xl = ['ionic strength [ ',self.Unit_I,' ]'];
+
+    case 'Q2'							% Q squared
+     xl = ['Q^2 [ ',self.Unit_Q2,' ]'];
+
+    otherwise							% not recognized?!
+     error('Independent not recognized!');
+   end
+
+  end	% set_xlabel
+
   %==========================================================================
   % ERRORBAR (OVERLOADED METHOD)
   %==========================================================================
@@ -109,7 +133,7 @@ classdef Graphics < handle
   % a fallback method
 
    optargs	= varargin;								% get the optional arguments
-   [ ax, x, y, color ] = self.prepare_plot ( name, 'Type', 'errorbar', optargs{:} );	% prepare the plot
+   [ax, x, y, dy, color] = self.prepare_errorbar( name, optargs{:} );			% prepare the plot
    self.make_errorbar ( ax, x, y, dy, color );						% make the plot
 
   end % errorbar
@@ -130,7 +154,7 @@ classdef Graphics < handle
   % a fallback method
 
    optargs	= varargin;								% get the optional arguments
-   [ ax, x, y, color ] = self.prepare_plot ( name, optargs{:} );			% prepare the plot
+   [ ax, x, y, color ] = self.prepare_errorbar ( name, optargs{:} );			% prepare the plot
    self.make_plot ( ax, x, y, color );							% make the plot
 
   end % plot
@@ -150,14 +174,6 @@ classdef Graphics < handle
    catch	error(['Property ',name,' not found!']); end				% print an error if the prop is not found
    end
 
-   try assert( strcmp( options.Type, 'errorbar' ) );					% if it's preparing an errorbar plot...
-    try		dy	= self.Data.(['d',name]);					% ...try to get the errors!
-    catch try	dy	= self.(['d',name]);
-    catch	error(['Property d',name,' not found!']); end; end
-   end
-
-   options	= struct(varargin{:});							% get optional arguments
-
    try	color = options.Color;			catch color = 'Green';		end	% default color: Green
 
    try	independent = options.Independent;	catch independent = 'C';	end	% ...default independent: C
@@ -173,13 +189,36 @@ classdef Graphics < handle
 
     try [ xunit yunit ] = self.get_units( independent, name );			end	% get the units for the axes labels
 
-    try		xlabel( ax,	[independent,' [ ',xunit,' ]']);		end	% try to set an x label
-    try		ylabel( ax,	[name,' [ ', yunit,' ]']);			end	% try to set an y label
+    try											% try to set an x label
+     if isempty(xunit)	xlabel( ax,	independent);
+     else		xlabel( ax,	[independent,' [ ',xunit,' ]']);	end
+    end
+
+    try											% try to set an x label
+     if isempty(yunit)	ylabel( ax,	name);
+     else		ylabel( ax,	[name,' [ ',yunit,' ]']);		end
+    end
 
    end
 
   end	% prepare_plot
 
+
+  %==========================================================================
+  % PREPARE ERRORBAR
+  %==========================================================================
+  function [ ax, x, y, dy, color ] = prepare_errorbar ( self, name, varargin )
+
+   optargs	= varargin;
+
+   [ ax, x, y, color ] = self.prepare_plot( name, optargs{:} );
+
+   try		dy	= self.Data.(['d',name]);					% try looking in the Data struct
+   catch try	dy	= self.(['d',name]);						% otherwise, look directly
+   catch	error(['Property ',['d',name],' not found!']); end			% print an error if the prop is not found
+   end
+
+  end	% prepare_errorbar
 
   %==========================================================================
   % GET AXES UNITS
@@ -214,11 +253,7 @@ classdef Graphics < handle
 
      case 'yes'										% in this case, do only one plot
 
-      xm	= unique(x);								% get the x for the averaged plot
-      for i = 1 : length(xm)
-       index	= ( x == xm(i) );							% get the index...
-       ym(i)	= mean ( y(index) );							% ...calculate mean y...
-      end
+      [ xm ym ] = self.average( x, y );							% get the average values
 
       nuance	= self.get_color(color,1);						% get the nuance for the plot
       plot( ax, xm, ym, 'o-',			...
@@ -272,13 +307,7 @@ classdef Graphics < handle
 
      case 'yes'										% in this case, do only one plot
 
-      xm	= unique(x);								% get the x for the averaged plot
-      weights	= 1 ./ dy.^2;								% calculate weigths for the weighed sum
-      for i = 1 : length(xm)
-       index	= ( x == xm(i) );							% get the index...
-       ym(i)	= sum ( y(index) .* weights(index) )	/ sum ( weights(index) );	% ...calculate y averaged...
-       dym(i)	= sum ( dy(index) .* weights(index) )	/ sum ( weights(index) );	% ...calculate dy averaged
-      end
+      [ xm ym dym ] = self.average( x, y, dy );						% get the average values
 
       nuance	= self.get_color(color,1);						% get the nuance for the plot
       errorbar( ax, xm, ym, dym, 'o-',			...

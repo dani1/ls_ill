@@ -108,6 +108,7 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   % Ex: /home/.../BSA_200_15_sample
 
   % general
+  Sample	= 'BSA'		% default sample: Bovine Serum Albumin
   Instrument
   Lambda
   Unit_Lambda

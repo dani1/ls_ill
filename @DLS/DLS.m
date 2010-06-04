@@ -26,6 +26,7 @@ classdef DLS < dynamicprops & Graphics & Utils
  properties (Access=public)
  % N.B.: some dynamic properties could be called later on, like Gamma, D, etc.
 
+  Sample
   Unit_C
   Unit_Q
   Unit_Q2
@@ -44,6 +45,7 @@ classdef DLS < dynamicprops & Graphics & Utils
  % In this class, the Data struct is changed according to changes in Q and C
 
   C
+  Phi
   Angles
   Q
   Q2
@@ -54,7 +56,15 @@ classdef DLS < dynamicprops & Graphics & Utils
  % HIDDEN PUBLIC PROPERTIES
  %============================================================================
  properties ( Access = public, Hidden)
-  Data
+
+  Data			= struct(	'C',		[],	...
+					'Phi',		[],	...
+					'Angles',	[],	...
+					'Q',		[],	...
+					'Q2',		[],	...
+					'Tau',		[],	...
+					'G',		[],	...
+					'dG',		[]	);
   % Data is a struct with all the data stored as fields (vectors or cell arrays)
   % For instance, all correlations are stored in dls.Data.G
   % Therefore one is allowed to use such syntaxes like the following:
@@ -84,6 +94,7 @@ classdef DLS < dynamicprops & Graphics & Utils
   % this class takes an array of Data classes as input
 
    % eat the strings
+   dls.Sample	= dataclasses(1).Sample;
    dls.Unit_Q	= dataclasses(1).Unit_Q;
    dls.Unit_Q2	= regexprep(dls.Unit_Q,'\^\{*-1\}*','\^\{-2\}');
    dls.Unit_C	= dataclasses(1).Unit_C;
@@ -97,7 +108,6 @@ classdef DLS < dynamicprops & Graphics & Utils
      conc	= [ conc dataclasses(i).C ];
     end
    end
-   dls.Data		= struct('C',[],'Angles',[],'Q',[],'Tau',[],'G',[],'dG',[]);
    dls.Data.C		= conc;
    dls.Data.Angles	= horzcat(dataclasses.Angles_dyn);
    dls.Data.Q		= horzcat(dataclasses.Q_dyn);
@@ -106,11 +116,13 @@ classdef DLS < dynamicprops & Graphics & Utils
    dls.Data.G		= horzcat(dataclasses.G);
    dls.Data.dG		= horzcat(dataclasses.dG);
 
+   dls.Data.Phi		= dls.Data.C * LIT.(dls.Sample).v0;
+
    % create unique properties with the update_uniques function in the Utils class
-   dls.update_uniques('C','Q','Q2','Angles');
+   dls.update_uniques('C','Phi','Q','Q2','Angles');
 
    % monitor properties with listeners in the Utils class
-   dls.monitorprop('C','Q','Q2','Angles');
+   dls.monitorprop('C','Phi','Q','Q2','Angles');
 
   end % constructor
 
@@ -292,17 +304,10 @@ classdef DLS < dynamicprops & Graphics & Utils
       end
 
      case 'Laplace'
-      [ coeffnames coeffval dcoeffval ] = self.fit_discrete (t, g, dg, 'Double', q, system);	% discrete fit to get the guess distribution...
-      index1	= strcmp(coeffnames,'Gamma1');
-      index2	= strcmp(coeffnames,'Gamma2');
-
-      gamma1	= coeffval(index1);
-      gamma2	= coeffval(index2);
-
       try alpha	= options.Alpha;	catch alpha	= 1e-2;		end			% default alpha: 1e-2
       try cycles= options.Cycles;	catch cycles	= 1;		end			% default cycles: 2
 
-      [ LP_Gamma LP_D LP_Dist ] = self.invert_laplace ( t, g, q, gamma1, gamma2, alpha, cycles );
+      [ LP_Gamma LP_D LP_Dist ] = self.invert_laplace ( t, g, q, alpha, cycles );		% invert Laplace!
 
       % group the output coefficients
       coeffnames		= {'LP_Gamma' 'LP_D' 'LP_Dist'};
@@ -581,25 +586,25 @@ classdef DLS < dynamicprops & Graphics & Utils
   %============================================================================
   % LOG LIN TOGGLE
   %============================================================================
-  function loglin_toggle ( obj, angle, axes)
+  function loglin_toggle ( obj, axes)
   % convert a lin_log plot into a log_lin plot, with reasonable limits for axes
 
-   if nargin == 1
-    axes = gca;
-    angle = obj.Angles(1);
-   elseif nargin == 2
-    axes = gca;
-   end
+   try ax	= axes;		catch ax = gca;		end		% try to select the axes
+
+   old_scale	= [ get(ax,'yscale') get(ax,'xscale') ];		% the old scale of both axes
 
    % behaviour depends on the actual situation
-   if strncmp(get(axes,'xscale'),'log',3)
-    set(axes,'yscale','log','xscale','lin');
-    % xmax depends strongly on the angle
-    xmax	= 0.11 + 0.6 * ( obj.Angles(length(obj.Angles)) - angle ) .^2 / ( obj.Angles(length(obj.Angles)) - obj.Angles(1) ) .^2;
-    axis(axes, [ 0 xmax 1e-3 1 ] );
-   else
-    set(axes,'yscale','lin','xscale','log');
-    axis(axes,'auto' );
+   switch old_scale
+    case 'linearlog'
+     set(ax,'yscale','log','xscale','lin');				
+     axis(ax,[ 0 1 1e-2 1 ]);						% the zoom goes up to 1 ms
+     
+    case 'loglinear'
+     set(ax,'yscale','lin','xscale','log');
+     axis(ax,'auto' );							% here the autozoom works
+
+    otherwise
+     error('This function only converts loglin into linlog and vice versa!');
    end
 
   end	% end of function
@@ -644,12 +649,18 @@ classdef DLS < dynamicprops & Graphics & Utils
   % this function eats the axes names and outputs the units for labels
   % NB: this method can be overloaded by subclasses
 
-   xunit	= self.(['Unit_',independent]);						% try to get the units of x axis...
+   switch independent
+    case 'Phi'
+     xunit	= '';									% volume fraction has no units
+    otherwise
+     xunit	= self.(['Unit_',independent]);						% try to get the units of x axis...
+   end
 
-   try		yunit	= self.(['Unit_',name]);					% try to set the units for y axis...
+   try		yunit	= self.(['Unit_',dependent]);					% try to set the units for y axis...
    catch
-    if ~isempty(regexp(name,'Gamma')) yunit = self.Unit_Gamma;				% ...otherwise, look whether it is a gamma...
-    elseif ~isempty(regexp(name,'D')) yunit = self.Unit_D; end				% ...or a diffusion constant
+    if strncmpi(dependent,'Gamma',5)	yunit = self.Unit_Gamma;			% ...otherwise, look whether it is a gamma...
+    elseif strncmpi(dependent,'D',1)	yunit = self.Unit_D;				% ...or a diffusion constant
+    end
    end
 
   end	% get_units
@@ -669,7 +680,7 @@ classdef DLS < dynamicprops & Graphics & Utils
   %============================================================================
   % INVERSE LAPLACE TRANSFORM (CONTIN)
   %============================================================================
-  [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, gamma1, gamma2, alpha, cycles )
+  [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, alpha, cycles )
 
  end	% end of static methods
 end	% end of class

@@ -1,29 +1,19 @@
 %============================================================================
 % FIT CORRELOGRAMMS USING INVERSE LAPLACE TRANSFORM (CONTIN)
 %============================================================================
-function [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, gamma1, gamma2, alpha, cycles )
+function [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, alpha, cycles )
 % The core function is rilt.m by another author. In this function, the data is prepared
 % before and after the CONTIN algorithm. Also, CONTIN is performed many times up to a certain
 % precision, using low-resolution fits as input for better ones.
 %
 % NB: the Laplace transform is performed not in terms of decay rates, but of decay times.
  
- if all(g>0) 	i_max	= length(g);			% if g is already > 0...!
- else  		i_max	= min( find(g<=0) ) -1;	end	% max index such that g > 0
+ [t g]	= filter_correlogramms(t,g);			% eliminate negative correlations
 
- t	= t(1:i_max);					% shorten t
- g	= g(1:i_max);					% shorten g
  y	= sqrt(g);					% field correlation function
 
  smin	= min(t);					% lower limit for the s space...
  smax	= max(t);					% ...and upper limit
-
- tau1	= 1/gamma1;
- tau2	= 1/gamma2;
- sigma1	= 1e0;
- sigma2	= 1e0;
- A1	= 0.5;
- A2	= 0.5;
 
  for i = 1 : cycles 					% repeat CONTIN many times with increasing precision
  
@@ -31,8 +21,7 @@ function [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, gamma1, gamma2, a
   s0	= logspace(log10(smin),log10(smax),sn);		% generate initial s space
 
   if i == 1						% initial guess distribution
-     g0 = ones(length(s0),1);				% uniform distribution...
-     g0	= g0 / sum(g0);					% ...and normalize it
+     g0 = initial_distr(s0,q);
   else
    g0	= interp1(s1,g,s0,'linear');			% interpolate fitted g to the new space
   end
@@ -42,13 +31,52 @@ function [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, gamma1, gamma2, a
 
  end
 
- close;							% close figure
+% close;							% close figure
 
  [ LP_Gamma ind ]	= sort(1./s0);			% transform decay times into decay rates...
  LP_D			= 1e-6.*LP_Gamma./q.^2;		% transform decay times into decay rates...
  LP_Dist		= g(ind)';			% ...and reorder the distribution vector
 
 end	% invert_laplace
+
+%============================================================================
+% FILTER CORRELOGRAMMS
+%============================================================================
+function [ t g ] = filter_correlogramms( t, g )
+
+ index1	= g>0;						% retain only positiv gs
+ index2	= t< 10;					% maximum time [ms]	
+
+ index	= index1 & index2;				% combine the criteria
+
+ t	= t(index);
+ g	= g(index);
+
+end
+
+%============================================================================
+% GUESS INITIAL DISTRIBUTION
+%============================================================================
+function g0 = initial_distr ( s0, q );
+
+     g0 = zeros(length(s0),1);
+
+     D0	= 10;						% A^2/ns
+
+     gamma	= D0 * q^2;				% guessed gamma
+     tau	= 1 / gamma;				% guessed tau
+
+     [tmp ind]	= min(s0 - tau);			% find the nearest element of s0 to tau
+
+     varn	= floor(0.1*length(s0));
+
+     for i = 1 : varn
+      g0(ind-floor(0.5*varn)+i)	= 1;
+     end
+
+     g0	= g0 / sum(g0);					% ...and normalize it
+
+end
 
 %============================================================================
 % RILT CONTIN-LIKE ALGORITHM (modified by Fabio Zanini)
@@ -282,7 +310,7 @@ for k = 1:maxsearch,
 
     % Condition for the stabilization (end of cycles):
     % difference between "old ssd" and "current ssd" == 0
-    if deltassd == 0, % < eps,
+    if deltassd  < 1e-10,
         %disp(['Stabilization reached at step: ' int2str(k) '/' int2str(maxsearch)])
         break;
     end

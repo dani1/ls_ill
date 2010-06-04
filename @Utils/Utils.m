@@ -76,7 +76,7 @@ classdef Utils < handle
    self.Data	= self.correct_Data_fields ( index );		% correct the fields in Data
    self.correct_Datalike_properties(index, len_before);		% correct Gammas, etc.
 
-   self.update_uniques('C','Q','Q2','Angles');			% update unique props
+   self.update_uniques('C','Phi','Q','Q2','Angles');		% update unique props
 
   end	% prop_list
 
@@ -90,7 +90,7 @@ classdef Utils < handle
    Data		= self.Data;					% copy the vector (for clarity)
 
    for i = 1 : length(fnames)					% for every field in Data...	
-    Data.(fnames{i}) = self.Data.(fnames{i}) ( index );	% ...keep only the good data
+    Data.(fnames{i}) = self.Data.(fnames{i}) ( index );		% ...keep only the good data
    end
 
   end	% correct_data_fields
@@ -161,12 +161,13 @@ classdef Utils < handle
 
    args		= struct(varargin{:});				% get the variables
    M		= [];						% initialize the matrix
-   argnames	= fieldnames(args);						% initialize the name array
-   filepath	= ['~/Desktop/',filename];			% default folder: Desktop
-   headerline = '#';
+   argnames	= fieldnames(args);				% initialize the name array
+   filepath	= ['~/tm/LS/results/',filename];		% default folder TODO: choose a sensible one!
+   headerline	= '#';
 
 
    for i = 1 : length(argnames)
+    args.(argnames{i}) = args.(argnames{i})(:);			% they must be columns
     M		= [ M		args.(argnames{i})	];	% fill the matrix
     headerline	= [ headerline	'\t' argnames{i} 	];	% fill the header line
    end
@@ -182,33 +183,15 @@ classdef Utils < handle
   end	% save ascii
 
   %============================================================================
-  % SET XLABEL ACCORDING TO INDEPENDENT
-  %============================================================================
-  function xl = set_xlabel ( self, independent )
-
-   switch independent
-    case 'C'							% concentration
-     xl = ['Protein concentration [ ',self.Unit_C,' ]'];
-
-    case 'I'							% ionic strength
-     xl = ['ionic strength [ ',self.Unit_I,' ]'];
-
-    case 'Q2'							% Q squared
-     xl = ['Q^2 [ ',self.Unit_Q2,' ]'];
-
-    otherwise							% not recognized?!
-     error('Independent not recognized!');
-   end
-
-  end	% set_xlabel
-
-  %============================================================================
   % SET PARAMETER FROM INDEPENDENT
   %============================================================================
   function parameter = set_parameter ( self, independent )
 
    switch independent
     case 'C'							% concentration
+     parameter = 'Q2';
+
+    case 'Phi'							% concentration
      parameter = 'Q2';
 
     case 'I'							% ionic strength
@@ -224,5 +207,31 @@ classdef Utils < handle
   end	% set_parameter
 
  end	% methods
+
+ %===========================================================================
+ % STATIC METHODS
+ %===========================================================================
+ methods (Static)
+
+  %============================================================================
+  % AVERAGE
+  %============================================================================
+  function [ xm ym dym ] = average ( x, y, dy )
+  % this function calculates the weighed average of a vector y using a
+  % projection onto unique(x)
+
+   if nargin == 2	dy = ones(1,length(y));		end				% non-weighed mean
+
+   xm	= unique(x);									% decide the projection
+   weights	= 1 ./ dy.^2;								% calculate weigths for the weighed sum
+   for i = 1 : length(xm)
+    index	= ( x == xm(i) );							% get the index...
+    ym(i)	= sum ( y(index) .* weights(index) )	/ sum ( weights(index) );	% ...calculate y averaged...
+    dym(i)	= sum ( dy(index) .* weights(index) )	/ sum ( weights(index) );	% ...calculate dy averaged
+   end
+
+  end	% average
+  
+ end	% static methods
 
 end	% Utils class
