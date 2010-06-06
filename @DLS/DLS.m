@@ -153,28 +153,25 @@ classdef DLS < dynamicprops & Graphics & Utils
 
    try	type = options.Type;		catch	type	= 'real';	end	% type ('real' or 'laplace' )
    
+   [ c_long angles_long x y ] = self.prepare_data_correlations ( type );	% prepare data
+
    % create the figures and plot the data
    for j = 1 : length(angles)							% for every angle...
 
-    [ ax(j), indep, dep ] = self.prepare_plot_correlations ( angles(j), type );	% prepare plots
+    ax(j)		= self.prepare_plot_correlations ( angles(j), type );	% ...prepare plots...
+    legend_names{j}	= {};	legend_group{j}	= [];				% ...prepare legends...
 
-    legend_names{j}	= {};	legend_group{j}	= [];				% ...and prepare legends
+    for l = 1 : length(c_long)						% look for data to be plotted...
 
-    for l = 1 : length(self.Data.C)						% look for data to be plotted...
-
-     if ( self.Data.Angles(l) == angles(j) && ismember(self.Data.C(l),C) )	% ...look the right indices
+     if ( angles_long(l) == angles(j) && ismember(c_long(l),C) )	% ...look the right indices
  
-      try x = self.Data.(indep){l};	catch x = self.(indep){l};	end	% ...rename the data
-      try y = self.Data.(dep){l};	catch y = self.(dep){l};	end	% ...rename the data
-
-      nuance	= nuances( self.Data.C(l) == C, :);				% select the nuance for the plot
-
-      plo	= plot(ax(j), x, y, 	'-o',				...
+      nuance	= nuances( c_long(l) == C, :);				% select the nuance for the plot
+      plo	= plot(ax(j), x{l}, y{l},'-o',				...
 					'Color',	nuance,		...
 					'LineWidth', 0.1*self.LineWidth,...
 					'MarkerSize',0.3*self.MarkerSize );	% plot
 
-      legen	=['Protein conc = ',num2str(self.Data.C(l),1),' ',self.Unit_C];	% legend
+      legen	=['Protein conc = ',num2str(c_long(l),1),' ',self.Unit_C];	% legend
 
       % create legend arrays
       if ~ismember({legen},legend_names{j})
@@ -191,11 +188,10 @@ classdef DLS < dynamicprops & Graphics & Utils
 
   end	% end of plot function
 
-
   %============================================================================
   % PREPARE PLOT FOR CORRELOGRAMMS (IN REAL OR LAPLACE SPACE)
   %============================================================================
-  function [ ax indep dep ] = prepare_plot_correlations ( self, angle, type )
+  function ax = prepare_plot_correlations ( self, angle, type )
 
    % create the figure
    fig		= self.create_figure;						% ...create the figure...
@@ -205,9 +201,6 @@ classdef DLS < dynamicprops & Graphics & Utils
 
    switch type
     case 'real'
-     indep	= 'Tau';								% independent name
-     dep	= 'G';								% dependent name
-
      axis([ 	self.MinimalLagtime	self.MaximalLagtime	...
 		self.MinimalG		self.MaximalG 		]);		% ...set the limits for the plot...
 
@@ -216,9 +209,6 @@ classdef DLS < dynamicprops & Graphics & Utils
      title(['Correlogramms at ',num2str(angle),'°']);				% ...set a title
 
     case 'Laplace'
-     indep	= 'LP_D';								% independent name
-     dep	= 'LP_Dist';							% dependent name
-
      xlabel(['D [ ',self.Unit_D,' ]']);						% ...set the x label...
      ylabel('distr [ normalised ]');						% ...set the y label...
      title(['Laplace Inverted correlogramms at ',num2str(angle),'°']);		% ...set a title
@@ -227,38 +217,103 @@ classdef DLS < dynamicprops & Graphics & Utils
   end	% prepare_plot_correlations
 
   %============================================================================
+  % PREPARE DATA FOR CORRELOGRAMMS (IN REAL OR LAPLACE SPACE)
+  %============================================================================
+  function [ c_long angles_long x y ] = prepare_data_correlations ( self, type )
+  % this function prepares the data for the plots
+
+   switch type
+    case 'real'
+     c_long		= self.Data.C;
+     angles_long	= self.Data.Angles;
+
+     for l = 1 : length(c_long)
+      x{l} = self.Data.Tau{l};
+      y{l} = self.Data.G{l};
+     end
+
+    case 'Laplace'
+     c_long		= self.LP_C;
+     angles_long	= self.LP_Angles;
+
+     for l = 1 : length(c_long)
+      x{l} = self.LP_D{l};
+      y{l} = self.LP_G{l};
+     end
+   end
+  end	% prepare_data_correlations
+
+  %============================================================================
   % PLOT CORRELOGRAMMS IN 3D
   %============================================================================
-  function plot3D ( self );
-  % TODO: complete function
+  function plot3D ( self, type, plottype );
+  % TODO: you cannot average over for the real correlations!
 
-   xname	= 'C';
-   yname	= 'LP_D';
-   zname	= 'LP_Dist';
+   if nargin == 1	type		= 'Laplace';	end			% default: plot real correlogramms
+   if nargin < 3	plottype	= 'contour';	end			% default: plot real correlogramms
 
-   x		= self.(xname);
-   y		= unique(horzcat(self.(yname){:}));
+   switch type
 
-   for i = 1 : length(self.(yname))
+    case 'real'								% if the correlogramms are real
 
-    zz{i}	= interp1( self.(yname){i}, self.(zname){i}, y );
+     t	= self.Data.Tau;
+     g	= self.Data.G;
+     c	= self.Data.C;
+     q	= self.Data.Q;
+     angles	= self.Data.Angles;
+     
+     [ t g c q angles ] = self.filter_repetitions ( t, g, c, q,angles);	% filter out repetitions
+
+     % transpose the cell contents... !
+     for i = 1 : length(t)
+      tt{i}	= t{i}' * ( q(i)^2 );
+      gt{i}	= g{i}';
+     end
+     t		= tt;
+     g		= gt;
+
+     yname	= 'Tau';
+
+    case 'Laplace'
+
+     t	= self.LP_D;
+     g	= self.LP_G;
+     c	= self.LP_C;
+
+     yname	= 'D';
+
+   end
+
+   assignin('base','t',t)
+
+   x		= unique(c);
+   y		= unique(horzcat(t{:}));
+
+   for i = 1 : length(t)
+
+    zz{i}	= interp1( t{i}, g{i}, y );
 
    end
 
    zzM	= cell2mat(zz');
 
    for i = 1 : length(x)
-
-    index	= ( self.Data.(xname) == self.(xname)(i) );
+    index	= ( c == x(i) );
     z(:,i)	= mean(zzM(index,:))';
-
    end
 
-   surf(x,y,z);
+   switch plottype
+    case 'contour'
+     contour(x,y,z,30);
+    case 'mesh'
+     mesh(x,y,z);
+    case 'surf'
+     surf(x,y,z);
+   end
 
    set(gca,'Yscale','log');
-   xlabel(['C [ ',self.(['Unit_',xname]), ' ]']);
-   ylabel(['D [ ', self.Unit_D, ' ]']);
+   xlabel(['C [ ',self.Unit_C, ' ]']);
+   ylabel([yname ' [ ', self.(['Unit_' yname]), ' ]']);
    zlabel('Dist [a.u.]');
    rotate3d;
 
@@ -282,43 +337,61 @@ classdef DLS < dynamicprops & Graphics & Utils
 
    try system = options.system;	catch try system = self.system; catch system = 'BSA'; end; end;		% try to read the system from opt args
 
-   for l = 1 : length(self.Data.Tau)				% fit for all data
- 
-    % select which range of data to use for the fit. The problem is mainly
-    % that for long lag times I'm fitting background, whereas for very short
-    % lag times it is afterpulse noise of the APDs
+   % select which range of data to use for the fit. The problem is mainly
+   % that for long lag times I'm fitting background, whereas for very short
+   % lag times it is afterpulse noise of the APDs
+   for l = 1 : length(self.Data.Tau)
     inde	= self.Data.Tau{l} > 1e-6 & self.Data.Tau{l} < 1e2;
-    t		= self.Data.Tau{l}(inde);
-    g		= self.Data.G{l}(inde);
-    dg		= self.Data.dG{l}(inde);
-    q		= self.Data.Q(l);
+    t{l}	= self.Data.Tau{l}(inde);
+    g{l}	= self.Data.G{l}(inde);
+    dg{l}	= self.Data.dG{l}(inde);
+    c(l)	= self.Data.C(l);
+    q(l)	= self.Data.Q(l);
+    angles(l)	= self.Data.Angles(l);
+   end
 
-    switch method
-     case {'Single', 'Streched', 'Double', 'Single+Streched'}					% in case we fit discrete decays...
-      [ coeffnames coeffval dcoeffval ] = self.fit_discrete (t, g, dg, method, q, system);	% ...perform the fit
+   % act differently depending on method chosen
+   switch method
+
+    case {'Single', 'Streched', 'Double', 'Single+Streched'}					% DISCRETE DECAYS
+
+     for l = 1 : length(t)
+      [ coeffnames coeffval dcoeffval ] = self.fit_discrete (	t{l}, g{l}, dg{l},	...
+								method, q(l), system	);	% perform the fit
 
       % group the output coefficients from every correlogramm
       for i = 1 : length(coeffnames)
        fitoutput.(coeffnames{i})(l)	= coeffval(i);
        dfitoutput.(coeffnames{i})(l)	= dcoeffval(i);
       end
+     end
 
-     case 'Laplace'
-      try alpha	= options.Alpha;	catch alpha	= 1e-2;		end			% default alpha: 1e-2
-      try cycles= options.Cycles;	catch cycles	= 1;		end			% default cycles: 2
+    case 'Laplace'										% LAPLACE INVERSION
 
-      [ LP_Gamma LP_D LP_Dist ] = self.invert_laplace ( t, g, q, alpha, cycles );		% invert Laplace!
+     try alpha	= options.Alpha;	catch alpha	= 1e-3;		end			% default alpha: 1e-3
+     try cycles= options.Cycles;	catch cycles	= 1;		end			% default cycles: 1
 
-      % group the output coefficients
-      coeffnames		= {'LP_Gamma' 'LP_D' 'LP_Dist'};
+     [ tf gf cf qf anglesf ] = self.filter_repetitions ( t, g, c, q, angles );			% filter out repetitions (the fit is faster)
+
+     for l = 1 : length(tf)
+      disp(['Fit n. ' num2str(l) ]);								% Show the fit number
+      [ LP_Gamma LP_D LP_G ] = self.invert_laplace ( tf{l}, gf{l}, qf(l), alpha, cycles );	% invert Laplace!
+
+     % group the output coefficients
       fitoutput.LP_Gamma{l}	= LP_Gamma;
       fitoutput.LP_D{l}		= LP_D;
-      fitoutput.LP_Dist{l}	= LP_Dist;
-      
-     otherwise											% if the method is not recognized...
-      error('Fit method not recognized!');							% ...print an error
-    end
+      fitoutput.LP_G{l}	= LP_G;
+     end
 
+     close;											% close fit figure
+
+     coeffnames		= {'LP_Gamma' 'LP_D' 'LP_G' 'LP_C' 'LP_Q' 'LP_Angles'};
+     fitoutput.LP_C		= cf;
+     fitoutput.LP_Q		= qf;
+     fitoutput.LP_Angles	= anglesf;
+     
+    otherwise											% if the method is not recognized...
+     error('Fit method not recognized!');							% ...print an error
    end
 
    % if the fields are cell arrays, add an abstract layer (STUPID MATLAB!)
@@ -467,6 +540,44 @@ classdef DLS < dynamicprops & Graphics & Utils
   end	% fit_gamma_q2
 
   %============================================================================
+  % GENERALIZED STOKES-EINSTEIN
+  %============================================================================
+  function genSE ( self, sls )
+  % This function checks the consistency of the generalized Stokes-Einstein:
+  %
+  %	D ( Phi )	= D0 * K(Phi) * [ 4/3*Pi R^3 / kT ] / [ Phi * X_T ]
+  %
+  % where K(Phi) is the sedimentation coefficient, R is the radius of the particle,
+  % and X_T is the isothermal osmotic compressibility.
+
+   % check that both the diffusion constant exists and sls is a valid SLS class
+   try assert( strcmp(class(sls),'SLS') );
+   catch error('Your SLS class is not valid.');
+   end
+
+   D0	= LIT.(self.Sample).D0;
+   R	= 1e-8 * LIT.(self.Sample).R;						% protein radius [ dm ]
+   kb	= LIT.Constants.kb;
+   T	= self.T;
+
+   for i =1 : length(self.C)
+    index_sls	= ( sls.Data.C == self.C(i) );					% calculate the sls index
+    X_T(i)	= mean( sls.X_T		(index_sls) );				% calculate KcR TODO: INCORRECT!
+    dX_T(i)	= mean( sls.dX_T	(index_sls) );				% calculate dKCR TODO: INCORRECT!
+   end
+
+   Kexp	= '( 1 - Phi ).^6.55';
+   Kfun	= inline(Kexp,'Phi');
+   K	= Kfun(self.Phi);
+
+   D_GE	= D0 .* K .* 4./3 .* pi .* R.^3 ./ ( kb .* T ) ./ ( self.Phi .* X_T );	% calculate the diff const TODO: sedimentation!
+   dD_GE = dX_T ./ X_T .* D_GE;							% propagate errors
+
+   self.check_add_prop('D_GE',D_GE,'dD_GE',dD_GE);				% add to the class
+
+  end	% genSe
+
+  %============================================================================
   % CALCULATE HYDRODYNAMIC RATIO
   %============================================================================
   function calculate_H ( self, Dname, sls )
@@ -483,7 +594,7 @@ classdef DLS < dynamicprops & Graphics & Utils
    catch error('Your diffusion constant does not exist, or your SLS class is not valid.');
    end
  
-   % calculate H ( long vector )
+   % calculate H ( short vector )
    for i = 1 : length(self.C)
     index_dls	= ( self.Data.C == self.C(i) );				% calculate the dls index
     index_sls	= ( sls.Data.C == self.C(i) );				% calculate the sls index
@@ -493,7 +604,7 @@ classdef DLS < dynamicprops & Graphics & Utils
     KcR		= mean( sls.Data.KcR		(index_sls) );		% calculate KcR TODO: INCORRECT!
     dKcR	= mean( sls.Data.dKcR		(index_sls) );		% calculate dKCR TODO: INCORRECT!
 
-    H(i)	= D / ( KcR * LIT.BSA.M * LIT.BSA.D0 );			% calculate H
+    H(i)	= D / (KcR*LIT.(self.Sample).M * LIT.(self.Sample).D0);	% calculate H
     dH(i)	= H(i) * sqrt( ( dD / D )^2 + ( dKcR / KcR )^2 );	% Gaussian error propagation
    end
 
@@ -681,6 +792,32 @@ classdef DLS < dynamicprops & Graphics & Utils
   % INVERSE LAPLACE TRANSFORM (CONTIN)
   %============================================================================
   [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, alpha, cycles )
+
+  %============================================================================
+  % FILTER REPETITIONS
+  %============================================================================
+  function [ tf gf cf qf anglesf ] = filter_repetitions ( t, g, c, q, angles )
+
+   % filter the data to avoid fitting repetitions (too long)
+   tf		= {};
+   gf		= {};
+   cf		= [];
+   qf		= [];
+   anglesf	= [];
+
+   for l = 1 : length(t)
+    isc	= ismember(cf,c(l));								% elements with the same C
+    isq	= ismember(qf,q(l));								% elements with the same Q
+    if isempty(cf) | ~( sum(isc & isq) )						% if no sample with the same C and Q exists...
+     tf	= { tf{:}	t{l}	};							% ... add props to the filtered data
+     gf	= { gf{:}	g{l}	};
+     cf	= [ cf		c(l)	];
+     qf	= [ qf		q(l)	];
+     anglesf	= [ anglesf	angles(l)	];
+    end
+   end
+
+  end	% filter_repetitions
 
  end	% end of static methods
 end	% end of class

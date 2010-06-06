@@ -12,26 +12,26 @@ function [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, alpha, cycles )
 
  y	= sqrt(g);					% field correlation function
 
- smin	= min(t);					% lower limit for the s space...
- smax	= max(t);					% ...and upper limit
+ smin	= 1/ (1e6 * 100 * q^2);				% lower limit for the s space...
+ smax	= 1/ (1e6 * 0.1 * q^2);				% ...and upper limit
 
  for i = 1 : cycles 					% repeat CONTIN many times with increasing precision
  
-  sn	= 10*i;						% precision for the s space
+  sn	= 10 + 20*(i-1);				% precision for the s space
   s0	= logspace(log10(smin),log10(smax),sn);		% generate initial s space
 
   if i == 1						% initial guess distribution
-     g0 = initial_distr(s0,q);
+   g0 = initial_distr(s0,q);
   else
    g0	= interp1(s1,g,s0,'linear');			% interpolate fitted g to the new space
   end
 
-  [g,yfit,cfg]	= rilt( t, y, s0, g0, alpha );		% perform the fit
+  ssdthreshold	= max( 1e-8, 1e-5 / 10^i );		% threshold for the fit
+
+  [g,yfit,cfg]	= rilt( t, y, s0, g0, alpha, ssdthreshold );		% perform the fit
   s1	= s0;						% s1 is the old s
 
  end
-
-% close;							% close figure
 
  [ LP_Gamma ind ]	= sort(1./s0);			% transform decay times into decay rates...
  LP_D			= 1e-6.*LP_Gamma./q.^2;		% transform decay times into decay rates...
@@ -81,7 +81,7 @@ end
 %============================================================================
 % RILT CONTIN-LIKE ALGORITHM (modified by Fabio Zanini)
 %============================================================================
-function [g,yfit,cfg] = rilt(t,y,s,g0,alpha,varargin)
+function [g,yfit,cfg] = rilt(t,y,s,g0,alpha,ssdthreshold)
 %     rilt   Regularized Inverse Laplace Transform
 % 
 % [g,yfit,cfg] = rilt(t,y,s,g0,alpha)
@@ -202,72 +202,24 @@ function [g,yfit,cfg] = rilt(t,y,s,g0,alpha,varargin)
 
 %###########################################################
 
-g0 = g0(:); % must be column
-s = s(:); % must be column
-y = y(:); % must be column
-t = t(:); % must be column
+g0 = g0(:);							% must be column
+s = s(:);							% must be column
+y = y(:);							% must be column
+t = t(:);							% must be column
 
-if nargin == 5
-    plot_type = @semilogx;
-    maxsearch = 1000;
-    options = optimset('MaxFunEvals',1e8,'MaxIter',1e8);
-    shape = 'decay';
-    constraints = {'g>0','zero_at_the_extremes'};
-    R = zeros(length(g0)-2,length(g0));
-    w = ones(size(y(:)));
-elseif nargin == 12
-    if isempty(varargin{1})
-        plot_type = @semilogx;
-    else
-        if strcmp(varargin{1},'logarithmic')
-            plot_type = @semilogx;
-        elseif strcmp(varargin{1},'linear')
-            plot_type = @plot;
-        end
-    end
-    if isempty(varargin{2})
-        maxsearch = 1000;
-    else
-        maxsearch = varargin{2};
-    end
-    if isempty(varargin{3})
-        options = optimset('MaxFunEvals',1e8,'MaxIter',1e8);
-    else
-        options = varargin{3};
-    end
-    if isempty(varargin{4})
-        shape = 'decay';
-    else
-        shape = varargin{4};
-    end
-    if isempty(varargin{5})
-        constraints = {'g>0';'zero_at_the_extremes'};
-    else
-        constraints = varargin{5};
-    end
-    if isempty(varargin{6})
-        R = zeros(length(g0)-2,length(g0));
-    else
-        R = varargin{6};
-    end
-    if isempty(varargin{7})
-        w = ones(size(y(:)));
-    else
-        w = varargin{7};
-    end
-end
+plot_type = @semilogx;						% decide plot type
+maxsearch = 100;						% max number of steps
+options = optimset('MaxFunEvals',1e8,'MaxIter',1e8);
+%constraints = {'g>0','zero_at_the_extremes'};			% constraints	TODO: choose better ones!
+constraints = {'g>0'};			% constraints	TODO: choose better ones!
+R = zeros(length(g0)-2,length(g0));
+w = ones(size(y(:)));
+ly = length(y);
+oldssd = Inf;
 
+% Prepare the data
 [sM,tM] = meshgrid(s,t);
-
-% Also raising kinetics can be inverted
-if strcmp(shape,'raise')
-    A = 1 - exp(-tM./sM);
-elseif strcmp(shape,'decay')
-    A = exp(-tM./sM);
-else
-    error(['Unknown shape: ' shape]);
-    return;
-end
+A = exp(-tM./sM);
 
 % Rough normalization of g0, to start with a good guess
 g0 = g0*sum(y)/sum(A*g0);
@@ -283,39 +235,34 @@ msd2plot = 0;
 drawnow;
 
 % Main cycle
-ly = length(y);
-oldssd = Inf;
-tic
-for k = 1:maxsearch,
-    % msd: The mean square deviation; this is the function
-    % that has to be minimized by fminsearch
-    [g,msdfit] = fminsearch(@msd,g0,options,y,A,alpha,R,w,constraints);
-    %--- Re-apply constraints ----
-    if ismember('zero_at_the_extremes',constraints)
-        g(1) = 0;
-        g(end) = 0;
-    end
-    if ismember('g>0',constraints)
-        g = abs(g);
-    end
-    %--------------------
-    g0 = g; % for the next step
-    ssd = sqrt(msdfit/ly); % Sample Standard Deviation
-    ssdStr = num2str(ssd);
-    deltassd = oldssd-ssd; % Difference between "old ssd" and "current ssd"
-    %disp([int2str(k) ': ' ssdStr])
-    oldssd = ssd;
-    msd2plot(k) = msdfit/ly;
-    plotdata(s1h,s2h,s3h,s4h,t,y,A,g,k,maxsearch,plot_type,s,msd2plot,msdh,ssdStr,deltassd);
+for k = 1 : maxsearch								% perform the fit at every step, till convergence or limit
 
-    % Condition for the stabilization (end of cycles):
-    % difference between "old ssd" and "current ssd" == 0
-    if deltassd  < 1e-10,
-        %disp(['Stabilization reached at step: ' int2str(k) '/' int2str(maxsearch)])
-        break;
-    end
+ [g,msdfit] = fminsearch(@msd,g0,options,y,A,alpha,R,w,constraints);		% This is the long step: minimize MSD!
+
+ % Re-apply constraints
+ if ismember('zero_at_the_extremes',constraints)
+     g(1) = 0;
+     g(end) = 0;
+ end
+ if ismember('g>0',constraints)
+     g = abs(g);
+ end
+
+ g0 = g;									% for the next step
+ ssd = sqrt(msdfit/ly);								% Sample Standard Deviation
+ ssdStr = num2str(ssd);
+ deltassd = oldssd-ssd;								% Difference between "old ssd" and "current ssd"
+ oldssd = ssd;
+
+ msd2plot(k) = msdfit/ly;
+ plotdata(	s1h,s2h,s3h,s4h,		...
+		t,y,A,g,k,			...
+		maxsearch,plot_type,s,		...
+		msd2plot,msdh,ssdStr,deltassd	);
+
+ if deltassd  < ssdthreshold		break;		end				% Convergence: difference between "old ssd" and "current ssd" < threshold
+
 end
-%disp(['Elapsed time: ' num2str(toc/60) ' min.'])
 
 % Saving parameters and results
 yfit = A*g; % fitting curve
@@ -330,12 +277,6 @@ cfg.w = w;
 cfg.maxsearch = maxsearch;
 cfg.constraints = constraints;
 cfg.date = datestr(now,30);
-
-% Store g and s in a temporary file
-% that can be loaded as a starting configuration
-%save rilt_temp g s cfg
-% disp('Temp output saved.')
-%set(gcf,'name','Fitting done')
 
 end	% rilt
 

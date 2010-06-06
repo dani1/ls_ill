@@ -154,7 +154,7 @@ classdef Graphics < handle
   % a fallback method
 
    optargs	= varargin;								% get the optional arguments
-   [ ax, x, y, color ] = self.prepare_errorbar ( name, optargs{:} );			% prepare the plot
+   [ ax, x, y, color ] = self.prepare_plot ( name, optargs{:} );			% prepare the plot
    self.make_plot ( ax, x, y, color );							% make the plot
 
   end % plot
@@ -194,7 +194,7 @@ classdef Graphics < handle
      else		xlabel( ax,	[independent,' [ ',xunit,' ]']);	end
     end
 
-    try											% try to set an x label
+    try											% try to set an y label
      if isempty(yunit)	ylabel( ax,	name);
      else		ylabel( ax,	[name,' [ ',yunit,' ]']);		end
     end
@@ -227,8 +227,11 @@ classdef Graphics < handle
   % this function eats the axes names and outputs the units for labels
   % NB: this method can be overloaded by subclasses
 
-   xunit	= self.(['Unit_',independent]);					% try to get the units of x axis...
-   yunit	= self.(['Unit_',dependent]);					% try to set the units for y axis...
+   xunit	= '';
+   yunit	= '';
+
+   try   xunit	= self.(['Unit_',independent]);	end				% try to get the units of x axis...
+   try	 yunit	= self.(['Unit_',dependent]);	end				% try to set the units for y axis...
 
   end	% get_units
 

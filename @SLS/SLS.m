@@ -147,8 +147,15 @@ classdef SLS < dynamicprops & Graphics & Utils
   %
   % Please note that X(c) is independent on Q and on M.
 
-   X	= 1 ./ ( LIT.Na .* LIT.kb .* self.T .* self.Data.C .* self.Data.KcR );	% calculate X_T
-   dX	= X .* self.Data.dKcR ./ self.Data.KcR;					% propagate errors
+   Na	= LIT.Constants.Na;
+   kb	= LIT.Constants.kb;
+   T	= self.T;
+   C	= self.Data.C;
+   KcR	= self.Data.KcR;
+   dKcR	= self.Data.dKcR;
+
+   X	= 1 ./ ( Na .* kb .* T .* C .* KcR );			% calculate X_T
+   dX	= X .* dKcR ./ KcR;					% propagate errors
    Unit_X = 'l * J^{-1}';
 
   end	% calculate_compressibility

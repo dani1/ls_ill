@@ -121,7 +121,7 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   dndc		= 0.1850;	% usual value in Tuebingen
   dndc_set	= 0.1820;	% usual value at ILL
   Unit_dndc	= 'ml/g'
-  T		= 22-LIT.T0;	% temperature (default: 22°C)
+  T		= 22-LIT.Constants.T0;	% temperature (default: 22°C)
 
   % SLS
   Angles_static
@@ -169,10 +169,10 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
 
     try
      lsd.T	= options.T;							% temperature
-     if lsd.T < 150	lsd.T = lsd.T-LIT.T0;	end				% check for °C input temperatures
+     if lsd.T < 150	lsd.T = lsd.T-LIT.Constants.T0;	end				% check for °C input temperatures
     catch									% fall back to 22°C
      fprintf(['Temperature not set. Falling back to ',...
-					num2str(lsd.T+LIT.T0),'°C.\n']);
+					num2str(lsd.T+LIT.Constants.T0),'°C.\n']);
     end
 
    catch
