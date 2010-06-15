@@ -3,6 +3,12 @@
 % the first file is opened and info about instrument and lambda are retrieved
 %=========================================================================================
 function [ lambda unit_lambda n_set ] = read_general_file_ALV ( genpath, runstart )
+
+ if nargin == 1
+  runstart	= 0;
+ end
+
+ genpath	= [ genpath num2str(runstart,'%4.4d') '.ASC' ];
  
  fid = fopen( genpath );								% open the file
  

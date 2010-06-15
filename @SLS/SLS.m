@@ -48,6 +48,7 @@ classdef SLS < dynamicprops & Graphics & Utils
  properties ( Access = public )
 
   % general parameters
+  Sample
   Unit_C									% units
   Unit_Q									% units (A^{-1})
   Unit_Q2									% units (A^{-2})
@@ -56,6 +57,8 @@ classdef SLS < dynamicprops & Graphics & Utils
   X_T										% osmotic compressibility
   dX_T										% error on X_T
   Unit_X_T									% units for compressibility
+  Data										% data stored as fields (vectors or cell arrays)
+
 
   % N.B.: some dynamic properties could be called later on
 
@@ -69,21 +72,12 @@ classdef SLS < dynamicprops & Graphics & Utils
  % In this class, the Data struct is changed according to changes in Q and C
 
   C
+  Phi
   Angles
   Q
   Q2
 
  end	% observed public properties
-
-
- %============================================================================
- % HIDDEN PUBLIC PROPERTIES
- %============================================================================
- properties ( Access = public, Hidden)
-  Data
-  % Data is a struct with all the data stored as fields (vectors or cell arrays)
-
- end	% hidden public properties
 
  %============================================================================
  % PUBLIC METHODS
@@ -96,6 +90,7 @@ classdef SLS < dynamicprops & Graphics & Utils
   function sls = SLS ( dataclasses )
 
    % eat the common strings from the first Data class
+   sls.Sample		= dataclasses(1).Sample;
    sls.Unit_KcR		= dataclasses(1).Unit_KcR;
    sls.Unit_C		= dataclasses(1).Unit_C;
    sls.Unit_Q		= dataclasses(1).Unit_Q;
@@ -114,6 +109,7 @@ classdef SLS < dynamicprops & Graphics & Utils
    end
    sls.Data		= struct('C',[],'Angles',[],'Q',[],'Q2',[],'KcR',[],'dKcR',[]);
    sls.Data.C		= conc;
+   sls.Data.Phi		= sls.Data.C * LIT.(sls.Sample).v0;
    sls.Data.Angles	= horzcat(dataclasses.Angles_static);
    sls.Data.Q		= horzcat(dataclasses.Q_static);
    sls.Data.Q2		= horzcat(dataclasses.Q_static) .^2;
@@ -125,10 +121,10 @@ classdef SLS < dynamicprops & Graphics & Utils
    [ sls.X_T sls.dX_T sls.Unit_X_T ] = sls.calculate_compressibility;		% calculate the compressibility
 
    % create unique properties with the update_uniques function in the Utils class
-   sls.update_uniques('C','Q','Q2','Angles');
+   sls.update_uniques('C','Phi','Q','Q2','Angles');
 
    % monitor properties with listeners in the Utils class
-   sls.monitorprop('C','Q','Q2','Angles');
+   sls.monitorprop('C','Phi','Q','Q2','Angles');
 
   end	% constructor
 
@@ -203,7 +199,7 @@ classdef SLS < dynamicprops & Graphics & Utils
 
    fit_function	= 'Minv + 2 * B2 * C';						% fit function
    coefficients	= {'Minv'	'B2'};						% coefficients
-   coeff_units	= {'Da^{-1}'	'mol*ml/g^2'};
+   coeff_units	= {'Da^{-1}'	'mol*l/g^2'};
    fit_expr	= {'1'		'2*C'};						% one MUST use this syntax with linear models
 
    weights	= 1 ./ ( datady ) .^2;
@@ -329,11 +325,11 @@ classdef SLS < dynamicprops & Graphics & Utils
 
    optargs	= varargin;								% get the optional arguments
 
-   [ ax, x, y, color ] = self.prepare_plot ( name, 'Type', 'errorbar', optargs{:} );	% prepare the plot
+   [ ax, x, y, dy, color ] = self.prepare_errorbar ( name, 'Type', 'errorbar', optargs{:} );	% prepare the plot
 
    if strcmp(name,'X_T')     set(ax,'XScale','log','YScale','log');		end	% set loglog for compressibility
 
-   self.make_errorbar ( ax, x, y, dy, color );						% make the plot
+   self.make_errorbar ( ax, x, y, dy, color, optargs{:} );					% make the plot
 
   end % errorbar
 
@@ -355,11 +351,33 @@ classdef SLS < dynamicprops & Graphics & Utils
 
    optargs	= varargin;								% get the optional arguments
 
-   [ ax, x, y, color ] = self.prepare_plot ( name, optargs{:} );			% prepare the plot
+   switch name
 
-   if strcmp(name,'X_T')     set(ax,'XScale','log','YScale','log');		end	% set loglog for compressibility
+    case 'X_T'
+     [ ax, x, y, color ] = self.prepare_plot ( name, optargs{:} );			% prepare the plot
+     set(ax,'XScale','log','YScale','log');						% set loglog for compressibility
+     self.make_plot ( ax, x, y, color, optargs{:} );						% make the plot
 
-   self.make_plot ( ax, x, y, color );							% make the plot
+    case 'Fit_KcR'
+     [ ax, x, y, color ] = self.prepare_plot ( 'KcR', optargs{:} );			% prepare the plot
+     self.make_plot ( ax, x, y, color, optargs{:} );						% make the plot
+
+     options	= struct(optargs{:});
+     try independent = options.Independent;	catch independent = 'C'; end
+     q	= 1 / self.M;									% select the right intercept
+     m	= 2 * self.B2;									% select the right slope
+
+     if strcmp(independent,'Phi') m = m/LIT.(Sample).v0;	end			% change the slope if necessary
+
+     self.plot_affine_fit ( x, q, m );							% plot the fit
+
+    
+
+    otherwise
+     [ ax, x, y, color ] = self.prepare_plot ( name, optargs{:} );			% prepare the plot
+     self.make_plot ( ax, x, y, color, optargs{:} );					% make the plot
+
+   end
 
   end % plot
 

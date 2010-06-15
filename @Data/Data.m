@@ -103,8 +103,14 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
  % PUBLIC PROPERTIES
  %============================================================================
  properties ( Access = public )
-  Path
-  % path is the path of the correlation files, w/o 0XXX and w/ extension
+  GENPath
+  % GENPath is the path where the general properties are stored
+
+  SLSPath
+  % SLSpath is the path of the table, inclusive the extension
+
+  DLSPath
+  % DLSpath is the path of the correlation files, w/o 0XXX and w/ extension
   % Ex: /home/.../BSA_200_15_sample
 
   % general
@@ -159,13 +165,18 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   %============================================================================
   % CONSTRUCTOR
   %============================================================================
-  function lsd = Data ( path, varargin )
+  function lsd = Data ( varargin )
 
    % get the optional arguments
    try
     options	= struct(varargin{:});
     try		lsd.Repetitions	= options.Repetitions;	end			% Repetitions
     try		lsd.Runstart	= options.Runstart;	end			% Runstart
+    try		lsd.Sample	= options.Sample;	end			% Sample
+    try		lsd.SLSPath	= options.SLSPath;	end			% SLSPath
+    try		lsd.DLSPath	= options.DLSPath;	end			% DLSPath
+    try		lsd.GENPath	= options.GENPath;
+    catch	lsd.GENPath 	= lsd.DLSPath ;		end			% GENPath
 
     try
      lsd.T	= options.T;							% temperature
@@ -179,19 +190,19 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
     error('Something is wrong in your optional arguments. Please check.');
    end
 
-   [ lsd.Instrument lsd.Path f ] = lsd.find_instrument( path, lsd.Runstart );	% get the instrument and the appropriate paths and functions
+   [ lsd.Instrument f ] = lsd.find_instrument( varargin{:} );			% get the instrument and the appropriate paths and functions
 
-   [lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.(f.gen)( lsd.Path.GEN, lsd.Runstart	);	% general options
-   [ lsd.Angles_static lsd.KcR lsd.dKcR ] = lsd.(f.sta)	( lsd.Path.SLS, options 	);	% load SLS data
+   [lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.(f.gen)( lsd.GENPath, lsd.Runstart );	% general options
+   [ lsd.Angles_static lsd.KcR lsd.dKcR ] = lsd.(f.sta)	( lsd.SLSPath, options 	);	% load SLS data
 
    % look for the numbers of Runs
    try
     lsd.Runs = options.Runs;
    catch
-    lsd.Runs = lsd.(f.fin) ( lsd.Path.DLS, lsd.Runstart );
+    lsd.Runs = lsd.(f.fin) ( lsd.DLSPath, lsd.Runstart );
    end
 
-   [ Ang_a Tau_a G_a dG_a ] = lsd.(f.dyn) ( lsd.Path.DLS, lsd.Runstart, lsd.Runs 	);	% load DLS data
+   [ Ang_a Tau_a G_a dG_a ] = lsd.(f.dyn) ( lsd.DLSPath, lsd.Runstart, lsd.Runs 	);	% load DLS data
    [ lsd.Angles_dyn lsd.Tau lsd.G lsd.dG ] = lsd.filter_dyn_data(Ang_a,Tau_a,G_a,dG_a	);	% filter DLS data
 
    lsd.Q_static = lsd.compute_Q_from_angles ( lsd.Angles_static );		% calculate Q
@@ -335,47 +346,24 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   %=========================================================================================
   % find instrument
   %=========================================================================================
-  function [ instrument newpath f ] = find_instrument( path, runstart );
+  function [ instrument f ] = find_instrument( varargin );
   % This function tries to understand what kind of instrument you have used according
   % to some properties of your path
   
    % possible instruments
    instrument1	= 'Malvern Zetasizer Nano';
    instrument2	= 'ALV CGS3 and 7004/FAST';
-  
-   % PATHS: these can be updated with new versions of the program
-   SLS_PATH_MALVERN	= [ path, '_SLS.txt' ];
-   DLS_PATH_MALVERN	= [ path, '_DLS.txt' ];
-   SLS_PATH_ALV		= [ path, '_bak.txt' ];
-   for i = 1 : 100
-    DLS_PATH_ALV{i}	= [ path, num2str(i-1,'%4.4u'), '.ASC'];
+
+   options	= struct(varargin{:});
+
+   try
+     assert(~isempty(regexp(options.Instrument,'Malvern')));
+     instrument	= instrument1;
+   catch
+     instrument	= instrument2;
    end
   
-   % check for the existence of the right files
-   if exist(SLS_PATH_MALVERN) == 2 || exist(DLS_PATH_MALVERN) == 2
-    instrument	= instrument1;
-  
-   elseif exist(SLS_PATH_ALV) == 2	|| sum(cellfun(@exist,DLS_PATH_ALV)) > 0
-    instrument	= instrument2;
-  
-   else
-    error('Instrument not found!');
-   end
-
-   % standard PATHS dependent on the instrument
-   PATH.GEN_Malvern	= '';
-   PATH.SLS_Malvern	= [ path, '_SLS.txt' ];
-   PATH.DLS_Malvern	= [ path, '_DLS.txt' ];
-   PATH.GEN_ALV		= [ path, num2str(runstart,'%4.4u'), '.ASC'];
-   PATH.SLS_ALV		= [ path, '_bak.txt' ];
-   PATH.DLS_ALV		= path;
-
    instr		= strtok(instrument);				% short version of the instrument
-
-   % set the paths according to the instrument
-   newpath.GEN		= PATH.(['GEN_',instr]);
-   newpath.SLS		= PATH.(['SLS_',instr]);
-   newpath.DLS		= PATH.(['DLS_',instr]);
 
    % choose the methods according to the instrument
    f.gen	= ['read_general_file_',instr];

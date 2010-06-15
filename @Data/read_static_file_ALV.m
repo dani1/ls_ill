@@ -18,7 +18,7 @@ function [ ang kcr dkcr ] = read_static_file_ALV ( slspath )
  
   while ~feof(fid)
    str = fgetl(fid);
-   if str(1) ~= 'A'					% check whether this is a header or a useful line
+   if length(str) == 0 | str(1) ~= 'A'					% check whether this is a header or a useful line
 
     % get the data about angles, kcr and dkcr
     [ ang_t tmp tmp tmp tmp tmp tmp tmp kcr_t dkcr_t tmp tmp ] = strread(str, '%f %f %f %f %f %f %f %f %f %f %s %s');

@@ -49,14 +49,6 @@ classdef DLS < dynamicprops & Graphics & Utils
   Angles
   Q
   Q2
-
- end	% observed public properties
-
- %============================================================================
- % HIDDEN PUBLIC PROPERTIES
- %============================================================================
- properties ( Access = public, Hidden)
-
   Data			= struct(	'C',		[],	...
 					'Phi',		[],	...
 					'Angles',	[],	...
@@ -75,6 +67,13 @@ classdef DLS < dynamicprops & Graphics & Utils
   % flexible and the best way to store things (remember dynamic field get-set
   % methods, etc.)
   %
+ end	% observed public properties
+
+ %============================================================================
+ % HIDDEN PUBLIC PROPERTIES
+ %============================================================================
+ properties ( Access = public, Hidden)
+
   MinimalLagtime	= 1e-6		% ms
   MaximalLagtime	= 1e4		% ms
   MinimalG		= -0.05
@@ -540,80 +539,6 @@ classdef DLS < dynamicprops & Graphics & Utils
   end	% fit_gamma_q2
 
   %============================================================================
-  % GENERALIZED STOKES-EINSTEIN
-  %============================================================================
-  function genSE ( self, sls )
-  % This function checks the consistency of the generalized Stokes-Einstein:
-  %
-  %	D ( Phi )	= D0 * K(Phi) * [ 4/3*Pi R^3 / kT ] / [ Phi * X_T ]
-  %
-  % where K(Phi) is the sedimentation coefficient, R is the radius of the particle,
-  % and X_T is the isothermal osmotic compressibility.
-
-   % check that both the diffusion constant exists and sls is a valid SLS class
-   try assert( strcmp(class(sls),'SLS') );
-   catch error('Your SLS class is not valid.');
-   end
-
-   D0	= LIT.(self.Sample).D0;
-   R	= 1e-8 * LIT.(self.Sample).R;						% protein radius [ dm ]
-   kb	= LIT.Constants.kb;
-   T	= self.T;
-
-   for i =1 : length(self.C)
-    index_sls	= ( sls.Data.C == self.C(i) );					% calculate the sls index
-    X_T(i)	= mean( sls.X_T		(index_sls) );				% calculate KcR TODO: INCORRECT!
-    dX_T(i)	= mean( sls.dX_T	(index_sls) );				% calculate dKCR TODO: INCORRECT!
-   end
-
-   Kexp	= '( 1 - Phi ).^6.55';
-   Kfun	= inline(Kexp,'Phi');
-   K	= Kfun(self.Phi);
-
-   D_GE	= D0 .* K .* 4./3 .* pi .* R.^3 ./ ( kb .* T ) ./ ( self.Phi .* X_T );	% calculate the diff const TODO: sedimentation!
-   dD_GE = dX_T ./ X_T .* D_GE;							% propagate errors
-
-   self.check_add_prop('D_GE',D_GE,'dD_GE',dD_GE);				% add to the class
-
-  end	% genSe
-
-  %============================================================================
-  % CALCULATE HYDRODYNAMIC RATIO
-  %============================================================================
-  function calculate_H ( self, Dname, sls )
-  % this function calculates the H function from SLS and DLS results, using the following formula:
-  %
-  %	H := D1 * S(q) / D0,	in this version, H:= D1 / ( Kc/R * LIT.M * LIT.D0 )
-  %
-  % Input parameters:
-  % - Dname:	the name of the diffusion constant you want to plot
-  % - sls:	this is the SLS class from which one takes the Kc/R values.
-
-   % check that both the diffusion constant exists and sls is a valid SLS class
-   try assert( strcmp(class(sls),'SLS') && ismember(Dname,properties(self)) )
-   catch error('Your diffusion constant does not exist, or your SLS class is not valid.');
-   end
- 
-   % calculate H ( short vector )
-   for i = 1 : length(self.C)
-    index_dls	= ( self.Data.C == self.C(i) );				% calculate the dls index
-    index_sls	= ( sls.Data.C == self.C(i) );				% calculate the sls index
-
-    D		= mean( self.(Dname)		(index_dls) );		% calculate D TODO: INCORRECT!
-    dD		= mean( self.(['d',Dname])	(index_dls) );		% calculate dD TODO: INCORRECT!
-    KcR		= mean( sls.Data.KcR		(index_sls) );		% calculate KcR TODO: INCORRECT!
-    dKcR	= mean( sls.Data.dKcR		(index_sls) );		% calculate dKCR TODO: INCORRECT!
-
-    H(i)	= D / (KcR*LIT.(self.Sample).M * LIT.(self.Sample).D0);	% calculate H
-    dH(i)	= H(i) * sqrt( ( dD / D )^2 + ( dKcR / KcR )^2 );	% Gaussian error propagation
-   end
-
-   self.check_add_prop(	'H',	H,	...
-			'dH',	dH,	...
-			'Unit_H','no units');				% add H to the class
-   end	% plot_H
-
-  %============================================================================
   % CORRELATE GAMMA
   %============================================================================
   function correlate_gamma ( self, gamma1, gamma2, varargin )
@@ -739,15 +664,28 @@ classdef DLS < dynamicprops & Graphics & Utils
 
    switch name										% act differently according to the property
 
-    case 'G'										% use a specific plot function for correlogramms
+    case 'G'										% correlogramms
      self.plot_correlations ( optargs{:} );
 
-    case {'LD_D' 'LD_Gamma' 'Laplace'}							% use a specific plot function for laplace correlogramms
+    case {'LD_D' 'LD_Gamma' 'Laplace'}							% laplace correlogramms
      self.plot_correlations ( 'Type', 'Laplace', optargs{:} );
+
+    case {'Fit_D1' 'Fit_De' 'Fit_Ds'}
+
+     name	= regexprep(name,'Fit_','');						% cut the part 'Fit_' from the name
+     [ ax, x, y, color ] = self.prepare_plot( name, optargs{:} );			% prepare the plot TODO: allow x-axis choice
+     self.make_plot ( ax, x, y, color, optargs{:} );					% plot the data
+
+     options	= struct(optargs{:});
+     try independent = options.Independent;	catch independent = 'C'; end
+     q	= self.D0;									% select the right intercept
+     m	= q * self.(['k' independent]);							% select the right slope
+
+     self.plot_affine_fit ( x, q, m );							% plot the fit
 
     otherwise										% use fallback methods for other props
      [ ax, x, y, color ] = self.prepare_plot ( name, optargs{:} );			% prepare the plot ( get_units is overloaded!)
-     self.make_plot ( ax, x, y, color );						% make the plot
+     self.make_plot ( ax, x, y, color, optargs{:} );					% make the plot
 
    end
 
@@ -775,6 +713,68 @@ classdef DLS < dynamicprops & Graphics & Utils
    end
 
   end	% get_units
+
+  %==========================================================================
+  % FIT DIFFUSION LINEARLY
+  %==========================================================================
+  function fit_D_linear( self, Dname, varargin )
+  % this function takes a diffusion constant and fits it linearly as a function
+  % of concentration or volume fraction
+
+   options	= struct(varargin{:});							% get optional arguments
+
+   independent	= 'C';									% C is the indepenent: Phi values are calculated later
+
+   try n = options.N;	catch n = min(4,length(self.(independent))); 		end	% default number of points: 4 OR total number of points
+
+   x		= self.Data.(independent)';						% x values
+   y		= self.(Dname)';							% y values
+   dy		= self.(['d' Dname])';							% y errors
+
+   % filter the data to include only the low-C datapoints
+   index	= ( x <= self.(independent)(n) );
+   x		= x(index);
+   y		= y(index);
+   dy		= dy(index);
+
+   weights	= 1 ./ ( dy .^2 );							% weights for the fit
+
+%   fit_function	= 'D0 + D0k * x';								% fit function
+   coefficients	= {'D0'	'D0k'		};						% coefficients
+   fit_expr	= {'1'	independent	};						% one MUST use this syntax with linear models
+
+   fit_options	= fitoptions(	'Method',	'LinearLeastSquares',	...
+				'Weights',	weights			);		% fit options
+
+   fit_type	= fittype(fit_expr,	'independent',	independent,	...
+ 				      	'coefficients',	coefficients,	...
+					'options',	fit_options	);		% fit type
+ 
+   [ cf gof ] = fit( x, y, fit_type );							% perform numerical fit
+   confidence = confint(cf,0.95);
+ 
+   % get fit result
+   cout		= coeffvalues (cf); 
+   dcout	=  0.5*(confidence(2,:)-confidence(1,:));
+
+   D0	= cout(1);
+   dD0	= dcout(1);
+   D0k	= cout(2);
+   dD0k	= dcout(2);
+   kC	= D0k / D0;
+   dkC	= kC * sqrt( ( dD0/D0 ) ^2 + ( dD0k /D0k ) ^2 );
+   kPhi	= kC / LIT.(self.Sample).v0;
+   dkPhi= dkC / LIT.(self.Sample).v0;
+
+   self.check_add_prop(	'D0',			D0,	...
+			'dD0',			dD0,	...
+			'kC',			kC,	...
+			'dkC',			dkC,	...
+			'kPhi',			kPhi,	...
+			'dkPhi',		dkPhi,	...
+			'Unit_kC',		'l/g'	);	% add props to the class
+
+  end	% fit_D_linear
 
  end	% end of public methods
  

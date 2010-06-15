@@ -133,8 +133,8 @@ classdef Graphics < handle
   % a fallback method
 
    optargs	= varargin;								% get the optional arguments
-   [ax, x, y, dy, color] = self.prepare_errorbar( name, optargs{:} );			% prepare the plot
-   self.make_errorbar ( ax, x, y, dy, color );						% make the plot
+   [ax, x, y, dy, color ] = self.prepare_errorbar( name, optargs{:} );			% prepare the plot
+   self.make_errorbar ( ax, x, y, dy, color, optargs{:} );				% make the plot
 
   end % errorbar
 
@@ -155,9 +155,19 @@ classdef Graphics < handle
 
    optargs	= varargin;								% get the optional arguments
    [ ax, x, y, color ] = self.prepare_plot ( name, optargs{:} );			% prepare the plot
-   self.make_plot ( ax, x, y, color );							% make the plot
+   self.make_plot ( ax, x, y, color, optargs{:} );					% make the plot
 
   end % plot
+
+  %==========================================================================
+  % SET INDEPENDENT
+  %==========================================================================
+  function independent	= set_independent( self, varargin )
+
+   options	= struct(varargin{:});
+   try	independent = options.Independent;	catch independent = 'C';	end	% ...default independent: C
+
+  end	% set_independent
 
   %==========================================================================
   % PREPARE PLOT
@@ -176,10 +186,13 @@ classdef Graphics < handle
 
    try	color = options.Color;			catch color = 'Green';		end	% default color: Green
 
-   try	independent = options.Independent;	catch independent = 'C';	end	% ...default independent: C
+   independent = self.set_independent(varargin{:});					% ...default independent: C
 
-   if length(y) == length(self.Data.C)	x	= self.Data.(independent);		% if the property is long, use the Data independent...
-   else					x	= self.(independent);		end	% ...else, use the unique independent
+   if ismember('Data',properties(self)) & length(y) == length(self.Data.C)
+    x	= self.Data.(independent);							% if the property is long, use the Data independent...
+   else
+    x	= self.(independent);
+   end											% ...else, use the unique independent
 
    try											% try using an existing figure...
     fig		= options.Figure;
@@ -238,10 +251,10 @@ classdef Graphics < handle
   %==========================================================================
   % MAKE PLOT
   %==========================================================================
-  function make_plot ( self, ax, x, y, color )
+  function make_plot ( self, ax, x, y, color, varargin )
   % this function makes the plot after that it has been prepared
 
-   if length(y) < length(self.Data.C)							% if the property is short...
+   if ~ismember('Data',properties(self)) | length(y) < length(self.Data.C)		% if the property is short...
 
     nuance	= self.get_color(color,1);						% ...get the nuance for the plot...
     plot( ax, x, y, 'o-',			...
@@ -251,7 +264,9 @@ classdef Graphics < handle
 
    else											% ...otherwise, use the unique independent
 
-    try	average = options.Average; 		catch average = 'yes'; end		% default: average
+     options	= struct(varargin{:});							% get the optional args
+     try	average = options.Average; 	catch average = 'yes';	end		% default: average
+
     switch	average									% act differently if one averages or not
 
      case 'yes'										% in this case, do only one plot
@@ -266,14 +281,18 @@ classdef Graphics < handle
 
      case 'no'										% in this case, color the lines differently parametrically
 
-      try parameter = options.Parameter;						% try to get the parameter...
-      catch parameter = self.set_parameter(independent);				% ...or fall back to default
+      try										% try to read the parameter...
+       parameter	= options.Parameter;
+      catch										% or set the standard one
+       independent	= self.set_independent(varargin{:});
+       parameter	= self.set_parameter(independent);
       end
 
       p	= self.(parameter);								% get the parametric vector
 
       nuances	= self.get_color(color,length(p));					% get the nuance for the plot
       for i = 1 : length(p)
+
        index	= ( self.Data.(parameter) == p(i) );					% get the index for this plot
        xp	= x(index);
        yp	= y(index);
@@ -292,7 +311,7 @@ classdef Graphics < handle
   %==========================================================================
   % MAKE ERRORBAR
   %==========================================================================
-  function make_errorbar ( self, ax, x, y, dy, color )
+  function make_errorbar ( self, ax, x, y, dy, color, varargin )
   % this function makes the errorbar plot after that it has been prepared
 
    if length(y) < length(self.Data.C)							% if the property is short...
@@ -305,6 +324,7 @@ classdef Graphics < handle
 
    else											% ...else, use the unique independent
 
+    options	= struct(varargin{:});							% get the optional args
     try	average = options.Average; 		catch average = 'yes'; end		% default: average
     switch	average									% act differently if one averages or not
 
@@ -320,8 +340,11 @@ classdef Graphics < handle
 
      case 'no'										% in this case, color the lines differently parametrically
 
-      try parameter = options.Parameter;						% try to get the parameter...
-      catch parameter = self.set_parameter(independent);				% ...or fall back to default
+      try										% try to read the parameter...
+       parameter	= options.Parameter;
+      catch										% or set the standard one
+       independent	= self.set_independent(varargin{:});
+       parameter	= self.set_parameter(independent);
       end
 
       p	= self.(parameter);								% get the parametric vector
@@ -343,6 +366,20 @@ classdef Graphics < handle
    end
 
   end	% make_errorbar
+
+  %==========================================================================
+  % PLOT AFFINE FIT
+  %==========================================================================
+  function plot_affine_fit( self, x, q, m )
+
+   yf	= inline('q + m * x','q','m','x');
+   y	= yf(q,m,x);
+
+   plot(gca, x, y, '-',	'LineWidth',	self.LineWidth,	...
+				'Color',	'Red' 		);			% plot
+
+
+  end	% plot_affine_fit
 
  end	% methods
 

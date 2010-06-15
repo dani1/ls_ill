@@ -20,11 +20,9 @@ function instrument = find_instrument( path );
  if exist(SLS_PATH_MALVERN) == 2 || exist(DLS_PATH_MALVERN) == 2
   instrument	= instrument1;
 
- elseif exist(SLS_PATH_ALV) == 2	|| sum(cellfun(@exist,DLS_PATH_ALV)) > 0
+ else
   instrument	= instrument2;
 
- else
-  error('Instrument not found!');
  end
 
 end	% find_instrument
