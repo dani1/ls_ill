@@ -167,46 +167,62 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   %============================================================================
   function lsd = Data ( varargin )
 
-   % get the optional arguments
-   try
-    options	= struct(varargin{:});
-    try		lsd.Repetitions	= options.Repetitions;	end			% Repetitions
-    try		lsd.Runstart	= options.Runstart;	end			% Runstart
-    try		lsd.Sample	= options.Sample;	end			% Sample
-    try		lsd.SLSPath	= options.SLSPath;	end			% SLSPath
-    try		lsd.DLSPath	= options.DLSPath;	end			% DLSPath
-    try		lsd.GENPath	= options.GENPath;
-    catch	lsd.GENPath 	= lsd.DLSPath ;		end			% GENPath
+   try		args	= struct(varargin{:});
+   catch	error('Please check your syntax.');	end			% try to read the arguments
 
-    try
-     lsd.T	= options.T;							% temperature
-     if lsd.T < 150	lsd.T = lsd.T-LIT.Constants.T0;	end				% check for °C input temperatures
-    catch									% fall back to 22°C
-     fprintf(['Temperature not set. Falling back to ',...
-					num2str(lsd.T+LIT.Constants.T0),'°C.\n']);
+   try		lsd.Sample	= args.Sample;
+   catch	disp('Default sample: BSA.');		end			% Sample
+
+   try		lsd.Repetitions	= args.Repetitions;	end			% Repetitions
+   try		lsd.Runstart	= args.Runstart;	end			% Runstart
+
+   try		lsd.T	= args.T;						% Temperature
+    		if	lsd.T < 150	lsd.T = lsd.T-LIT.Constants.T0;	end	% check for °C input temperatures
+   catch	disp(	['T =' num2str(lsd.T+LIT.Constants.T0),'°C.']	);	% fall back to 22°C
+   end
+
+   try		lsd.DLSPath	= args.DLS;
+   catch	disp('No DLS data.');			end			% DLS
+
+   try		lsd.GENPath	= args.GEN;					% General parameters
+   catch
+    try		lsd.GENPath	= args.DLS;
+    catch	error('No path for the general parameters!');
     end
-
-   catch
-    error('Something is wrong in your optional arguments. Please check.');
    end
 
-   [ lsd.Instrument f ] = lsd.find_instrument( varargin{:} );			% get the instrument and the appropriate paths and functions
+   try		[ lsd.Instrument f ]	= lsd.find_instr( args.Instrument );	% Instrument
+   catch	[ lsd.Instrument f ]	= lsd.find_instr;	end
 
-   [lsd.Lambda lsd.Unit_Lambda lsd.n_set ] = lsd.(f.gen)( lsd.GENPath, lsd.Runstart );	% general options
-   [ lsd.Angles_static lsd.KcR lsd.dKcR ] = lsd.(f.sta)	( lsd.SLSPath, options 	);	% load SLS data
+   [	lsd.Lambda, 		...
+	lsd.Unit_Lambda,	...
+	lsd.n_set 	]	= lsd.(f.gen) ( lsd.GENPath,lsd.Runstart );	% general options
 
-   % look for the numbers of Runs
-   try
-    lsd.Runs = options.Runs;
-   catch
-    lsd.Runs = lsd.(f.fin) ( lsd.DLSPath, lsd.Runstart );
+   try										% SLS
+    lsd.SLSPath	= args.SLS;
+    [	lsd.Angles_static,	...
+	lsd.KcR,		...
+	lsd.dKcR 	]	= lsd.(f.sta) ( lsd.SLSPath, args 	);	% load SLS data
+    lsd.Q_static		= lsd.Q_from_angles ( lsd.Angles_static );	% calculate Q
+
+   catch	disp('No SLS data.');			end
+
+
+   try		lsd.Runs = options.Runs;					% Runs
+   catch	lsd.Runs = lsd.(f.fin) ( lsd.DLSPath, lsd.Runstart );   end
+
+   try										% DLS if needed
+    assert(~isempty(lsd.DLSPath));
+    [	Ang_a,	...
+	Tau_a,	...
+	G_a,	...
+	dG_a 	] = lsd.(f.dyn) ( lsd.DLSPath, lsd.Runstart, lsd.Runs 	);	% load DLS data
+    [	lsd.Angles_dyn,	...
+	lsd.Tau,	...
+	lsd.G,		...
+	lsd.dG 		] = lsd.filter_dyn_data(Ang_a,Tau_a,G_a,dG_a	);	% filter DLS data
+    lsd.Q_dyn	= lsd.Q_from_angles ( lsd.Angles_dyn );			% calculate Q
    end
-
-   [ Ang_a Tau_a G_a dG_a ] = lsd.(f.dyn) ( lsd.DLSPath, lsd.Runstart, lsd.Runs 	);	% load DLS data
-   [ lsd.Angles_dyn lsd.Tau lsd.G lsd.dG ] = lsd.filter_dyn_data(Ang_a,Tau_a,G_a,dG_a	);	% filter DLS data
-
-   lsd.Q_static = lsd.compute_Q_from_angles ( lsd.Angles_static );		% calculate Q
-   lsd.Q_dyn = lsd.compute_Q_from_angles ( lsd.Angles_dyn );			% calculate Q
 
   end	% constructor 
 
@@ -318,7 +334,7 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   %=========================================================================================
   % COMPUTE Q FROM ANGLES
   %=========================================================================================
-  function q = compute_Q_from_angles ( obj, angles )
+  function q = Q_from_angles ( obj, angles )
   % fill the Q vector with lsd.Runs entries starting from the angles (both SLS and DLS)
 
    % check the unit conversion ( convert lambda into angstrom )
@@ -346,30 +362,27 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
   %=========================================================================================
   % find instrument
   %=========================================================================================
-  function [ instrument f ] = find_instrument( varargin );
+  function [ instrument functions ] = find_instr( instr );
   % This function tries to understand what kind of instrument you have used according
   % to some properties of your path
-  
+
    % possible instruments
-   instrument1	= 'Malvern Zetasizer Nano';
-   instrument2	= 'ALV CGS3 and 7004/FAST';
+   Malvern	= 'Malvern Zetasizer Nano';
+   ALV		= 'ALV CGS3 and 7004/FAST';
 
-   options	= struct(varargin{:});
-
-   try
-     assert(~isempty(regexp(options.Instrument,'Malvern')));
-     instrument	= instrument1;
-   catch
-     instrument	= instrument2;
+   if		nargin	== 0;		instrument = ALV;
+   elseif	strfind(Malvern,instr)	instrument = Malvern;
+   elseif	strfind(ALV,	instr)	instrument = ALV;
+   else		error('Instrument not found.');
    end
-  
+
    instr		= strtok(instrument);				% short version of the instrument
 
    % choose the methods according to the instrument
-   f.gen	= ['read_general_file_',instr];
-   f.sta	= ['load_static_data_',instr];
-   f.fin	= ['find_runs_',instr];
-   f.dyn	= ['read_dyn_files_',instr];
+   functions.gen	= ['read_general_file_',instr];
+   functions.sta	= ['load_static_data_',instr];
+   functions.fin	= ['find_runs_',instr];
+   functions.dyn	= ['read_dyn_files_',instr];
   
   end	% find_instrument 
 

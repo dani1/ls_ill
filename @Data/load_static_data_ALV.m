@@ -10,14 +10,14 @@ function [ angles_static kcr dkcr ] = load_static_data_ALV ( obj, slspath, optio
 
   % pick out the best data point on the basis of a quality parameter ( percentual error, smallest I, etc. );
   for i = 1 : length(angles_static)
-   candidates = struct('kcr',[],'dkcr',[]);				% create empty candidate
+   candidates = struct('kcr',[],'dkcr',[]);			% create empty candidate
    for j = 1 : length(Ang_a)
     if Ang_a(j) == angles_static(i)
      candidates.kcr	= [ candidates.kcr	KcR_a(j) ];
      candidates.dkcr	= [ candidates.dkcr	dKcR_a(j)];
     end
    end
-  [ kcr(i) dkcr(i) ]	= filter_stddev ( candidates );			% filter stddev
+  [ kcr(i) dkcr(i) ]	= filter_stddev ( candidates );		% filter stddev
   end   
 
   dkcr	= 0.01 .* dkcr .* kcr;					% turn relative into absolute errors
@@ -44,7 +44,7 @@ function [ angles_static kcr dkcr ] = load_static_data_ALV ( obj, slspath, optio
   obj.C	= options.C;
  catch
   obj.C	= obj.C_set;
-  fprintf('No UV-determined concentration has been input. Falling back to C_set\n');
+  disp('No UV-determined concentration has been input. Falling back to C_set.');
  end
 
  % n (fallback: n_set, from read_static_file_* )
@@ -52,21 +52,21 @@ function [ angles_static kcr dkcr ] = load_static_data_ALV ( obj, slspath, optio
   obj.n	= options.n;
  catch
   obj.n	= obj.n_set;
-  fprintf('No corrected index of refraction for the solvent has been input. Falling back to n_set\n');
+  disp(['Default n = ' num2str(obj.n) '.']);
  end
 
  % dndc (fallback: class default)
  try
   obj.dndc	= options.dndc;
  catch
-  fprintf(['No corrected dn/dc has been input. Falling back to the standard: ', num2str(obj.dndc),' ml/g\n']);
+  disp(['Default dn/dc = ' num2str(obj.dndc) ' ml/g.']);
  end
 
  % dndc_set (fallback: class default)
  try
   obj.dndc_set = options.dndc_set;
  catch
-  fprintf(['No corrected dn/dc_set has been input. Falling back to the standard: ', num2str(obj.dndc_set),' ml/g\n\n']);
+  disp(['Default dn/dc_set = ' num2str(obj.dndc_set) ' ml/g.']);
  end
 
  % correction of values
