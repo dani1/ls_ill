@@ -5,7 +5,7 @@ function [ Angles Tau G dG ] =  read_dyn_files_ALV( path, runstart, runs )
  for i = 1 : runs
 
   % define the file names
-  dyn_files{i}	= [path,'00',num2str(runstart+i-1,'%2.2u'),'.ASC'];
+  dyn_files{i}	= [path,num2str(runstart+i-1,'%4.4u'),'.ASC'];
 
   angle = [];
   tau	= [];
