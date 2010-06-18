@@ -76,7 +76,8 @@ classdef Utils < handle
    self.Data	= self.correct_Data_fields ( index );		% correct the fields in Data
    self.correct_Datalike_properties(index, len_before);		% correct Gammas, etc.
 
-   self.update_uniques('C','Phi','Q','Q2','Angles');		% update unique props
+   try self.update_uniques('C','Phi'); 		end		% update C and Phi
+   try self.update_uniques('Q','Q2','Angles');	end		% update Q, Q2, and Angles
 
   end	% prop_list
 

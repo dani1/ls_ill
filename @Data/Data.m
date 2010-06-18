@@ -176,6 +176,10 @@ classdef Data < hgsetget	% necessary to inherit properties from the methods
    try		lsd.Repetitions	= args.Repetitions;	end			% Repetitions
    try		lsd.Runstart	= args.Runstart;	end			% Runstart
 
+   try		lsd.C	= args.C;	end			% Runstart
+   try		lsd.C_set	= args.C_set;	end			% Runstart
+   try		lsd.n	= args.n;	end			% Runstart
+
    try		lsd.T	= args.T;						% Temperature
     		if	lsd.T < 150	lsd.T = lsd.T-LIT.Constants.T0;	end	% check for °C input temperatures
    catch	disp(	['T =' num2str(lsd.T+LIT.Constants.T0),'°C.']	);	% fall back to 22°C
