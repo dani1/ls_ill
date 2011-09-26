@@ -102,7 +102,7 @@ classdef Graphics < handle
     case 'C'							% concentration
      xl = ['Protein concentration [ ',self.Unit_C,' ]'];
 
-    case 'Phi'							% volume fraction
+    case {'Phi'	'Phi_Model' }					% volume fraction
      xl	= ['\Phi'];
 
     case 'I'							% ionic strength
@@ -254,17 +254,19 @@ classdef Graphics < handle
   function make_plot ( self, ax, x, y, color, varargin )
   % this function makes the plot after that it has been prepared
 
+   options	= struct(varargin{:});							% get the optional args
+   try	symbol = options.Symbol; 	catch symbol = 'o-';	end		% default: Markers and Lines
+
    if ~ismember('Data',properties(self)) | length(y) < length(self.Data.C)		% if the property is short...
 
     nuance	= self.get_color(color,1);						% ...get the nuance for the plot...
-    plot( ax, x, y, 'o-',			...
+    plot( ax, x, y, symbol,			...
 		'Color',	nuance,			...
 		'MarkerSize',	self.MarkerSize,	...
 		'LineWidth',	self.LineWidth		);				% ...and plot!
 
    else											% ...otherwise, use the unique independent
 
-     options	= struct(varargin{:});							% get the optional args
      try	average = options.Average; 	catch average = 'yes';	end		% default: average
 
     switch	average									% act differently if one averages or not
@@ -274,7 +276,7 @@ classdef Graphics < handle
       [ xm ym ] = self.average( x, y );							% get the average values
 
       nuance	= self.get_color(color,1);						% get the nuance for the plot
-      plot( ax, xm, ym, 'o-',			...
+      plot( ax, xm, ym, symbol,			...
 		'Color',	nuance,			...
 		'MarkerSize',	self.MarkerSize,	...
 		'LineWidth',	self.LineWidth		);				% plot
@@ -314,7 +316,7 @@ classdef Graphics < handle
   function make_errorbar ( self, ax, x, y, dy, color, varargin )
   % this function makes the errorbar plot after that it has been prepared
 
-   if length(y) < length(self.Data.C)							% if the property is short...
+   if ~ismember('Data',properties(self)) | length(y) < length(self.Data.C)		% if the property is short...
 
     nuance	= self.get_color(color,1);						% get the nuance for the plot
     errorbar( ax, x, y, dy, 'o-',			...

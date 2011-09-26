@@ -1,16 +1,35 @@
 %============================================================================
 % FIT CORRELOGRAMMS USING INVERSE LAPLACE TRANSFORM (CONTIN)
 %============================================================================
-function [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, alpha, cycles )
+function [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, dg, q, alpha, cycles )
 % The core function is rilt.m by another author. In this function, the data is prepared
 % before and after the CONTIN algorithm. Also, CONTIN is performed many times up to a certain
 % precision, using low-resolution fits as input for better ones.
 %
 % NB: the Laplace transform is performed not in terms of decay rates, but of decay times.
  
- [t g]	= filter_correlogramms(t,g);			% eliminate negative correlations
+ [t g dg]	= filter_correlogramms(t,g,dg);			% eliminate negative correlations
 
- y	= sqrt(g);					% field correlation function
+ Tau	= t;
+ G	= g;
+ dG	= dg;
+
+ clear t g dg;
+
+ l		= length(Tau);
+ N		= 10;
+ lN		= floor(l/N);
+ closeto	= 5;
+
+ for i = 1 : N
+  ind	= [ lN * (i-1) + 1 : lN * (i -1 ) + closeto ];
+  t(i)	= mean( Tau(ind) );
+  g(i)	= mean( G(ind) );
+  dg(i)	= mean( dG(ind) );
+ end
+
+ y	= sqrt(g);					% field correlation functio
+ dy	= dg ./ ( 2 * y );				% error propagation
 
  smin	= 1/ (1e6 * 100 * q^2);				% lower limit for the s space...
  smax	= 1/ (1e6 * 0.1 * q^2);				% ...and upper limit
@@ -28,7 +47,12 @@ function [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, alpha, cycles )
 
   ssdthreshold	= max( 1e-8, 1e-5 / 10^i );		% threshold for the fit
 
-  [g,yfit,cfg]	= rilt( t, y, s0, g0, alpha, ssdthreshold );		% perform the fit
+  [g,yfit,cfg]	= rilt( t, y, s0, g0, alpha, ssdthreshold );		% perform the fit using the Matlab function
+
+%  mex -lool -lgsl -lgslcblas -lm contin.c
+%  var	= 0.75^2*ones(1, length(y)); 
+%  [s0, g, bkg] = contin(t, y, var, smin, smax, 10*length(x), 0.1, 0);	% perform the fit using Marcus's C function
+
   s1	= s0;						% s1 is the old s
 
  end
@@ -42,7 +66,7 @@ end	% invert_laplace
 %============================================================================
 % FILTER CORRELOGRAMMS
 %============================================================================
-function [ t g ] = filter_correlogramms( t, g )
+function [ t g dg ] = filter_correlogramms( t, g, dg )
 
  index1	= g>0;						% retain only positiv gs
  index2	= t< 10;					% maximum time [ms]	
@@ -51,6 +75,7 @@ function [ t g ] = filter_correlogramms( t, g )
 
  t	= t(index);
  g	= g(index);
+ dg	= dg(index);
 
 end
 
@@ -81,7 +106,7 @@ end
 %============================================================================
 % RILT CONTIN-LIKE ALGORITHM (modified by Fabio Zanini)
 %============================================================================
-function [g,yfit,cfg] = rilt(t,y,s,g0,alpha,ssdthreshold)
+function [g,yfit,cfg] = rilt(t,y,dy,s,g0,alpha,ssdthreshold)
 %     rilt   Regularized Inverse Laplace Transform
 % 
 % [g,yfit,cfg] = rilt(t,y,s,g0,alpha)
@@ -204,8 +229,10 @@ function [g,yfit,cfg] = rilt(t,y,s,g0,alpha,ssdthreshold)
 
 g0 = g0(:);							% must be column
 s = s(:);							% must be column
-y = y(:);							% must be column
 t = t(:);							% must be column
+y = y(:);							% must be column
+dy = dy(:);							% must be column
+w = 1 ./ dy.^2;
 
 plot_type = @semilogx;						% decide plot type
 maxsearch = 100;						% max number of steps
@@ -213,7 +240,6 @@ options = optimset('MaxFunEvals',1e8,'MaxIter',1e8);
 %constraints = {'g>0','zero_at_the_extremes'};			% constraints	TODO: choose better ones!
 constraints = {'g>0'};			% constraints	TODO: choose better ones!
 R = zeros(length(g0)-2,length(g0));
-w = ones(size(y(:)));
 ly = length(y);
 oldssd = Inf;
 
@@ -225,28 +251,19 @@ A = exp(-tM./sM);
 g0 = g0*sum(y)/sum(A*g0);
 
 % Plots initialization
-fh = gcf; clf(fh);
-set(fh,'doublebuffer','on');
-s1h = subplot(2,2,1); plot(t,y,'.',t,A*g0); title('Data and fitting curve'); axis tight
-s2h = subplot(2,2,2); feval(plot_type,s,g0,'o-'); title('Initial distribution...'); axis tight
-s3h = subplot(2,2,3); msdh = plot(0,0); title('Normalized msd');
-s4h = subplot(2,2,4); plot(t,abs(y-A*g0)); title('Residuals'); axis tight
-msd2plot = 0;
-drawnow;
+%fh = gcf; clf(fh);
+%set(fh,'doublebuffer','on');
+%s1h = subplot(2,2,1); plot(t,y,'.',t,A*g0); title('Data and fitting curve'); axis tight
+%s2h = subplot(2,2,2); feval(plot_type,s,g0,'o-'); title('Initial distribution...'); axis tight
+%s3h = subplot(2,2,3); msdh = plot(0,0); title('Normalized msd');
+%s4h = subplot(2,2,4); plot(t,abs(y-A*g0)); title('Residuals'); axis tight
+%msd2plot = 0;
+%drawnow;
 
 % Main cycle
 for k = 1 : maxsearch								% perform the fit at every step, till convergence or limit
 
  [g,msdfit] = fminsearch(@msd,g0,options,y,A,alpha,R,w,constraints);		% This is the long step: minimize MSD!
-
- % Re-apply constraints
- if ismember('zero_at_the_extremes',constraints)
-     g(1) = 0;
-     g(end) = 0;
- end
- if ismember('g>0',constraints)
-     g = abs(g);
- end
 
  g0 = g;									% for the next step
  ssd = sqrt(msdfit/ly);								% Sample Standard Deviation
@@ -254,11 +271,11 @@ for k = 1 : maxsearch								% perform the fit at every step, till convergence o
  deltassd = oldssd-ssd;								% Difference between "old ssd" and "current ssd"
  oldssd = ssd;
 
- msd2plot(k) = msdfit/ly;
- plotdata(	s1h,s2h,s3h,s4h,		...
-		t,y,A,g,k,			...
-		maxsearch,plot_type,s,		...
-		msd2plot,msdh,ssdStr,deltassd	);
+% msd2plot(k) = msdfit/ly;
+% plotdata(	s1h,s2h,s3h,s4h,		...
+%		t,y,A,g,k,			...
+%		maxsearch,plot_type,s,		...
+%		msd2plot,msdh,ssdStr,deltassd	);
 
  if deltassd  < ssdthreshold		break;		end				% Convergence: difference between "old ssd" and "current ssd" < threshold
 

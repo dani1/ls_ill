@@ -51,6 +51,13 @@ function [ coeffnames coeffval dcoeffval ] = fit_discrete ( t, g, dg, method, q,
    upperbond	= [ 1		Max_Gamma1 	0.5	Max_Gamma2 	1	];
    startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	0.8	];
 
+  case 'DoubleStreched'										% double decay, exp + streched
+   fit_function	= '( As1 * exp( - ( Gammas1 * t).^b1 ) + As2 * exp(-( Gammas2 *t).^b2 )) .^2';
+   coeffnames	= { 'As1'	'Gammas1'	'As2'	'Gammas2'	'b1'	'b2'	};
+   lowerbond	= [ 0.5		Min_Gamma1 	0	Min_Gamma2 	0	0	];
+   upperbond	= [ 1		Max_Gamma1 	0.5	Max_Gamma2 	1	1	];
+   startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	0.8	0.8	];
+
   otherwise
    error('Method not recognized!');
  end

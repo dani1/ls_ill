@@ -352,7 +352,7 @@ classdef DLS < dynamicprops & Graphics & Utils
    % act differently depending on method chosen
    switch method
 
-    case {'Single', 'Streched', 'Double', 'Single+Streched'}					% DISCRETE DECAYS
+    case {'Single', 'Streched', 'Double', 'Single+Streched', 'DoubleStreched'}			% DISCRETE DECAYS
 
      for l = 1 : length(t)
       [ coeffnames coeffval dcoeffval ] = self.fit_discrete (	t{l}, g{l}, dg{l},	...
@@ -374,7 +374,7 @@ classdef DLS < dynamicprops & Graphics & Utils
 
      for l = 1 : length(tf)
       disp(['Fit n. ' num2str(l) ]);								% Show the fit number
-      [ LP_Gamma LP_D LP_G ] = self.invert_laplace ( tf{l}, gf{l}, qf(l), alpha, cycles );	% invert Laplace!
+      [ LP_Gamma LP_D LP_G ] = self.invert_laplace(tf{l}, gf{l}, dgf{l}, qf(l), alpha, cycles);	% invert Laplace!
 
      % group the output coefficients
       fitoutput.LP_Gamma{l}	= LP_Gamma;
@@ -673,8 +673,8 @@ classdef DLS < dynamicprops & Graphics & Utils
     case {'Fit_D1' 'Fit_De' 'Fit_Ds'}
 
      name	= regexprep(name,'Fit_','');						% cut the part 'Fit_' from the name
-     [ ax, x, y, color ] = self.prepare_plot( name, optargs{:} );			% prepare the plot TODO: allow x-axis choice
-     self.make_plot ( ax, x, y, color, optargs{:} );					% plot the data
+     [ ax, x, y, dy, color ] = self.prepare_errorbar( name, optargs{:} );		% prepare the plot TODO: allow x-axis choice
+     self.make_errorbar ( ax, x, y, dy, color, optargs{:} );				% plot the data
 
      options	= struct(optargs{:});
      try independent = options.Independent;	catch independent = 'C'; end
@@ -739,14 +739,15 @@ classdef DLS < dynamicprops & Graphics & Utils
 
    weights	= 1 ./ ( dy .^2 );							% weights for the fit
 
-%   fit_function	= 'D0 + D0k * x';								% fit function
-   coefficients	= {'D0'	'D0k'		};						% coefficients
-   fit_expr	= {'1'	independent	};						% one MUST use this syntax with linear models
+   fit_function	= 'D0 * ( 1 + k * x)';							% fit function
+   coefficients	= {'D0'	'k'	};							% coefficients
+   startpoint	= [ 6	0	];							% coefficients
 
-   fit_options	= fitoptions(	'Method',	'LinearLeastSquares',	...
-				'Weights',	weights			);		% fit options
+   fit_options	= fitoptions(	'Method', 'NonLinearLeastSquares',	...
+				'Weights',	weights,		...
+				'StartPoint',	startpoint		);		% fit options
 
-   fit_type	= fittype(fit_expr,	'independent',	independent,	...
+   fit_type	= fittype(fit_function,	'independent',	'x',		...
  				      	'coefficients',	coefficients,	...
 					'options',	fit_options	);		% fit type
  
@@ -759,10 +760,8 @@ classdef DLS < dynamicprops & Graphics & Utils
 
    D0	= cout(1);
    dD0	= dcout(1);
-   D0k	= cout(2);
-   dD0k	= dcout(2);
-   kC	= D0k / D0;
-   dkC	= kC * sqrt( ( dD0/D0 ) ^2 + ( dD0k /D0k ) ^2 );
+   kC	= cout(2);
+   dkC	= dcout(2);
    kPhi	= kC / LIT.(self.Sample).v0;
    dkPhi= dkC / LIT.(self.Sample).v0;
 
@@ -791,7 +790,7 @@ classdef DLS < dynamicprops & Graphics & Utils
   %============================================================================
   % INVERSE LAPLACE TRANSFORM (CONTIN)
   %============================================================================
-  [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, q, alpha, cycles )
+  [ LP_Gamma LP_D LP_Dist ] = invert_laplace ( t, g, dg, q, alpha, cycles )
 
   %============================================================================
   % FILTER REPETITIONS

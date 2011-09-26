@@ -19,6 +19,8 @@ classdef BSA
  Unit_D0		=	'A^2/ns'
  v0			=	1.140e-3
  Unit_v0		=	'l/g'
+ vmol			=	155
+ Unit_vmol		=	'nm^3'
  R			=	3.60
  Unit_R			=	'nm'
 
