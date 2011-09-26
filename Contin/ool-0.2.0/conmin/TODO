@@ -1,0 +1,14 @@
+
+CONMIN Todo Items
+=================
+
+* Rename maxfomin to innerpoint
+
+* Replace minofmax to innerpoint
+
+* Reimplement conmin_vector functions using blas like methods
+
+* Accept NULL as a flag for default method parameters on set function
+
+* Fix the macro OOL_CONMIN_EVAL_HV, which does not work when calling as
+  OOL_CONMIN_EVAL_HV(M, M->x, (st->aux), (st->Hv))

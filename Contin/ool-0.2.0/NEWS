@@ -1,0 +1,32 @@
+June 01, 2005
+-----------
+ool-0.2.0 is released. This new release brings a new method (SPG). The
+PGRAD and GENCAN were validated with the CUTEr test problem
+suite. Most of the OOL Reference Manual was rewriten and/or
+improved. Besides, two new chapters ("Quick Start" and "Brief
+Theoretical Introduction") were included to the OOL Reference
+Manual. Several bugs were fixed.
+
+May 05, 2005
+------------
+The Nonmonotone Spectral Gradient Method (SPG) is the third method
+implemented in the OOL. This method is suited for minimization of
+differentiable functions subjected to bound constraints. It is a
+competitive algorithm with low memory requirements, with the spectral
+steplength, a clever choice for the steplength which really improves
+the convergence speed.
+
+It is available in the CVS. A new realease is coming soon.
+
+
+March 22, 2005
+--------------
+Araucaria Foundation, the State of Parana Research Foundation,
+Brazil, has approved a one-year term project to financially supports
+the OOL development.
+
+
+August 04, 2004
+--------------
+ool-0.1.0 is the first release. It contains two methods (PGRAD and
+GENCAN) and an initial version of the documentation.

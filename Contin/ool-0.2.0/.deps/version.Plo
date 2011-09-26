@@ -1,0 +1,5 @@
+version.lo: version.c ool/ool_version.h /usr/include/gsl/gsl_types.h
+
+ool/ool_version.h:
+
+/usr/include/gsl/gsl_types.h:

@@ -1,0 +1,230 @@
+2005-06-01  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* OOL: Version 0.2.0 released
+
+2005-05-28  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* theory.texi: correct math display in html version
+	of ool-ref.
+
+2005-05-19  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* pgrad.c: minor fix in line search.
+
+	* pgrad.texi, spg.texi, gencan.texi: example section points to
+	quick start example, overview section no longer describes the
+	problem addressed by each method (it points to Chapter Brief
+	Theoretical Introduction).
+
+	* ool-ref.texi: chapter quick start added.
+
+	* quickstart.texi: new chapter with a small example.
+
+2005-05-19  Sergio Drumond Ventura  <ventura@mat.ufpr.br>
+
+	* ool-ref.texi: function and parameter indices fixed.
+
+2005-05-19  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* pgrad.c: line search quadratic model fixed to account
+	for the effective direction.
+
+2005-05-18  Sergio Drumond Ventura  <ventura@mat.ufpr.br>
+
+	* ool-ref.texi: new chapter added.
+
+	* theory.texi: new chapter with brief theoretical description.
+
+	* conmin.texi: overview section transfered to new chapter.
+
+	* pgrad.c: line search with quadratic model.
+
+2005-05-17  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* gencan.texi: description of gencan parameters updated.
+
+	* gencan.h: both state variables spgls_Xtrial and tnls_Xplus were
+	replaced by Xtrial.
+
+2005-05-15  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* gencan_iterate.c: An serious incorrect treatment of return value
+	of the Conjugate Gradient subalgorithm was fixed.
+
+2005-05-13  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* gencan: Parameters sorted; check for correct parameters in
+	gencan_parameters_set; fixed stop criteria. Many fixes in
+	interpolation and extrapolation in Truncated Newton.
+
+2005-05-12  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* conmin_vector.c: conmin_vector_set_zero() no longer employs
+	memset due to portable reasons.
+
+	* gencan: The process to update gencan continues.
+
+	New parameters: cg_epsnqmp and cg_maxitnqmp. Parameter infty
+	replaced by infrel and infabs. Some state fields were renamed
+	(xnorm -> xeucn, xinfn -> xsupn).
+
+	A quadratic equation in conjugated gradient function is now solved
+	with gsl_poly_solve_quadratic(). Some new gencan return codes were
+	defined. Many other fixes and little changes.
+
+2005-05-11  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* gencan: Many modifications were done to bring gencan closer to
+	the upstream version, distributed by its authors.
+
+	New parameters were added (cg_scre, cg_gpnf, cg_epsi, cg_epsf,
+	ucgmia, ucgmib, maxextrap), some parameters were renamed (detla ->
+	udelta0, eps_inf -> epsgpsn, eps_euc -> epspgen, lammin -> lspgmi,
+	lammax -> lspgma), some were deleted (cg_eps, cg_maxit). State
+	structure was updated too: fields renamed (gptwon2 -> gpeucn2,
+	gpinfn -> gpsupn, gitwon2 -> gieucn2), new fields (acgeps, bcgeps,
+	gpsupn0, gpeucn20, epsgpen2).
+
+	In gencan_cg.c, a new strategy to compute the tolerance and the
+	maximum number of iterations of the conjugated gradient
+	subalgorithm was coded.
+	
+	
+2005-05-10  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* Several fixes and enhancements on documentation.
+	* gencan.c: gencan_is_optimal() tests for f unbounded from below.
+	* gencan_spgls.c: gencan_spgls() fixed to match original fortran
+	routine.
+	* pgrad.c: pgrad_projection simplified, cubic line search deleted
+	* pgrad.h: state field norm_pg delete. M->size takes is place.
+	
+
+2005-05-09  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* spg.c: nonmonotone Armijo corrected, stop criteria on
+	infinite norm of g1, line search with quadratic model
+	* spg.texi: documentation enhanced
+
+2005-05-07  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* ool_conmin_defs.h: error codes defined from the GSL error codes
+
+2005-05-06  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* spg.texi: First SPG documentation version
+
+2005-05-03  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* spg: Spectral Gradient Method included in OOL
+
+2005-04-20  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* pgrad.h: pg deleted in pgrad state structure
+	* pgrad.c: vector difference norm computed with
+	conmin_vector_dist() function
+	* conmin_vector.c: function conmin_vector_dist() rewritten
+	from scratch to avoid overflow
+
+2005-04-17  Ricardo Biloti  <biloti@mat.com.br>
+
+	* gencan.h: vectors near_l and near_u added to conmin_genca_state
+	structure.
+	* gencan.c: vectors near_l and near_u initialized in 
+	gencan_parameters_set and gencan_set, and allocated and deallocates
+	in gencan_alloc and gencan_free, respectively.
+	* gencan_iterate.c: vectors near_l and near_u from state structure
+	employed in gencan_actual_iterate.
+
+2005-04-15  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* gencan.c: No longer test for feasibility. Impose it any way.
+	* conmin_vector.c: including conmin_vector_set_zero() and using it
+	where conmin_vector_set_all( , , 0.0) was previously employed.
+	Function conmin_vector_dist() returns norm-2 of the difference of
+	two vectors.
+
+2004-11-16  Iara da Cunha <iaradacunha@bol.com.br>
+
+	* pgrad: including pgrad_simple_line_search()
+	
+2004-10-18  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* ool_conmin_common.h: OOL_CONMIN_EVAL_HV fixed
+
+2004-08-11  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* pgrad.c: line search fixes and double comparisons
+
+2004-08-05  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* pgrad.texi: first pgrad documentation
+	* pgrad.c: cosmetic changes
+	* pgrad.h: cosmetic changes
+
+2004-08-03  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* gencan_cg.c: access to vectors (x[ii], l[ii], u[ii], etc) done
+	through pointers to avoid multiple index arithmetics
+	* gencan_tools.c: idem
+	* gencan_iterate.c: idem
+	* ool-ref.texi: minor fixes
+	* conmin.texi: including pgrad in the 'Algorithms' section, and
+	switch examples to pgrad instead gencan
+
+2004-07-28  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* gencan.texi: correct example source code and output inserted
+	* test_gencan.c: change some non-default parameter values
+
+2004-07-08  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* ool_conmin.h: ool_conmin_pgrad.h included
+	* pgrad.h: ool_conmin_pgrad.h inclusion excluded
+	* test_pgrad.c: code clean-up
+
+2004-07-07  Akiles <akiles@user.sourceforge.net>
+
+	* pgrad: Code clean up and replacement of the names of functions
+	proj() to pgrad_proj() and line_search() to pgrad_line_search()
+
+2004-07-07  Iara da Cunha   <iaradacunha@bol.com.br>
+
+	* pgrad: including projected gradient method
+
+2004-06-24  Ricardo Biloti  <biloti@mat.ufpr.br>
+
+	* conmin.c and ool_conmin_common.h: spelling fixes in fcount,
+ 	  gcount and hcount
+	* conmin.texi: spelling fixes in accordance to the above
+   	  corrections
+
+2004-06-15  Ricardo Biloti  <biloti@mat.ufpr.br>
+	* usage.texi: cleanup and corrections due to GSL import
+	* intro.texi: cleanup and corrections due to GSL import
+	* doc: minor fixes
+	
+2004-06-12  Akiles <akiles@user.sourceforge.net>
+	* ool_conmin_common: remotion of ool_conmin_is_x_optimal()
+          and inclusion of ool_conmin_minimizer_size()
+	* conmin: several small fixings
+	* gencan: several small fixings
+	
+2004-06-06  Ricardo Biloti  <biloti@mat.ufpr.br>
+	* doc: minor corrections in tex/info formulas
+
+2004-06-04  Sergio Drumond Ventura  <ventura@users.sourceforge.net>
+	* doc: first documentation released
+	
+2004-06-04  Ricardo Biloti  <biloti@mat.ufpr.br>
+	* Tools: commit of tools, initially with numerical differentiation
+	  for gradient and Hessian
+	* gencan_cg.c: changing the way amax1 and amax1n is calculated to
+ 	  avoid cancellation errors
+	* gencan_cg.c: fixed floating point comparisons
+	* gencan_cg.c: eps and maxit are local variables, been no longer
+ 	  are members of the state structure
+
+2004-02-18  Akiles <akiles@users.sourceforge.net>
+	* OOL: Open Optimization Library - Starting Project
+

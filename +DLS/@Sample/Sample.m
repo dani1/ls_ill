@@ -1,0 +1,114 @@
+classdef Sample
+% This class takes as input some info about a sample and stores it.
+
+ properties
+
+  Protein					% what protein?
+  Salt						% what salt?
+  C						% protein concentration
+  Unit_C	= 'g/l';
+  Cs						% salt concentration
+  Unit_Cs	= 'mM'
+
+  T
+  Unit_T	= 'K';
+  n
+
+  Point						% datapoints
+
+ end
+
+ properties ( SetAccess = private, Dependent )
+
+  Angle
+  Q
+
+ end
+
+ properties ( Hidden)
+
+  Instrument
+  C_set
+  n_set
+
+ end
+
+ methods
+
+  function self = Sample( varargin )
+
+   a	= Args(varargin{:});								% get the args
+
+   try		self.Instrument	= Instruments.(a.Instrument);				% get the instrument
+   catch 	error('Instrument not found!');
+   end
+
+   props	= {	'Protein',	'Salt',		...
+			'C',		'C_set',	...
+			'Cs',		'T',		...
+			'n',		'n_set'		};
+   for i = 1 : length(props)
+    try		self.(props{i})		= a.(props{i});
+    catch	warning(['Property ' props{i} ' not found!']);
+    end
+   end
+
+   
+   [ s e ] = self.find_start_end( a.Path );
+
+   self.Point	= DLS.Point;
+
+   for i = s : e
+
+    file		= [ a.Path num2str(i,'%4.4u') '.ASC' ];
+    self.Point(i-s+1)	= self.Instrument.read_dynamic_file ( file );
+
+   end
+
+
+   pointprops	= {	'Protein',	'Salt',		...
+			'C',		'C_set',	...
+			'Cs',				...
+			'n',		'n_set'		};
+   for i = 1 : length(pointprops)
+     [ self.Point.(pointprops{i}) ]	= deal(a.(pointprops{i}));			% the deal function rocks!
+   end
+
+  end
+
+  function Angle= get.Angle ( self );
+   Angle= unique([self.Point.Angle]);
+  end
+
+  function Q	= get.Q ( self );
+   Q	= unique([self.Point.Q]);
+  end
+
+ end
+
+ methods ( Access = private, Static )
+
+  [ s e ] = find_start_end ( path );
+
+ end
+
+ % FIT METHODS
+ methods
+
+  function fit ( self , model )
+   for i = 1 : length( self.Point )
+    self.Point(i).fit( model );
+   end
+  end
+
+  function invert_laplace ( self )
+   for i = 1 : length( self.Point )
+    fprintf([num2str(i) ': ']);
+    self.Point(i).invert_laplace;
+    fprintf('\n');
+   end
+  end
+
+ end
+
+end

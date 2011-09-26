@@ -1,0 +1,402 @@
+@c -----------------------------------------------------------------------------
+@c $Id: quickstart.texi,v 1.5 2005/06/01 15:05:24 biloti Exp $
+@c -----------------------------------------------------------------------------
+
+@cindex quick start
+@cindex sample code
+
+To impatients, this chapter works out an example on the usage of the
+library. The code presented, despite its simplicity, can be used to
+solve real problems with minor modifications.
+
+@menu
+* Quick Start Example::
+@end menu
+
+@c -----------------------------------------------------------------------------
+@node Quick Start Example
+@section Example
+
+Consider the problem
+@tex
+\beforedisplay
+$$
+\eqalign{
+\hbox{minimize } & f(x) \equiv \sum_{i=1}^N (x_i - a_i)^2 \cr
+\hbox{subject to } & \quad \ell \le x \le u \cr}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@ifnothtml
+
+minimize f(x) = ||x-a||^2, subject to L <= x <= U
+
+@end ifnothtml
+@end ifinfo
+@ifhtml
+@html
+<table align="center">
+<tr><td>
+minimize &fnof;(x) &equiv; &sum; (x<sub>i</sub> - a<sub>i</sub>)&sup2;
+</td></tr>
+<tr align="center"><td>
+subject to L &le; x &le; U
+</td></tr>
+</table>
+@end html
+@end ifhtml
+@c
+@noindent
+where
+@ifnothtml
+@math{a}
+@end ifnothtml
+@ifhtml
+@html
+a
+@end html
+@end ifhtml
+is a given vectors in
+@ifnothtml
+@math{R^n}.
+@end ifnothtml
+@ifhtml
+@html
+R<sup>n</sup>.
+@end html
+@end ifhtml
+
+
+We present a sample code for solving this problem with help of
+the OOL, and comment it line by line.
+
+@noindent
+
+@smallexample
+   1: #include <stdio.h>
+   2: #include <ool/ool_conmin.h>
+
+   3: void iteration_echo( ool_conmin_minimizer *M );
+@end smallexample
+
+@noindent
+Line 1 includes the C standard IO header and line 2 includes the
+header for the OOL library. The last should be included in every
+program that uses OOL. Line 3 simply defines the prototype of an
+auxiliary function defined below. The following block defines the
+objective function. The prototype for objective function should always
+be like in line 4 and 5. The objective function may have parameters,
+which are provided by a void pointer params. In this example
+@code{params} points to a vector. To be used inside the function,
+@code{params} is typecasted to @code{gsl_vector *} (line 7). For
+functions depending on several parameters, @code{params} could points
+to a structure defined to cluster them all.
+
+@smallexample
+   4: double
+   5: fun( const gsl_vector *X, void* params )
+   6: @{
+   7:    gsl_vector *a = (gsl_vector *) params;
+   8:    size_t ii, nn;
+   9:    double ai, xi;
+  10:    double f;
+
+  11:    nn = X->size;
+
+  12:    f = 0;
+  13:    for( ii = 0; ii < nn; ii++ )
+  14:       @{
+  15:          ai = gsl_vector_get( a, ii );
+  16:          xi = gsl_vector_get( X, ii );
+  17:          f += (xi - ai)*(xi - ai);
+  18:       @}
+  19:    return f;
+  20: @}
+
+@end smallexample
+
+@noindent
+The next block implements functions to evaluate the gradient (lines
+21--35), objective function and gradient (simultaneously) (36--53), and
+the product of Hessian by a given vector (54--66).
+
+@smallexample
+  21: void
+  22: fun_df( const gsl_vector *X, void* params, gsl_vector *G )
+  23: @{
+  24:    gsl_vector *a = (gsl_vector *) params;
+  25:    size_t ii, nn;
+  26:    double ai, xi, gi;
+
+  27:    nn = X->size;
+
+  28:    for( ii = 0; ii < nn; ii++ )
+  29:       @{
+  30:          ai = gsl_vector_get( a, ii );
+  31:          xi = gsl_vector_get( X, ii );
+  32:          gi = 2 * ( xi - ai );
+  33:          gsl_vector_set( G, ii, gi );
+  34:       @}
+  35: @}
+
+  36: void
+  37: fun_fdf( const gsl_vector *X, void* params,
+  38:          double *f, gsl_vector *G )
+  39: @{
+  40:    gsl_vector *a = (gsl_vector *) params;
+  41:    size_t ii, nn;
+  42:    double ai, xi, gi;
+
+  43:    nn = X->size;
+  44:    (*f) = 0;
+
+  45:    for( ii = 0; ii < nn; ii++ )
+  46:       @{
+  47:          ai = gsl_vector_get( a, ii );
+  48:          xi = gsl_vector_get( X, ii );
+  49:          (*f) += (xi - ai)*(xi - ai);
+  50:          gi = 2 * ( xi - ai );
+  51:          gsl_vector_set( G, ii, gi );
+  52:       @}
+  53: @}
+
+  54: void
+  55: fun_Hv( const gsl_vector *X, void *params,
+  56:         const gsl_vector *V, gsl_vector *hv )
+  57: @{
+  58:    size_t ii, nn;
+  59:    double hvi;
+
+  60:    nn = X->size;
+
+  61:    for( ii = 0; ii < nn; ii++ )
+  62:       @{
+  63:          hvi = 2 * gsl_vector_get( V, ii );
+  64:          gsl_vector_set( hv, ii, hvi);
+  65:       @}
+  66: @}
+@end smallexample
+
+@noindent
+Finally, comes the main routine which drives the optimization. Lines
+69 and 70 define the number of variables of the problem and the
+limit for the number of iterations, respectively.
+
+@smallexample
+  67: int main( void )
+  68: @{
+  69:   size_t nn   = 100;
+  70:   size_t nmax = 10000;
+  71:   size_t ii;
+  72:   int status;
+@end smallexample
+
+@noindent
+The next two lines are the only two lines which are method
+dependent. They are responsible to select which optimization algorithm
+will be used, the @sc{spg} algorithm, in this example.
+
+@smallexample
+  73:   const ool_conmin_minimizer_type *T = ool_conmin_minimizer_spg;
+  74:   ool_conmin_spg_parameters P;
+@end smallexample
+
+@noindent
+The next four lines declare variables to hold the objective
+function, the constraints, the minimizer method, and the initial iterate,
+respectively.
+
+@smallexample
+  75:   ool_conmin_function   F;
+  76:   ool_conmin_constraint C;
+  77:   ool_conmin_minimizer *M;
+  78:   gsl_vector *X;
+@end smallexample
+
+@noindent
+In line 79 a vector is declared to represent the function parameters
+as in the description of the problem. In the following block, this
+vector is initialized as
+@ifnothtml
+@math{ a = (0.1, 0.2, \ldots, 10)^T}.
+@end ifnothtml
+@ifhtml
+@html
+a = (0.1, 0.2,..., 10)<sup>T</sup>.
+@end html
+@end ifhtml
+
+@smallexample
+  79:   gsl_vector *a;
+
+  80:   a = gsl_vector_alloc( nn );
+  81:   for ( ii = 0; ii < nn; ii++)
+  82:      gsl_vector_set( a, ii, ((double) ii + 1.0)/10.0 );
+@end smallexample
+
+@noindent
+The function structure is filled in with the number of variables
+(line 83), pointers to routines to evaluate the objective function and
+its derivatives (84--87), and a pointer to the function parameters (88).
+
+@smallexample
+  83:   F.n   = nn;
+  84:   F.f   = &fun;
+  85:   F.df  = &fun_df;
+  86:   F.fdf = &fun_fdf;
+  87:   F.Hv  = &fun_Hv;
+  88:   F.params = (void *) a;
+@end smallexample
+
+@noindent
+The memory allocation to store the bounds is performed in lines 90 and
+91. Further the lower and upper bounds are set to -3 and
+3, respectively, to all variables.
+
+@smallexample
+  89:   C.n = nn;
+  90:   C.L = gsl_vector_alloc( C.n );
+  91:   C.U = gsl_vector_alloc( C.n );
+
+  92:   gsl_vector_set_all( C.L, -3.0 );
+  93:   gsl_vector_set_all( C.U,  3.0 );
+@end smallexample
+
+@noindent
+These two lines allocate and set the initial iterate.
+
+@smallexample
+  94:   X = gsl_vector_alloc( nn );
+  95:   gsl_vector_set_all( X, 1.0 );
+@end smallexample
+
+@noindent
+Line 96 allocate the necessary memory for an instance of the
+optimization algorithm of type @code{T} (defined in line 73). Line 97
+initializes its parameters to default values. If the you want to tune
+the method by changing the default values to some parameter this
+should be done between lines 97 and 98.
+
+@smallexample
+  96:   M = ool_conmin_minimizer_alloc( T, nn );
+
+  97:   ool_conmin_parameters_default( T, (void*)(&P) );
+@end smallexample
+
+@noindent
+In line 98, everything is put together. It states that this instance
+of the method @code{M} is responsible for minimizing function @code{F},
+subject to constraints @code{C}, starting from point @code{X}, with
+parameters @code{P}.
+
+@smallexample
+  98:   ool_conmin_minimizer_set( M, &F, &C, X, (void*)(&P) );
+@end smallexample
+
+@noindent
+We are now in position to begin iterating. The iteration counter is
+initialized (line 99) and some information concerning the initial
+point is displayed (101--102). The iteration loop is repeated while
+the maximum number of iterations was not reached and the @code{status}
+is @code{OOL_CONTINUE}. Further conditions could also be considered
+(maximum number of function/gradient evaluation for example). The
+iteration counter is incremented (104) and one single iteration of the
+method is performed (105). In line 106 the current iterate is checked
+for optimality. Finally some information concerning this iteration is
+displayed.
+
+@smallexample
+  99:   ii = 0;
+ 100:   status = OOL_CONTINUE;
+
+ 101:   printf( "%4i : ", ii );
+ 102:   iteration_echo ( M );
+
+ 103:   while( ii < nmax && status == OOL_CONTINUE )@{
+ 104:      ii++;
+ 105:      ool_conmin_minimizer_iterate( M );
+ 106:      status = ool_conmin_is_optimal( M );
+
+ 107:      printf( "%4i : ", ii );
+ 108:      iteration_echo( M );
+ 109:   @}
+@end smallexample
+
+@noindent
+The program ends displaying the convergence status (110--113), number
+of variables, function and gradient evaluations, the objective
+function value at the last iterate and the norm of its projected
+gradient (114--123).
+
+@smallexample
+ 110:   if(status == OOL_SUCCESS)
+ 111:      printf("\nConvergence in %i iterations", ii);
+ 112:   else
+ 113:      printf("\nStopped with %i iterations", ii);
+
+ 114:   printf("\nvariables................: %6i"
+ 115: 	 "\nfunction evaluations.....: %6i"
+ 116: 	 "\ngradient evaluations.....: %6i"
+ 117: 	 "\nfunction value...........: % .6e"
+ 118: 	 "\nprojected gradient norm..: % .6e\n",
+ 119: 	 nn,
+ 120: 	 ool_conmin_minimizer_fcount( M ),
+ 121: 	 ool_conmin_minimizer_gcount( M ),
+ 122: 	 ool_conmin_minimizer_minimum( M ),
+ 123: 	 ool_conmin_minimizer_size( M ));
+@end smallexample
+
+@noindent
+To finalize, all allocated memory is freed.
+
+@smallexample
+ 124:   gsl_vector_free( C.L );
+ 125:   gsl_vector_free( C.U );
+ 126:   gsl_vector_free( X );
+ 127:   gsl_vector_free( a );
+
+ 128:   ool_conmin_minimizer_free( M );
+
+ 129:   return OOL_SUCCESS;
+ 130: @}
+@end smallexample
+
+@noindent
+This last block codes an auxiliar function to display few elements of
+the current iterate and the objective value.
+
+@smallexample
+ 131: void iteration_echo( ool_conmin_minimizer *M )
+ 132: @{
+ 133:   double f = M->f;
+ 134:   size_t ii, nn;
+
+ 135:   nn = X->size;
+
+ 136:   printf( "f( " );
+ 137:   for( ii = 0; ii < 3; ii++ )
+ 138:     printf( "%+6.3e, ", gsl_vector_get( M->x, ii ) );
+ 139:   printf( "... ) = %+6.3e\n", f );
+
+ 140: @}
+@end smallexample
+
+@noindent
+
+
+This code produces the output:
+@smallexample
+   0 : f( +0.000e+00, +0.000e+00, +0.000e+00, ... ) = +3.384e+03
+   1 : f( +1.000e-02, +2.000e-02, +3.000e-02, ... ) = +2.741e+03
+   2 : f( +1.000e-01, +2.000e-01, +3.000e-01, ... ) = +1.168e+03
+
+Convergence in 2 iterations
+variables................:    100
+function evaluations.....:      3
+gradient evaluations.....:      3
+function value...........:  1.167950e+03
+projected gradient norm..:  8.881784e-16
+@end smallexample
+
+@c -----------------------------------------------------------------------------

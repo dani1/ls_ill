@@ -1,0 +1,26 @@
+
+GENCAN Todo Items
+=================
+
+* gencan_alloc() - Test alocation after each call of malloc 
+
+* Remove fortranits
+  - unnecessary if's
+  - vector copies
+
+* Organize gencan_state structure
+
+* gencan_actual_iterate: Replace st->S by M->dx ?
+
+* What hapens if st->gptwon2 == 0.0 on first iteration?
+
+* Create void gencan_cg_maximum_step() function on file gencan_cg.c
+
+* What is the meaning of GENCAN_CG_S?
+
+* Insert parameter tol.
+
+* Implement some enum objects to clearly handle flags.
+  For example, instead of P.cg_scre = 1 or 2, would be better
+  to have P.cg_scre = OOL_GENCAN_CG_EUCLIDIAN_NORM or
+  OOL_GENCAN_SUPREMUN_NORM
