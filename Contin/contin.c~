@@ -41,8 +41,10 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <ool/ool_conmin.h>
-#include <gsl/gsl_matrix.h>
+//#include <ool/ool_conmin.h>
+//#include <gsl/gsl_matrix.h>
+
+#include <//ool_conmin.h>
         
 /*
 ------------------------------------------------------------------------------
