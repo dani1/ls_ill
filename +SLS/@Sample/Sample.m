@@ -46,7 +46,7 @@ classdef Sample
 
   function self = Sample( varargin )
 
-   a	= Args(varargin{:});								% get the args
+   a	= Args(varargin{:})	;							% get the args
 
    try		self.Instrument	= Instruments.(a.Instrument);				% get the instrument
    catch 	error('Instrument not found!');
@@ -64,7 +64,9 @@ classdef Sample
    end
 
    try		self.Point	= self.Instrument.read_static_file ( a.Path );  	% get the KcR and angles
-   catch	error('Error loading the static file!');
+   catch disp(self)
+       error('Error loading the static file!');
+      
    end
 
    pointprops	= {	'Protein',	'Salt',		...
@@ -90,23 +92,23 @@ classdef Sample
    dKcR	= sum( y .* w ) / sum( w );
   end
 
-  function X_T	= get.X_T ( self );
+  function X_T	= get.X_T ( self )
    y	= [ self.Point.X_T ];
    w	= 1./ [ self.Point.dX_T ].^2;
    X_T	= sum( y .* w ) / sum( w );   
   end
 
-  function dX_T	= get.dX_T ( self );
+  function dX_T	= get.dX_T ( self )
    y	= [ self.Point.dX_T ];
    w	= 1./ [ self.Point.dX_T ].^2;
    dX_T	= sum( y .* w ) / sum( w );   
   end
 
-  function Angle= get.Angle ( self );
+  function Angle= get.Angle ( self )
    Angle= unique([self.Point.Angle]);
   end
 
-  function Q	= get.Q ( self );
+  function Q	= get.Q ( self )
    Q	= unique([self.Point.Q]);
   end
 

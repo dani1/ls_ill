@@ -10,7 +10,7 @@ classdef Args < dynamicprops
    l		= length(cellargs);
 
    try		assert( l ~= 0 & ~mod( l, 2 ) );
-   catch	error('Optional args not even!');
+   catch;	error('Optional args not even!');
    end
 
    for i = 1 : floor(l/2)

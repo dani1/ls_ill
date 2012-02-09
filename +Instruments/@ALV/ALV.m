@@ -9,8 +9,8 @@ classdef ALV
   Unit_Lambda	= 'A';
   Angles	= struct(	'Min',	12,	...
 				'Max',	150	);
-  T		= struct(	'Min',	LIT.Constants.T0,	...	% Minimal T = 0°C
-				'Max',	LIT.Constants.T0+45	);	% Maximal T = 45°C
+  T		= struct(	'Min',	-Constants.T0,	...	% Minimal T = 0°C
+				'Max',	-Constants.T0+45	);	% Maximal T = 45°C
 
  end
 
@@ -18,7 +18,8 @@ classdef ALV
 
   Point	= read_static_file 	( path )
   Point	= read_dynamic_file	( path )
-
+  Point	= read_dynamic_file_fast_init( path )
+  [t gt dgt Angle temperature] = read_dynamic_file_fast( path );
  end
 
 end

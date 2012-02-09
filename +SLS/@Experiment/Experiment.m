@@ -232,7 +232,6 @@ classdef Experiment < dynamicprops
 
    self.plot_compressibility;
    plot(x, BKG + beta .* x.^( -eta ), 'LineWidth', self.LineWidth );
-
    self.check_add_prop('Eta',eta,'dEta',deta);
 
   end	% fit_compressibility

@@ -1,7 +1,7 @@
 function point	= read_dynamic_file ( path )
 
  fid	= fopen( path );
-
+% disp(path);
  tau	= [];
  g	= [];
  dg	= [];
@@ -45,3 +45,4 @@ function point	= read_dynamic_file ( path )
  point.correct_G;
 
 end
+

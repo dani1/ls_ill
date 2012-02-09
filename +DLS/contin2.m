@@ -1,7 +1,7 @@
 %============================================================================
 % FIT CORRELOGRAMMS USING INVERSE LAPLACE TRANSFORM (CONTIN)
 %============================================================================
-function [ s g A ] = contin2 ( t, y, dy, smin, smax, m, alpha, cycles )
+function s  = contin2 ( t, y, dy, smin, smax, m, alpha, cycles )
 % The core function is rilt.m by another author. In this function, the data is prepared
 % before and after the CONTIN algorithm. Also, CONTIN is performed many times up to a certain
 % precision, using low-resolution fits as input for better ones.

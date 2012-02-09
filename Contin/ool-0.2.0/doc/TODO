@@ -1,8 +1,0 @@
-
-DOC Todo Items
-===============
-
-* Improve/translate the Developers' Guide (newmethod.texi)
-
-* In gencan.texi, describe what happens when cg_eps is negative (take
-a look at gencan_cg.c)

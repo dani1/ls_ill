@@ -30,6 +30,8 @@ classdef Sample
   Instrument
   C_set
   n_set
+  raw_data_path
+  date_experiment
 
  end
 
@@ -37,10 +39,9 @@ classdef Sample
 
   function self = Sample( varargin )
 
-   a	= Args(varargin{:});								% get the args
-
+   a	= Args(varargin{:});% get the args
    try		self.Instrument	= Instruments.(a.Instrument);				% get the instrument
-   catch 	error('Instrument not found!');
+   catch ; error('Instrument not found!');
    end
 
    props	= {	'Protein',	'Salt',		...
@@ -49,22 +50,23 @@ classdef Sample
 			'n',		'n_set'		};
    for i = 1 : length(props)
     try		self.(props{i})		= a.(props{i});
-    catch	warning(['Property ' props{i} ' not found!']);
+    catch ;	warning(['Property ' props{i} ' not found!']);
     end
    end
 
-   
+  
+   self.raw_data_path = a.Path;
    [ s e ] = self.find_start_end( a.Path );
-
+	disp(['load: ' a.Path '[' num2str(s, '%4.4u') ':' num2str(e, '%4.4u') ']' ]);
+   
    self.Point	= DLS.Point;
-
    for i = s : e
 
     file		= [ a.Path num2str(i,'%4.4u') '.ASC' ];
-    self.Point(i-s+1)	= self.Instrument.read_dynamic_file ( file );
+    self.Point(i-s+1)	= self.Instrument.read_dynamic_file_fast_init( file );
+	%self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
 
    end
-
 
    pointprops	= {	'Protein',	'Salt',		...
 			'C',		'C_set',	...
@@ -76,11 +78,11 @@ classdef Sample
 
   end
 
-  function Angle= get.Angle ( self );
+  function Angle= get.Angle ( self )
    Angle= unique([self.Point.Angle]);
   end
 
-  function Q	= get.Q ( self );
+  function Q	= get.Q ( self )
    Q	= unique([self.Point.Q]);
   end
 

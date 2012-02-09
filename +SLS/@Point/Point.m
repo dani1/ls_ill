@@ -48,7 +48,7 @@ classdef Point
  methods
 
   function Phi = get.Phi ( self )
-   v0		= LIT.(self.Protein).v0;
+   v0		= LIT.(self.Protein).v0; %%% !!! LIT not defined !!!
    Phi		= self.C * v0;
   end
 

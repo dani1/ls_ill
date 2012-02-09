@@ -5,7 +5,7 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
 % take correlogramm and Q-vector as input and return values of fit coefficient as output
 % the fit is limited to discrete discrete times
 
-  Min_D1		= 1;			% A^2 / ns
+  Min_D1		= 0.5;			% A^2 / ns %changed from 1 to 0.5
   Max_D1		= 100;			% A^2 / ns
   Start_D1		= 6;			% A^2 / ns
   Min_D2		= 0;			% A^2 / ns
@@ -43,28 +43,28 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
    fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
    coeffnames	= { 'A1'	'Gamma1'	'A2'	'Gamma2'	};
    lowerbond	= [ 0.5		Min_Gamma1 	0	Min_Gamma2 	];
-   upperbond	= [ 1		Max_Gamma1 	0.5	Max_Gamma2 	];
+   upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	]; %changed 3 from 0.5 to 1
    startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	];
 
   case 'DoubleBKG'										% double exponential decay (with background)
    fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2 + b';
    coeffnames	= { 'A1'	'Gamma1'	'A2'	'Gamma2'	'b'	};
-   lowerbond	= [ 0.5		Min_Gamma1 	0	Min_Gamma2 	-1e-3	];
-   upperbond	= [ 1		Max_Gamma1 	0.5	Max_Gamma2 	1e-3	];
+   lowerbond	= [ 0.1		Min_Gamma1 	0	Min_Gamma2 	-1e-3	];
+   upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	1e-3	]; %changed 3 from 0.5 to 1
    startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	0	];
 
   case 'SingleStreched'										% double decay, exp + streched
    fit_function	= '( Ae * exp( - Gammae * t ) + As * exp(-( Gammas *t).^b )) .^2';
    coeffnames	= { 'Ae'	'Gammae'	'As'	'Gammas'	'b'	};
    lowerbond	= [ 0.5		Min_Gamma1 	0	Min_Gamma2 	0	];
-   upperbond	= [ 1		Max_Gamma1 	0.5	Max_Gamma2 	1	];
+   upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	1	];
    startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	0.8	];
 
   case 'DoubleStreched'										% double decay, exp + streched
    fit_function	= '( As1 * exp( - ( Gammas1 * t).^b1 ) + As2 * exp(-( Gammas2 *t).^b2 )) .^2';
    coeffnames	= { 'As1'	'Gammas1'	'As2'	'Gammas2'	'b1'	'b2'	};
    lowerbond	= [ 0.5		Min_Gamma1 	0	Min_Gamma2 	0	0	];
-   upperbond	= [ 1		Max_Gamma1 	0.5	Max_Gamma2 	1	1	];
+   upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	1	1	];
    startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	0.8	0.8	];
 
   case 'Cumulants'
@@ -77,7 +77,6 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
    dg		= dg ( ind );
    yc		= log( sqrt( g ) );					% Get the straight line for cumulants!
    dyc		= dg ./ ( 2 * g );
-
   otherwise
    error('Method not recognized!');
  end

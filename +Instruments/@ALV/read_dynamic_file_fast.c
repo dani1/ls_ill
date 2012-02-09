@@ -1,13 +1,13 @@
 /*
  * =====================================================================================
  *
- *       Filename:  read_static_from_autosave.c
+ *       Filename:  read_dynamic_file_fast.c
  *
- *    Description:  read static count rate and monitor diode intensity from autosave file of ALV light scattering instrument.
+ *    Description:  read correlation data from autosave files created by ALV Light Scattering Instrument 
  *
  *        Version:  1.0
  *        Created:  22.12.2011 16:07:05
- *       Revision:  none
+ *       Revision:   20.01.2011
  *       Compiler:  gcc
  *
  *         Author:  Daniel Soraruf (), daniel.soraruf@gmail.com
@@ -22,9 +22,13 @@
 #include 	<stdlib.h>
 #include 	<string.h>
 
+/* check if calling from matlab and include necessary mex.h*/
 #ifdef MATLAB_MEX_FILE
 #include "mex.h"
 #endif
+
+/*  define max_length of correlation data */
+#define MAX_CORR_VECTOR_LENGTH 1000
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  mexFunction 
@@ -47,39 +51,42 @@ void mexFunction(int nlhs,
 	int buf_out_len;
 	int status;
 	int i ;
-
 	
-//	t   = mxGetPr(plhs[0]);
-//	gt  = mxGetPr(plhs[1]);
-//	dgt = mxGetPr(plhs[2]);
+ 	/*  get length of input string */
 	buflen = (mxGetM(prhs[0]) * mxGetN(prhs[0])) + 1;
-	path = mxMalloc(buflen * sizeof(char));
+	/*  allocate memory for path */
+	path   = mxMalloc(buflen * sizeof(char));
+	/*  get path string from input prhs[0]  */
 	status = mxGetString(prhs[0], path, buflen); 
 	if (status != 0)
 		mexWarnMsgTxt("Not enough space. String is truncated."); 
-//	gt  = mxMalloc(1000 * sizeof(double));
-//	dgt = mxMalloc(1000 * sizeof(double));
-//	t   = mxMalloc(1000 * sizeof(double));
-	t = calloc(1000, sizeof(double));
-	gt = calloc(1000, sizeof(double));
-	dgt = calloc(1000, sizeof(double));
-	buf_out_len = read_data(t,gt,dgt,&temperature,&angle, path);
 
+	/*  allocate memory */
+	t   = calloc(MAX_CORR_VECTOR_LENGTH, sizeof(double));
+	gt  = calloc(MAX_CORR_VECTOR_LENGTH, sizeof(double));
+	dgt = calloc(MAX_CORR_VECTOR_LENGTH, sizeof(double));
+	/*  read data from file: */
+	/*  buf_out_len = length of correlation data vectors */
+	buf_out_len = read_data(t,gt,dgt,&temperature,&angle, path);
+	
+	/*  allocate Matlab memory: 3 vectors t,gt, dgt*/
 	plhs[0] = mxCreateDoubleMatrix(buf_out_len, 1 , mxREAL);
 	plhs[1] = mxCreateDoubleMatrix(buf_out_len, 1 , mxREAL);
 	plhs[2] = mxCreateDoubleMatrix(buf_out_len, 1 , mxREAL);
+	/*  allocate Matlab memory: 2 variables angle,temperature */
 	plhs[3] = mxCreateDoubleMatrix(1, 1, mxREAL);
 	plhs[4] = mxCreateDoubleMatrix(1, 1, mxREAL);
-	
+	/*  get pointer to Matlab angle and temparature variables */
 	plhs_angle = mxGetPr(plhs[3]);
 	plhs_temperature = mxGetPr(plhs[4]);
-
+	/*  populate Matlab angle and temperature variables */
 	*plhs_angle = angle;
 	*plhs_temperature = temperature;
-	
+	/*  get pointer to 3 Matlab vectors t,gt, dgt */
 	plhs_t = mxGetPr(plhs[0]);
 	plhs_gt = mxGetPr(plhs[1]);
 	plhs_dgt = mxGetPr(plhs[2]);
+	/*  populate  3 Matlab vectors t,gt, dgt*/
 	for ( i = 0 ; i < buf_out_len; i++)
 	{
 		plhs_t[i] = t[i];
@@ -100,9 +107,12 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 	char *str = (char*) malloc(1000 * sizeof(char));
 	float tmp_float;
 	int number_of_columns = 5;
-	int col_number_time = 0;
-	int col_number_correloation = 1;
-	int col_number_std_dev = 1;
+	/*  ASSUMPTION : col_number_correlation != 0  !!!*/
+	const int col_number_time = 0;
+	const int col_number_correlation = 1;
+	int loop_col_number_time = col_number_time;
+	/* ASSUMPTION std_dev in separate list in 2 columns 0 = time, 1 = std_dev */
+	//const int col_number_std_dev = 1;
 	int time_index = 0;
 	int correlation_index = 0;
 	int std_dev_index = 0;
@@ -135,26 +145,30 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 		fscanf(file_pointer, "%s", str);
 //		printf("%s\n", str);
 	}
+	/*  read first column of first row (for speed up, less strcmp) */
 	fscanf(file_pointer,"%s", str);
-	t[time_index++] = atof(str); 
+	if (col_number_time == 0)
+	{
+		t[time_index++] = atof(str); 
+		loop_col_number_time = number_of_columns;
+	}
+	/* first column already read */
 	while( strcmp(str, "\"Count") != 0 )
 	{
 		for ( i = 0 ; i < number_of_columns; i++)
 		{
-			if ( i == 0)
+			if ( i == col_number_correlation - 1)
 			{
+			 	/*  -1 necessary since i = col_number + 1 for speed up */
 				fscanf(file_pointer,"%lf", & gt[correlation_index++]);
-//				printf(" gt[%d]: %lf\n",correlation_index -1, \
-//					gt[correlation_index -1 ]);
 			}
 			else
 			{
-				if (i == number_of_columns - 1)
+				if (i == loop_col_number_time - 1)
 				{
+				/*  fscanf at position  col_number_time (if col_number_time ==0 -> next column)  */
 					fscanf(file_pointer,"%s", str);
 					t[time_index++] = atof(str);
-//					printf(" t[%d]: %lf \t ", time_index-1,\
-//							t[time_index -1]);
 				}
 				else
 				{
@@ -173,31 +187,38 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 	{
 		fscanf(file_pointer, "%f", & tmp_float);
 		fscanf(file_pointer, "%lf",& dgt[std_dev_index++]);
-//		printf("t[%d] = %lf ; dgt[%d] = %lf\n", std_dev_index -1, t[std_dev_index-1],std_dev_index -1,  dgt[std_dev_index-1]);
 	}
 	fclose(file_pointer);
 	time_index --;
 	std_dev_index --;
-//	printf("%d %d %d", std_dev_index, correlation_index, time_index);
 	return time_index;
 }				/* ----------  end of function read_data  ---------- */
 
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  main
- *  Description:  
+ *  Description:  For test / launch purposes
  * =====================================================================================
  */
 	int
 main ( int argc, char *argv[] )
 {
+	
 	char *path = "/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC";
-	double *t = (double * ) malloc(1000 * sizeof(double));
-	double *gt = (double * ) malloc(1000 * sizeof(double));
-	double *dgt = (double * ) malloc(1000 * sizeof(double));
+	double *t = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
+	double *gt = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
+	double *dgt = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
 	double angle, temperature;
-	int len;
+	int len, i;
 	len = read_data(t,gt,dgt,&temperature, &angle,path);
 	printf("\n\nangle : %lf \ntemperature: %lf\nlen : %d\n", angle, temperature, len);
-	return 0;
+	/*  head   */
+	for ( i = 0 ; i < 5 ; i++) 
+		printf("\n %lf %lf %lf" , t[i], gt[i], dgt[0]);
+	printf("\n");
+	/*  tail */
+	for ( i = len-5 ; i < len ; i++) 
+		printf("\n %lf %lf %lf" , t[i], gt[i], dgt[i]);
+	printf("\n");
+	 and include necessary mex.hreturn 0;
 }				/* ----------  end of function main  ---------- */

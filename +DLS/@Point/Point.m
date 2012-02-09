@@ -50,7 +50,7 @@ classdef Point < dynamicprops
  methods
 
   function Phi = get.Phi ( self )
-   v0		= LIT.(self.Protein).v0;
+   v0		= LIT.(self.Protein).v0; %%% !!! not defined LIT !!!
    Phi		= self.C * v0;
   end
 
@@ -91,7 +91,7 @@ classdef Point < dynamicprops
   function fit ( self, method )
 
    fit_obj	= self.fit_discrete ( self.Tau, self.G, self.dG, method, self.Q, self.Protein );
-
+   
    try self.addprop(['Fit_' method]);	end
    self.(['Fit_' method])	= fit_obj;
 
@@ -122,8 +122,8 @@ classdef Point < dynamicprops
    dy		= 0.5 ./ y .* dgt;
 
    % PART 3: PERFORM INVERSE LAPLACE TRANSFORM
-   [ s, gs, bs ]= self.contin(t, y, dy, min(t), max(t), 15*N, 0.1, 0);
-%   [ s, gs, bs ]= self.contin(t, y, dy, min(t), max(t), N, 0.1, 0);
+ %  s = self.contin2(t, y, dy, min(t), max(t), 15*N, 0.1, 1); %%% output controllare !!!
+ [ s, gs, bs ]= self.contin(t, y, dy, min(t), max(t), 50*N, 0.2, 0);
    D	= 1e-6 ./ ( self.Q^2 * s );
 
    try   self.addprop('CONTIN'); end			% maybe it is already a property
