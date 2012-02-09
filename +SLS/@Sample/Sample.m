@@ -68,9 +68,9 @@ classdef Sample
    try		self.Point	= self.Instrument.read_static_file ( a.Path );  	% get the KcR and angles
    catch disp(self)
        error('Error loading the static file!');
-      
+    
    end
-
+   self.raw_data_path = a.Path;
    pointprops	= {	'Protein',	'Salt',		...
 			'C',		'C_set',	...
 			'Cs',				...
