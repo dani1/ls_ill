@@ -39,6 +39,8 @@ classdef Sample
   C_set
   n_set
   dndc_set
+  raw_data_path
+  date_experiment
 
  end
 
