@@ -114,6 +114,10 @@ classdef Sample
    Q	= unique([self.Point.Q]);
   end
 
+	 [KcR dKcR SLSData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, init_index, end_index)
  end
+ methods(Access = private)
+	 [s e] = find_start_end( path )
+ 
 
 end
