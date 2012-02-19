@@ -18,8 +18,12 @@ classdef ALV
 
   Point	= read_static_file 	( path )
   Point	= read_dynamic_file	( path )
-  Point	= read_dynamic_file_fast_init( path )
+  Point	= invoke_read_dynamic_file_fast( path )
+  Point = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index)
   [t gt dgt Angle temperature] = read_dynamic_file_fast( path );
+  s = read_tol_file(path_of_tol_file)
+  [angle count_rate1 count_rate2 I_mon temperature] = read_static_from_autosave(path_of_autosave_file)
+  
  end
 
 end

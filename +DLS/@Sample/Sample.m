@@ -62,7 +62,7 @@ classdef Sample
    for i = s : e
 
     file		= [ a.Path num2str(i,'%4.4u') '.ASC' ];
-    self.Point(i-s+1)	= self.Instrument.read_dynamic_file_fast_init( file );
+    self.Point(i-s+1)	= self.Instrument.invoke_read_dynamic_file_fast( file );
 	%self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
 
    end

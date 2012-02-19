@@ -64,12 +64,25 @@ classdef Sample
     catch	warning(['Property ' props{i} ' not found!']);
     end
    end
-
-   try		self.Point	= self.Instrument.read_static_file ( a.Path );  	% get the KcR and angles
-   catch disp(self)
-       error('Error loading the static file!');
-    
-   end
+ if any(strcmp('path_standard', properties(a)))
+	   bool_get_data_from_autosave = 1;
+	else
+	   bool_get_data_from_autosave = 0;
+	end
+	if ~bool_get_data_from_autosave
+	   try		self.Point	= self.Instrument.read_static_file ( a.Path );  	% get the KcR and angles
+	   catch disp(self)
+	       error('Error loading the static file!');
+	    
+	   end
+    else
+        disp(['Load SLS:' a.Path])
+		[start_index, end_index] = self.find_start_end( a.Path );
+		path_standard = a.path_standard;
+		path_solvent  = a.path_solvent;
+		self.Point = self.Instrument.read_static(path_standard, path_solvent, ...
+			a.Path, self.C, self.dndc, start_index, end_index);
+	end
    self.raw_data_path = a.Path;
    pointprops	= {	'Protein',	'Salt',		...
 			'C',		'C_set',	...
@@ -114,10 +127,9 @@ classdef Sample
    Q	= unique([self.Point.Q]);
   end
 
-	 [KcR dKcR SLSData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, init_index, end_index)
  end
- methods(Access = private)
+ methods(Access = private, Static)
 	 [s e] = find_start_end( path )
- 
+ end
 
 end
