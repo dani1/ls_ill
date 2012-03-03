@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  read_dynamic_file_fast.c
+ *       Filename:  read_static_from_autosave_fast.c
  *
  *    Description:  read correlation data from autosave files created by ALV Light Scattering Instrument 
  *
@@ -44,10 +44,8 @@ void mexFunction(int nlhs,
 
 	char *path;
 	int buflen;
-	double *gt, *plhs_gt;
-	double *dgt, *plhs_dgt;
-	double *t, *plhs_t;
 	double angle, *plhs_angle, temperature, *plhs_temperature;
+	double count_rate1, *plhs_cr1, count_rate2,*plhs_cr2 , monitor_intensity, *plhs_imon;
 	int buf_out_len;
 	int status;
 	int i ;
@@ -61,38 +59,32 @@ void mexFunction(int nlhs,
 	if (status != 0)
 		mexWarnMsgTxt("Not enough space. String is truncated."); 
 
-	/*  allocate memory */
-	t   = calloc(MAX_CORR_VECTOR_LENGTH, sizeof(double));
-	gt  = calloc(MAX_CORR_VECTOR_LENGTH, sizeof(double));
-	dgt = calloc(MAX_CORR_VECTOR_LENGTH, sizeof(double));
 	/*  read data from file: */
-	/*  buf_out_len = length of correlation data vectors */
-	buf_out_len = read_data(t,gt,dgt,&temperature,&angle, path);
+	i = read_data(&count_rate1, &count_rate2,&monitor_intensity,&temperature,&angle, path);
 	
 	/*  allocate Matlab memory: 3 vectors t,gt, dgt*/
-	plhs[0] = mxCreateDoubleMatrix(buf_out_len, 1 , mxREAL);
-	plhs[1] = mxCreateDoubleMatrix(buf_out_len, 1 , mxREAL);
-	plhs[2] = mxCreateDoubleMatrix(buf_out_len, 1 , mxREAL);
+	plhs[0] = mxCreateDoubleMatrix(1, 1 , mxREAL);
+	plhs[1] = mxCreateDoubleMatrix(1, 1 , mxREAL);
+	plhs[2] = mxCreateDoubleMatrix(1, 1 , mxREAL);
 	/*  allocate Matlab memory: 2 variables angle,temperature */
 	plhs[3] = mxCreateDoubleMatrix(1, 1, mxREAL);
 	plhs[4] = mxCreateDoubleMatrix(1, 1, mxREAL);
 	/*  get pointer to Matlab angle and temparature variables */
-	plhs_angle = mxGetPr(plhs[3]);
+	plhs_angle       = mxGetPr(plhs[3]);
 	plhs_temperature = mxGetPr(plhs[4]);
 	/*  populate Matlab angle and temperature variables */
-	*plhs_angle = angle;
+	*plhs_angle       = angle;
 	*plhs_temperature = temperature;
 	/*  get pointer to 3 Matlab vectors t,gt, dgt */
-	plhs_t = mxGetPr(plhs[0]);
-	plhs_gt = mxGetPr(plhs[1]);
-	plhs_dgt = mxGetPr(plhs[2]);
-	/*  populate  3 Matlab vectors t,gt, dgt*/
-	for ( i = 0 ; i < buf_out_len; i++)
-	{
-		plhs_t[i] = t[i];
-		plhs_gt[i] = gt[i];
-		plhs_dgt[i] = dgt[i];
-	}
+	plhs_cr1  = mxGetPr(plhs[0]);
+	plhs_cr2  = mxGetPr(plhs[1]);
+	plhs_imon = mxGetPr(plhs[2]);
+	/*  populate  3 Matlab count rates and monitor intensity*/
+	*plhs_cr1  = count_rate1;
+	*plhs_cr2  = count_rate2;
+	*plhs_imon = monitor_intensity;
+
+	
 }				/* ----------  end of function mexFunction  ---------- */
 #endif
 /* 
@@ -101,22 +93,10 @@ void mexFunction(int nlhs,
  *  Description:  read dynamic data from DLS instrument ALV autosave
  * =====================================================================================
  */
-int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  char *path)
+int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,  char *path)
 {
 	FILE* file_pointer;
 	char *str = (char*) malloc(1000 * sizeof(char));
-	float tmp_float;
-	int number_of_columns = 5;
-	/*  ASSUMPTION : col_number_correlation != 0  !!!*/
-	const int col_number_time = 0;
-	const int col_number_correlation = 1;
-	int loop_col_number_time = col_number_time;
-	/* ASSUMPTION std_dev in separate list in 2 columns 0 = time, 1 = std_dev */
-	//const int col_number_std_dev = 1;
-	int time_index = 0;
-	int correlation_index = 0;
-	int std_dev_index = 0;
-	int i;
 	file_pointer = fopen(path, "r+");
 	/*find temperature*/
 	while( strcmp(str, "Temperature") != 0)
@@ -139,59 +119,38 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 	fscanf(file_pointer, "%s", str);
 	/*  save angle   */
 	*angle = atof(str);
-//	printf("%lf\n", *angle);
-	while( strcmp(str, "\"Correlation\"") != 0 )
+	/*  find count_rate 1 */
+	while( strcmp(str, "MeanCR0") != 0)
 	{
 		fscanf(file_pointer, "%s", str);
-//		printf("%s\n", str);
 	}
-	/*  read first column of first row (for speed up, less strcmp) */
-	fscanf(file_pointer,"%s", str);
-	if (col_number_time == 0)
-	{
-		t[time_index++] = atof(str); 
-		loop_col_number_time = number_of_columns;
-	}
-	/* first column already read */
-	while( strcmp(str, "\"Count") != 0 )
-	{
-		for ( i = 0 ; i < number_of_columns; i++)
-		{
-			if ( i == col_number_correlation - 1)
-			{
-			 	/*  -1 necessary since i = col_number + 1 for speed up */
-				fscanf(file_pointer,"%lf", & gt[correlation_index++]);
-			}
-			else
-			{
-				if (i == loop_col_number_time - 1)
-				{
-				/*  fscanf at position  col_number_time (if col_number_time ==0 -> next column)  */
-					fscanf(file_pointer,"%s", str);
-					t[time_index++] = atof(str);
-				}
-				else
-				{
-					fscanf(file_pointer, "%f", & tmp_float);
-				}
-			}
-		}
-	}
-	
-	while( strcmp(str, "\"StandardDeviation\"") != 0 )
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
+	/*  save count_rate 1   */
+	*cr1 = atof(str);
+	/*  find count_rate 2 */
+	while( strcmp(str, "MeanCR1") != 0)
 	{
 		fscanf(file_pointer, "%s", str);
-//		printf("%s\n", str);
 	}
-	while(!feof(file_pointer))
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
+	/*  save count_rate 2   */
+	*cr2 = atof(str);
+	/*  find monitor diode */
+	while( strcmp(str, "Monitor") != 0)
 	{
-		fscanf(file_pointer, "%f", & tmp_float);
-		fscanf(file_pointer, "%lf",& dgt[std_dev_index++]);
+		fscanf(file_pointer, "%s", str);
 	}
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
+	/*  save monitor diode intensity   */
+	*imon = atof(str);
+
 	fclose(file_pointer);
-	time_index --;
-	std_dev_index --;
-	return time_index;
+	return 1;
 }				/* ----------  end of function read_data  ---------- */
 
 /* 
@@ -205,20 +164,12 @@ main ( int argc, char *argv[] )
 {
 	
 	char *path = "/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC";
-	double *t = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
-	double *gt = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
-	double *dgt = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
+	double cr1;
+	double cr2;
+	double imon; 
 	double angle, temperature;
-	int len, i;
-	len = read_data(t,gt,dgt,&temperature, &angle,path);
-	printf("\n\nangle : %lf \ntemperature: %lf\nlen : %d\n", angle, temperature, len);
-	/*  head   */
-	for ( i = 0 ; i < 5 ; i++) 
-		printf("\n %lf %lf %lf" , t[i], gt[i], dgt[0]);
-	printf("\n");
-	/*  tail */
-	for ( i = len-5 ; i < len ; i++) 
-		printf("\n %lf %lf %lf" , t[i], gt[i], dgt[i]);
-	printf("\n");
+	int len;
+	len = read_data(&cr1,&cr2,&imon,&temperature, &angle,path);
+	printf("results: %f %f %f %f %f", cr1, cr2, imon, temperature, angle);
 	return 0;
 }				/* ----------  end of function main  ---------- */
