@@ -1,0 +1,32 @@
+Quick introduction:
+
+DLS
+
+Single Sample:
+
+Data of each file (one count at one angle) is saved in a class named DLS.Point.
+The set of data files of different counts at different angles (single correlograms) is saved in an ARRAY of DLS.Point stored in a class DLS.Sample:
+(DLS is not a class, but only a container (folder) where the DLS classes are stored : Point, Sample
+
+A single data point can be accessed by DLS.Sample.Point(j).property or DLS.Sample.Point(j).method.
+The same applies also to the results of the fitting which will be accessible by DLS.Sample.Point(i).Fit_<fitmethod>
+where <fitmethod> stands for Double, Single, DoubleBKG, Cumulants...
+
+Multiple Samples:
+
+For multiple samples it is useful to have an array of DLS.Sample, as shown in the example file, 
+where now the data at one angle can be accessed by arr_name(i).Point(j).property.
+
+Fitting:
+
+fitting can be performed on a whole dataset by Point.fit('fitmethod'), with fitmethod
+as described above. so Sample can be fitted by arr_name(i).fit('fitmethod')
+(do not try arr_name.fit() since arr_name is an array and has no method fit)
+
+For further information on calling the Class DLS.Sample for data extraction and settings, 
+please look at the example file.
+
+SLS
+
+Data is saved as a SLS.Sample class, with similar structure as DLS.Sample, where SLS.Point stores the angle dependent
+data values (mainly KcR) and SLS.Sample the info about sample and array of Angle, Q, SLS.Point...
