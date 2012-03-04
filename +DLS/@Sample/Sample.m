@@ -55,16 +55,24 @@ classdef Sample
    end
 
    self.raw_data_path = a.Path;
-   [ s e ] = self.find_start_end( a.Path );
+   [ s e nc] = self.find_start_end( a.Path );
 	disp(['load: ' a.Path '[' num2str(s, '%4.4u') ':' num2str(e, '%4.4u') ']' ]);
    
    self.Point	= DLS.Point;
-   for i = s : e
-
-    file		= [ a.Path num2str(i,'%4.4u') '.ASC' ];
-    self.Point(i-s+1)	= self.Instrument.invoke_read_dynamic_file_fast( file );
-	%self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
-
+   if nc < 0
+	   for i = s : e
+		file		= [ a.Path num2str(i,'%4.4u') '.ASC' ];
+		self.Point(i-s+1)	= self.Instrument.invoke_read_dynamic_file_fast( file );
+		%self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
+	   end
+   else
+	   for i = s : e
+		   for i_c = 1 : nc
+			file		= [ a.Path num2str(i,'%4.4u') '_' num2str(i_c, '%4.4u') '.ASC' ];
+			self.Point(i-s+1)	= self.Instrument.invoke_read_dynamic_file_fast( file );
+			%self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
+			end
+	   end
    end
 
    pointprops	= {	'Protein',	'Salt',		...
@@ -89,7 +97,7 @@ classdef Sample
 
  methods ( Access = private, Static )
 
-  [ s e ] = find_start_end ( path );
+  [ s e nc] = find_start_end ( path );
 
  end
 
