@@ -178,7 +178,7 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 		}
 	}
 	
-	while( strcmp(str, "\"StandardDeviation\"") != 0 )
+	while( strcmp(str, "\"StandardDeviation\"") != 0 && !feof(file_pointer) )
 	{
 		fscanf(file_pointer, "%s", str);
 //		printf("%s\n", str);
@@ -190,7 +190,18 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 	}
 	fclose(file_pointer);
 	time_index --;
-	std_dev_index --;
+	/*  check whether std_dev in file, if not fill with ones */
+	if (! std_dev_index ) 
+	{
+		for ( i = 0 ; i < time_index ; i++)
+		{
+			dgt[i] = 1;
+		}
+	}
+	else
+	{
+		std_dev_index --;
+	}
 	return time_index;
 }				/* ----------  end of function read_data  ---------- */
 
@@ -204,12 +215,13 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 main ( int argc, char *argv[] )
 {
 	
-	char *path = "/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC";
+	char *path = "/Users/daniel/Documents/tesi/data/data_raw/LS/2012_03_02/BSA_5gl_Nosalt0000_0001.ASC";
 	double *t = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
 	double *gt = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
 	double *dgt = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
 	double angle, temperature;
 	int len, i;
+	i = 1;
 	len = read_data(t,gt,dgt,&temperature, &angle,path);
 	printf("\n\nangle : %lf \ntemperature: %lf\nlen : %d\n", angle, temperature, len);
 	/*  head   */
