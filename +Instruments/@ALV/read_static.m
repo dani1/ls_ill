@@ -22,16 +22,16 @@ function [sls_point SlsData] = read_static(path_standard, path_solvent, path_fil
 	%dn_over_dc = 0.1;
 	%start_index = 0;
 	%end_index = 37;
-	%==============================================================================
+	%------------------------------------------------------------------------------
 	% get solvent and standard data
-	%==============================================================================
+	%------------------------------------------------------------------------------
 	solvent = Instruments.ALV.read_tol_file(path_solvent);
 	standard = Instruments.ALV.read_tol_file(path_standard);
 	index = 0;
 	point(end_index - start_index) = struct('scatt_angle', 0, 'count_rate', 0, 'monitor_intensity', 0, 'error_count_rate', 0);
-	%==============================================================================
+	%------------------------------------------------------------------------------
 	% get data from autosave ALV files
-	%==============================================================================
+	%------------------------------------------------------------------------------
 	if path_file(1) == '~'
 		homepath = getenv('HOME'); % !!! works only on unix systems
 		path_file = [homepath path_file(2:end)];
@@ -52,26 +52,19 @@ function [sls_point SlsData] = read_static(path_standard, path_solvent, path_fil
 	end
 
 	%[KcR] = calc_kc_over_r(scatt_angle, standard, solvent,cr_mean,0.001, Imean);
-	%==============================================================================
+
 	% find all angles in file
-	%==============================================================================
 	a = unique([point.scatt_angle]);
-	%==============================================================================
 	% sort them ( to be consistent with the program generated file)
-	%==============================================================================
 	angles = sort(a);
-	%==============================================================================
 	% preallocate memory
-	%==============================================================================
 	SlsData = SLS.AngleData.empty(length(angles),0);
 	angle_tolerance = 1e-3;
 	for index = 1 : length(angles)
 		
 		SlsData(index) = SLS.AngleData(angles(index));
 		for index_1 = 1 : length(point);
-			%======================================================================
 			% save data at one ANGLE in SlsData
-			%======================================================================
 			if abs(point(index_1).scatt_angle - angles(index)) < angle_tolerance
 				SlsData(index).add(point(index_1));
 			end
