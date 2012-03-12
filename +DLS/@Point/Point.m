@@ -62,11 +62,11 @@ classdef Point < dynamicprops
 
   function correct_G ( self )
 
-   i	= ( self.Tau_raw < 1e-5 );			% limit time: 10 ns
+   i	= ( self.Tau_raw < 1e-3 );			% limit time: 10 ns
    norm	= abs(mean( self.G_raw( i ) ));
 
    i	= ( self.Tau_raw > 1e-3	);			% shortest time: 1 mus
-   i	= i & ( self.Tau_raw < 1e2	);		% longest time: 100 ms
+   i	= i & ( self.Tau_raw < 1e2	);	% longest time: 100 ms
 
    self.Tau	= self.Tau_raw (i);
    self.G	= self.G_raw(i)		/ norm;		% normalize
