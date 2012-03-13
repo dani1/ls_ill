@@ -66,10 +66,12 @@ classdef Sample
 		%self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
 	   end
    else
+       counter = 0;
 	   for i = s : e
 		   for i_c = 1 : nc
+            counter = counter + 1;
 			file		= [ a.Path num2str(i,'%4.4u') '_' num2str(i_c, '%4.4u') '.ASC' ];
-			self.Point(i-s+1)	= self.Instrument.invoke_read_dynamic_file_fast( file );
+			self.Point(counter)	= self.Instrument.invoke_read_dynamic_file_fast( file );
 			%self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
 			end
 	   end
