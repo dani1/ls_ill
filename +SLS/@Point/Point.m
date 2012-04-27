@@ -97,7 +97,7 @@ classdef Point
   % correct intensity values based on comparison
   %============================================================================
   function correct_attenuator_intensity ( self )
-	  attenuators = self.Instrument.attenuators;
+	  attenuators = self.Instrument.attenuators ;
 	  RawData = SlsData;
   end
 
