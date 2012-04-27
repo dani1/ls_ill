@@ -26,7 +26,7 @@ function point	= read_dynamic_file ( path )
  end
  
  % read stddev
- while ~strcmp(str,'"StandardDeviation"') str=fgetl(fid); end
+ while (~strcmp(str,'"StandardDeviation"') && ~feof(fid)) str=fgetl(fid); end
  while ~feof(fid)
   str=fgetl(fid);
   [ tmp dg_t ]	= strread(str, '%f %f');

@@ -20,6 +20,8 @@ classdef Point
   Unit_T	= 'K'
   n
   dndc
+  
+ 
 
  end
 
@@ -42,6 +44,7 @@ classdef Point
   dndc_set
   KcR_raw
   dKcR_raw
+  SlsData
 
  end
 

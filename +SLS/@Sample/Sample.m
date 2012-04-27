@@ -77,11 +77,11 @@ classdef Sample
 	   end
     else
         disp(['Load SLS:' a.Path])
-		[start_index, end_index] = self.find_start_end( a.Path );
+		[start_index, end_index, nc] = self.find_start_end( a.Path );
 		path_standard = a.path_standard;
 		path_solvent  = a.path_solvent;
 		self.Point = self.Instrument.read_static(path_standard, path_solvent, ...
-			a.Path, self.C, self.dndc, start_index, end_index);
+			a.Path, self.C, self.dndc, start_index, end_index, nc);
 	end
    self.raw_data_path = a.Path;
    pointprops	= {	'Protein',	'Salt',		...
@@ -129,7 +129,7 @@ classdef Sample
 
  end
  methods(Access = private, Static)
-	 [s e] = find_start_end( path )
+	 [s e nc] = find_start_end( path )
  end
 
 end

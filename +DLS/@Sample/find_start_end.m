@@ -12,7 +12,7 @@ function [ s e nc] = find_start_end1 ( path )
  e = -1;
  i = -1;
  flag = 0;
- while flag == 0 & i < 200
+ while flag == 0 && i < 200
   i	= i+1;
   flag	= exist( [ path num2str(i,'%4.4u') '.ASC' ] );
  end
@@ -26,7 +26,7 @@ function [ s e nc] = find_start_end1 ( path )
  end
 
  flag = 1;
- while flag ~= 0 & i < 500
+ while flag ~= 0 && i < 500
   i	= i+1;
   flag	= exist( [ path num2str(i,'%4.4u') '.ASC' ] );
  end

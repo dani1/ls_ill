@@ -1,6 +1,7 @@
 function [count_rate1 count_rate2 I_mon angle temperature] = read_static_from_autosave(path_of_autosave_file)
 	% reads the mean count rate 0,1 , Monitor diode intensity and angle from autosave ASCII file
-	%path_of_autosave_file = '~/Documents/tesi/data/data_raw/LS/2011_10_31/BSA_5gl_0004.ASC'
+	%path_of_autosave_file =
+	%'~/Documents/tesi/data/data_raw/LS/2011_10_31/BSA_5gl_0004.ASC'
 	fid = fopen(path_of_autosave_file);
 	str = fgetl(fid);
     while ~strcmp(str(1:11), 'Temperature')

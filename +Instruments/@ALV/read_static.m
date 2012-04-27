@@ -1,4 +1,4 @@
-function [sls_point SlsData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, varargin)
+function [sls_point SlsData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number, varargin)
 	%input: (path_standard, path_solvent, path_file, protein_conc,
 	%dn_over_dc, start_index {autosave file} , end_index {autosave file})
 	%
@@ -28,7 +28,7 @@ function [sls_point SlsData] = read_static(path_standard, path_solvent, path_fil
 	solvent = Instruments.ALV.read_tol_file(path_solvent);
 	standard = Instruments.ALV.read_tol_file(path_standard);
 	index = 0;
-	point(end_index - start_index) = struct('scatt_angle', 0, 'count_rate', 0, 'monitor_intensity', 0, 'error_count_rate', 0);
+	point(end_index - start_index + 1) = struct('scatt_angle', 0, 'count_rate', 0, 'monitor_intensity', 0, 'error_count_rate', 0);
 	%------------------------------------------------------------------------------
 	% get data from autosave ALV files
 	%------------------------------------------------------------------------------
@@ -38,17 +38,32 @@ function [sls_point SlsData] = read_static(path_standard, path_solvent, path_fil
 		%disp(path);
 		%path = '/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC';
 	end
-
-	for i = start_index : end_index
-		index = index + 1;
-		file = [ path_file num2str(i,'%4.4u') '.ASC' ];
-		[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature]...
+	if count_number < 1
+		for i = start_index : end_index
+			index = index + 1;
+			file = [ path_file num2str(i,'%4.4u') '.ASC' ];
+			[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature]...
 		   	= Instruments.ALV.read_static_from_autosave_fast(file);
-		%point(index).cr1 = count_rate1;
-		%point(index).cr2 = count_rate2;
-		point(index).count_rate = count_rate1 + count_rate2;
-		point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
-		point(index).file_index = index;
+			%point(index).cr1 = count_rate1;
+			%point(index).cr2 = count_rate2;
+			point(index).count_rate = count_rate1 + count_rate2;
+			point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
+			point(index).file_index = index;
+		end
+	else
+		for i = start_index : end_index
+			for j = 1 : count_number
+				index = index + 1;
+				file = [ path_file num2str(i,'%4.4u') '_' num2str(j,'%4.4u') '.ASC' ];
+				[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature]...
+				= Instruments.ALV.read_static_from_autosave_fast(file);
+				%point(index).cr1 = count_rate1;
+				%point(index).cr2 = count_rate2;
+				point(index).count_rate = count_rate1 + count_rate2;
+				point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
+				point(index).file_index = [i j];
+			end
+		end
 	end
 
 	%[KcR] = calc_kc_over_r(scatt_angle, standard, solvent,cr_mean,0.001, Imean);
@@ -88,5 +103,6 @@ function [sls_point SlsData] = read_static(path_standard, path_solvent, path_fil
 		sls_point(i).Angle = SlsData(i).scatt_angle;
 		sls_point(i).KcR_raw = SlsData(i).KcR;
 		sls_point(i).dKcR_raw = SlsData(i).dKcR;
+        sls_point(i).SlsData = SlsData;
     end
 end

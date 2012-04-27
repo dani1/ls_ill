@@ -123,7 +123,7 @@ classdef Point < dynamicprops
 
    % PART 3: PERFORM INVERSE LAPLACE TRANSFORM
  %  s = self.contin2(t, y, dy, min(t), max(t), 15*N, 0.1, 1); %%% output controllare !!!
- [ s, gs, bs ]= self.contin(t, y, dy, min(t), max(t), 50*N, 0.2, 0);
+ [ s, gs, bs ]= self.contin(t, y, dy, min(t), max(t), 10*N, 0.15, 0);
    D	= 1e-6 ./ ( self.Q^2 * s );
 
    try   self.addprop('CONTIN'); end			% maybe it is already a property

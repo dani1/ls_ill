@@ -11,8 +11,8 @@ classdef AngleData < handle
 		% allocate count to 0x0 array of struct
 		count = struct([]);
 		mean_count_rate;
+        error_mean_count_rate;
 		mean_monitor_intensity;
-		error_mean_count_rate;
 		error_mean_monitor_intensity;
         mean_temperature;
 		KcR;

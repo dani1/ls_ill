@@ -29,6 +29,7 @@
 
 /*  define max_length of correlation data */
 #define MAX_CORR_VECTOR_LENGTH 1000
+int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,  char *path);
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  mexFunction 
