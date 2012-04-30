@@ -1,6 +1,6 @@
 %******************************************************************************
 % Written By: Daniel Soraruf
-% last change : 16/01/2012
+% last change : 28/04/2012
 %******************************************************************************
 %==============================================================================
 % raw SLS data at one angle, calculate KcR
@@ -104,8 +104,8 @@ classdef AngleData < handle
 		end
 		%======================================================================
 		% calculate Kc/R at certain angle
-		% protein_conc in mg/l !!!
-		% dn_over_dc normally in [0.1:0.3]
+		% protein_conc in mg/ml !!!
+		% dn_over_dc normally in [0.1:0.3] ml/g
 		% TODO: error propagation
 		%======================================================================
 		function calc_kc_over_r(self, standard, solvent, protein_conc, dn_over_dc, instrument)
@@ -117,7 +117,8 @@ classdef AngleData < handle
 			%wavelength = 0.00006328 ; % cm
 			number_avogadro = Constants.Na; 
 			
-			% calculate optical constant
+			% calculate optical constant : using correction for cylindrical cuvettes
+			% multiplication by n_std ^2 / n_solv ^2
 			K = (2 * pi * dn_over_dc * standard.refraction_index )^2 /...
 				(wavelength^4 * number_avogadro);
 			%sample_excess_count_rate = (count_rate - solvent.count_rate(angle_index)) ...

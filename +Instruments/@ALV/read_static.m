@@ -1,4 +1,4 @@
-function [sls_point SlsData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number, varargin)
+function [sls_point RawData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number, varargin)
 	%input: (path_standard, path_solvent, path_file, protein_conc,
 	%dn_over_dc, start_index {autosave file} , end_index {autosave file})
 	%
@@ -103,6 +103,8 @@ function [sls_point SlsData] = read_static(path_standard, path_solvent, path_fil
 		sls_point(i).Angle = SlsData(i).scatt_angle;
 		sls_point(i).KcR_raw = SlsData(i).KcR;
 		sls_point(i).dKcR_raw = SlsData(i).dKcR;
-        sls_point(i).SlsData = SlsData;
     end
+	RawData.SlsData = SlsData;
+	RawData.solvent = solvent;
+	RawData.standard = standard;
 end

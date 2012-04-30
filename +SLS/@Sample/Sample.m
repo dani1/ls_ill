@@ -41,6 +41,7 @@ classdef Sample
   dndc_set
   raw_data_path
   date_experiment
+  RawData
 
  end
 
@@ -66,9 +67,10 @@ classdef Sample
    end
  if any(strcmp('path_standard', properties(a)))
 	   bool_get_data_from_autosave = 1;
-	else
+else
 	   bool_get_data_from_autosave = 0;
 	end
+	% get data from table
 	if ~bool_get_data_from_autosave
 	   try		self.Point	= self.Instrument.read_static_file ( a.Path );  	% get the KcR and angles
 	   catch disp(self)
@@ -77,10 +79,10 @@ classdef Sample
 	   end
     else
         disp(['Load SLS:' a.Path])
-		[start_index, end_index, nc] = self.find_start_end( a.Path );
+		[start_index, end_index, nc] = self.Instrument.find_start_end( a.Path );
 		path_standard = a.path_standard;
 		path_solvent  = a.path_solvent;
-		self.Point = self.Instrument.read_static(path_standard, path_solvent, ...
+		[self.Point self.RawData] = self.Instrument.read_static(path_standard, path_solvent, ...
 			a.Path, self.C, self.dndc, start_index, end_index, nc);
 	end
    self.raw_data_path = a.Path;
@@ -95,6 +97,26 @@ classdef Sample
 
   end
 
+  function correct_attenuator( self )
+	  if any(strcmp('SlsData', properties(self.RawData)))
+		sls_data = RawData.SlsData;
+		for i_angle = 1 : length(sls_data)
+			for i_att = 1 : length(self.Instrument.attenuator)
+				if ( round(sls_data(i_angle).count(1).monitor_intensity / self.Instrument.attenuator(i_att).monitor_intensity) == 1)
+					sls_data(i_angle).KcR = sls_data.KcR * self.Instrument.attenuator(i_att).intensity_correction;
+					sls_data(i_angle).dKcR = sls_data.dKcR * self.Instrument.attenuator(i_att).intensity_correction;
+					% exit i_att cycle
+					break
+				end
+			end
+			self.Point(i_angle).KcR = sls_data(i_angle).KcR
+			self.Point(i_angle).dKcR = sls_data(i_angle).dKcR
+		end
+	  else
+		  disp('no raw data from autosave available ! -> exit')
+	  end
+
+  end
   function KcR	= get.KcR ( self )
    y	= [ self.Point.KcR ];
    w	= 1./ [ self.Point.dKcR ].^2;

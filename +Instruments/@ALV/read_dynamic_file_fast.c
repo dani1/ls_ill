@@ -35,7 +35,6 @@
  *  Description:  comunicate between matlab and c program
  * =====================================================================================
  */
-int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  char *path);
 #ifdef MATLAB_MEX_FILE
 void mexFunction(int nlhs, 
 		mxArray *plhs[], 
@@ -104,7 +103,6 @@ void mexFunction(int nlhs,
  */
 int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  char *path)
 {
-	int read_check;
 	FILE* file_pointer;
 	char *str = (char*) malloc(1000 * sizeof(char));
 	float tmp_float;
@@ -123,32 +121,32 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 	/*find temperature*/
 	while( strcmp(str, "Temperature") != 0)
 	{
-		read_check=fscanf(file_pointer, "%s", str);
+		fscanf(file_pointer, "%s", str);
 	}
-	read_check=fscanf(file_pointer, "%s", str);
-	read_check=fscanf(file_pointer, "%s", str);
-	read_check=fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
 	/*  save temperature */
 	*temp = atof(str);
 //	printf("%lf\n", *temp);
 	/*  find angle */
 	while( strcmp(str, "Angle") != 0)
 	{
-		read_check=fscanf(file_pointer, "%s", str);
+		fscanf(file_pointer, "%s", str);
 	}
-	read_check=fscanf(file_pointer, "%s", str);
-	read_check=fscanf(file_pointer, "%s", str);
-	read_check=fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", str);
 	/*  save angle   */
 	*angle = atof(str);
 //	printf("%lf\n", *angle);
 	while( strcmp(str, "\"Correlation\"") != 0 )
 	{
-		read_check=fscanf(file_pointer, "%s", str);
+		fscanf(file_pointer, "%s", str);
 //		printf("%s\n", str);
 	}
 	/*  read first column of first row (for speed up, less strcmp) */
-	read_check=fscanf(file_pointer,"%s", str);
+	fscanf(file_pointer,"%s", str);
 	if (col_number_time == 0)
 	{
 		t[time_index++] = atof(str); 
@@ -162,19 +160,19 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 			if ( i == col_number_correlation - 1)
 			{
 			 	/*  -1 necessary since i = col_number + 1 for speed up */
-				read_check=fscanf(file_pointer,"%lf", & gt[correlation_index++]);
+				fscanf(file_pointer,"%lf", & gt[correlation_index++]);
 			}
 			else
 			{
 				if (i == loop_col_number_time - 1)
 				{
-				/*  read_check=fscanf at position  col_number_time (if col_number_time ==0 -> next column)  */
-					read_check=fscanf(file_pointer,"%s", str);
+				/*  fscanf at position  col_number_time (if col_number_time ==0 -> next column)  */
+					fscanf(file_pointer,"%s", str);
 					t[time_index++] = atof(str);
 				}
 				else
 				{
-					read_check=fscanf(file_pointer, "%f", & tmp_float);
+					fscanf(file_pointer, "%f", & tmp_float);
 				}
 			}
 		}
@@ -182,13 +180,13 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 	
 	while( strcmp(str, "\"StandardDeviation\"") != 0 && !feof(file_pointer) )
 	{
-		read_check=fscanf(file_pointer, "%s", str);
+		fscanf(file_pointer, "%s", str);
 //		printf("%s\n", str);
 	}
 	while(!feof(file_pointer))
 	{
-		read_check=fscanf(file_pointer, "%f", & tmp_float);
-		read_check=fscanf(file_pointer, "%lf",& dgt[std_dev_index++]);
+		fscanf(file_pointer, "%f", & tmp_float);
+		fscanf(file_pointer, "%lf",& dgt[std_dev_index++]);
 	}
 	fclose(file_pointer);
 	time_index --;
