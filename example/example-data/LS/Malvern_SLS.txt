@@ -1,0 +1,622 @@
+
+-----------------------------------------------------------------
+Initialisation
+-----------------------------------------------------------------
+
+Setting temperature to 25,0??C...
+
+-----------------------------------------------------------------
+Dark count measurement
+-----------------------------------------------------------------
+Dark count: 0,3 kcps
+
+
+-----------------------------------------------------------------
+Scattering standard measurement
+-----------------------------------------------------------------
+
+Equilibrating sample for 180 seconds...
+Scattering standard count: 228,3 kcps
+Raw Std Dev:  242,76  /  Filtered Std Dev:  234,41  /  Drift: 457,45  /  Raw Mean: 499,86
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Scattering standard count: 269,9 kcps
+Raw Std Dev:  61,092  /  Filtered Std Dev:  51,885  /  Drift: 50,979  /  Raw Mean: 351,09
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Scattering standard count: 248,4 kcps
+Raw Std Dev:  292,06  /  Filtered Std Dev:  264,82  /  Drift: 306,82  /  Raw Mean: 576,86
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Scattering standard count: 235,6 kcps
+Raw Std Dev:  1363,8  /  Filtered Std Dev:  1331,1  /  Drift: 3043,4  /  Raw Mean: 1825,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Scattering standard count: 239,6 kcps
+Raw Std Dev:  1454,8  /  Filtered Std Dev:  1394,2  /  Drift: 4100,7  /  Raw Mean: 1545,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Scattering standard count: 287,7 kcps
+Raw Std Dev:  37,439  /  Filtered Std Dev:  33,179  /  Drift: 28,417  /  Raw Mean: 354,12
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Scattering standard count: 276,0 kcps
+Raw Std Dev:  60,416  /  Filtered Std Dev:  58,624  /  Drift: 67,307  /  Raw Mean: 370,08
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Scattering standard count: 228,1 kcps
+Raw Std Dev:  249,14  /  Filtered Std Dev:  237,67  /  Drift: 562,07  /  Raw Mean: 556,41
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Scattering standard count: 248,8 kcps
+Raw Std Dev:  381,16  /  Filtered Std Dev:  368,69  /  Drift: 803,21  /  Raw Mean: 616,48
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Scattering standard count: 269,4 kcps
+Raw Std Dev:  67,629  /  Filtered Std Dev:  64,751  /  Drift: 17,546  /  Raw Mean: 399,26
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Scattering standard count: 283,1 kcps
+
+-----------------------------------------------------------------
+Solvent only measurement
+-----------------------------------------------------------------
+
+Equilibrating sample for 180 seconds...
+Solvent only scattering count: 36,6 kcps
+Raw Std Dev:  2,1731  /  Filtered Std Dev:  1,7274  /  Drift: 0,82616  /  Raw Mean: 36,648
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Solvent only scattering count: 37,5 kcps
+Raw Std Dev:  2,1762  /  Filtered Std Dev:  1,8945  /  Drift: 1,6554  /  Raw Mean: 37,526
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Solvent only scattering count: 38,2 kcps
+Raw Std Dev:  2,3238  /  Filtered Std Dev:  1,9773  /  Drift: 1,8596  /  Raw Mean: 38,405
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Solvent only scattering count: 39,7 kcps
+Raw Std Dev:  3,4842  /  Filtered Std Dev:  2,8734  /  Drift: 4,6821  /  Raw Mean: 41,179
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Solvent only scattering count: 40,2 kcps
+Raw Std Dev:  3,0578  /  Filtered Std Dev:  2,4  /  Drift: 3,679  /  Raw Mean: 41,049
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Solvent only scattering count: 39,6 kcps
+Raw Std Dev:  1,8291  /  Filtered Std Dev:  1,4975  /  Drift: 1,7513  /  Raw Mean: 39,641
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Solvent only scattering count: 39,9 kcps
+Raw Std Dev:  1,893  /  Filtered Std Dev:  1,5937  /  Drift: 1,0433  /  Raw Mean: 39,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Solvent only scattering count: 40,6 kcps
+Raw Std Dev:  1,9418  /  Filtered Std Dev:  1,5724  /  Drift: 0,92137  /  Raw Mean: 40,645
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Solvent only scattering count: 40,4 kcps
+Raw Std Dev:  1,8878  /  Filtered Std Dev:  1,4636  /  Drift: 1,5502  /  Raw Mean: 40,439
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Solvent only scattering count: 41,5 kcps
+Raw Std Dev:  1,851  /  Filtered Std Dev:  1,4713  /  Drift: 2,0163  /  Raw Mean: 41,475
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Solvent only scattering count: 40,8 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,00833 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 2246,3 kcps
+Raw Std Dev:  127,23  /  Filtered Std Dev:  93,818  /  Drift: 156,76  /  Raw Mean: 2481,1
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 2283,9 kcps
+Raw Std Dev:  2373  /  Filtered Std Dev:  2308,4  /  Drift: 5428,7  /  Raw Mean: 4651
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 2486,4 kcps
+Raw Std Dev:  3002,8  /  Filtered Std Dev:  2949,9  /  Drift: 6431,6  /  Raw Mean: 5699,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 2275,5 kcps
+Raw Std Dev:  174,86  /  Filtered Std Dev:  152,68  /  Drift: 327,06  /  Raw Mean: 2531,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 2270,3 kcps
+Raw Std Dev:  97,143  /  Filtered Std Dev:  73,144  /  Drift: 69,044  /  Raw Mean: 2459,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 2261,9 kcps
+Raw Std Dev:  92,51  /  Filtered Std Dev:  68,644  /  Drift: 1,2101  /  Raw Mean: 2434,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 2217,1 kcps
+Raw Std Dev:  93,779  /  Filtered Std Dev:  66,122  /  Drift: 8,5989  /  Raw Mean: 2431,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 2157,6 kcps
+Raw Std Dev:  94,073  /  Filtered Std Dev:  67,035  /  Drift: 32,677  /  Raw Mean: 2443,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 2239,4 kcps
+Raw Std Dev:  105  /  Filtered Std Dev:  80,306  /  Drift: 113,58  /  Raw Mean: 2446,8
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 2275,8 kcps
+Raw Std Dev:  89,404  /  Filtered Std Dev:  60,884  /  Drift: 15,988  /  Raw Mean: 2413,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 2254,1 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,0074 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 1994,0 kcps
+Raw Std Dev:  97,09  /  Filtered Std Dev:  71,559  /  Drift: 21,714  /  Raw Mean: 2171,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1962,7 kcps
+Raw Std Dev:  103,1  /  Filtered Std Dev:  82,01  /  Drift: 74,127  /  Raw Mean: 2162,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1989,6 kcps
+Raw Std Dev:  92,492  /  Filtered Std Dev:  70,473  /  Drift: 48,862  /  Raw Mean: 2149,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1985,5 kcps
+Raw Std Dev:  94,71  /  Filtered Std Dev:  73,283  /  Drift: 69,619  /  Raw Mean: 2147,1
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1895,9 kcps
+Raw Std Dev:  96,208  /  Filtered Std Dev:  76,351  /  Drift: 42,748  /  Raw Mean: 2159,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1958,9 kcps
+Raw Std Dev:  91,366  /  Filtered Std Dev:  69,013  /  Drift: 88,146  /  Raw Mean: 2140
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1988,6 kcps
+Raw Std Dev:  131,68  /  Filtered Std Dev:  109,23  /  Drift: 0,15151  /  Raw Mean: 2156,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1960,6 kcps
+Raw Std Dev:  87,404  /  Filtered Std Dev:  64,414  /  Drift: 45,831  /  Raw Mean: 2148,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1985,0 kcps
+Raw Std Dev:  86,042  /  Filtered Std Dev:  60,741  /  Drift: 46,897  /  Raw Mean: 2147,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1964,1 kcps
+Raw Std Dev:  109,24  /  Filtered Std Dev:  85,987  /  Drift: 83,715  /  Raw Mean: 2170,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1969,4 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,00648 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 1770,5 kcps
+Raw Std Dev:  88,67  /  Filtered Std Dev:  68,748  /  Drift: 81,928  /  Raw Mean: 1913,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1746,7 kcps
+Raw Std Dev:  119,56  /  Filtered Std Dev:  100,37  /  Drift: 130,18  /  Raw Mean: 1940,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1746,7 kcps
+Raw Std Dev:  86,22  /  Filtered Std Dev:  62,408  /  Drift: 81,987  /  Raw Mean: 1904,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1721,4 kcps
+Raw Std Dev:  73,487  /  Filtered Std Dev:  50,719  /  Drift: 14,753  /  Raw Mean: 1880,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1759,3 kcps
+Raw Std Dev:  83,152  /  Filtered Std Dev:  61,652  /  Drift: 72,468  /  Raw Mean: 1902
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1729,9 kcps
+Raw Std Dev:  82,497  /  Filtered Std Dev:  55,966  /  Drift: 24,94  /  Raw Mean: 1886,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1724,7 kcps
+Raw Std Dev:  93,262  /  Filtered Std Dev:  67,769  /  Drift: 63,041  /  Raw Mean: 1919,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1726,1 kcps
+Raw Std Dev:  76,332  /  Filtered Std Dev:  56,102  /  Drift: 12,659  /  Raw Mean: 1881,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1760,4 kcps
+Raw Std Dev:  75,037  /  Filtered Std Dev:  55,336  /  Drift: 17,41  /  Raw Mean: 1887,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1739,8 kcps
+Raw Std Dev:  78,637  /  Filtered Std Dev:  60,507  /  Drift: 1,8594  /  Raw Mean: 1891,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1714,3 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,00555 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 1453,9 kcps
+Raw Std Dev:  81,961  /  Filtered Std Dev:  66,394  /  Drift: 70,198  /  Raw Mean: 1672,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1542,1 kcps
+Raw Std Dev:  87,713  /  Filtered Std Dev:  70,277  /  Drift: 102,24  /  Raw Mean: 1669,8
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1558,7 kcps
+Raw Std Dev:  795,22  /  Filtered Std Dev:  781,28  /  Drift: 75,864  /  Raw Mean: 1911,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1545,2 kcps
+Raw Std Dev:  84,281  /  Filtered Std Dev:  66,174  /  Drift: 26,304  /  Raw Mean: 1679,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1564,7 kcps
+Raw Std Dev:  82,711  /  Filtered Std Dev:  64,817  /  Drift: 12,169  /  Raw Mean: 1686,1
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1515,8 kcps
+Raw Std Dev:  87,157  /  Filtered Std Dev:  65,244  /  Drift: 23,985  /  Raw Mean: 1677
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1469,1 kcps
+Raw Std Dev:  117,21  /  Filtered Std Dev:  98,956  /  Drift: 128,97  /  Raw Mean: 1700,1
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1524,6 kcps
+Raw Std Dev:  84,169  /  Filtered Std Dev:  66,271  /  Drift: 32,822  /  Raw Mean: 1681,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1501,9 kcps
+Raw Std Dev:  69,12  /  Filtered Std Dev:  49,439  /  Drift: 31,842  /  Raw Mean: 1634
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1458,7 kcps
+Raw Std Dev:  68,006  /  Filtered Std Dev:  49,072  /  Drift: 45,515  /  Raw Mean: 1626,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1515,9 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,00403 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 1240,7 kcps
+Raw Std Dev:  94,296  /  Filtered Std Dev:  77,509  /  Drift: 119,17  /  Raw Mean: 1396
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1294,7 kcps
+Raw Std Dev:  73,181  /  Filtered Std Dev:  57,064  /  Drift: 18,278  /  Raw Mean: 1405,1
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1228,5 kcps
+Raw Std Dev:  3427,1  /  Filtered Std Dev:  3423,4  /  Drift: 3248,5  /  Raw Mean: 2753,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1278,9 kcps
+Raw Std Dev:  178,09  /  Filtered Std Dev:  166,88  /  Drift: 73,37  /  Raw Mean: 1441,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1156,1 kcps
+Raw Std Dev:  92,847  /  Filtered Std Dev:  80,869  /  Drift: 200,81  /  Raw Mean: 1315,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1186,7 kcps
+Raw Std Dev:  95,752  /  Filtered Std Dev:  81,622  /  Drift: 187,98  /  Raw Mean: 1336,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1254,6 kcps
+Raw Std Dev:  72,101  /  Filtered Std Dev:  53,901  /  Drift: 5,225  /  Raw Mean: 1394,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1259,3 kcps
+Raw Std Dev:  76,128  /  Filtered Std Dev:  58,546  /  Drift: 15,659  /  Raw Mean: 1386,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1255,0 kcps
+Raw Std Dev:  74,807  /  Filtered Std Dev:  55,824  /  Drift: 52,895  /  Raw Mean: 1377,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1240,3 kcps
+Raw Std Dev:  90,878  /  Filtered Std Dev:  73,7  /  Drift: 48,073  /  Raw Mean: 1396,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1253,1 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,00509 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 1338,2 kcps
+Raw Std Dev:  123,65  /  Filtered Std Dev:  110,93  /  Drift: 127,68  /  Raw Mean: 1482
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1303,7 kcps
+Raw Std Dev:  79,931  /  Filtered Std Dev:  66,072  /  Drift: 11,496  /  Raw Mean: 1437,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1293,5 kcps
+Raw Std Dev:  74,454  /  Filtered Std Dev:  63,256  /  Drift: 50,717  /  Raw Mean: 1423,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1116,4 kcps
+Raw Std Dev:  102,81  /  Filtered Std Dev:  93,736  /  Drift: 142,55  /  Raw Mean: 1398,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1340,0 kcps
+Raw Std Dev:  68,532  /  Filtered Std Dev:  53,046  /  Drift: 26,283  /  Raw Mean: 1437,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1332,7 kcps
+Raw Std Dev:  69,964  /  Filtered Std Dev:  54,46  /  Drift: 33,126  /  Raw Mean: 1448,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1321,0 kcps
+Raw Std Dev:  79,472  /  Filtered Std Dev:  62,554  /  Drift: 47,964  /  Raw Mean: 1458,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1265,1 kcps
+Raw Std Dev:  71,855  /  Filtered Std Dev:  59,467  /  Drift: 69,443  /  Raw Mean: 1393,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1317,9 kcps
+Raw Std Dev:  71,688  /  Filtered Std Dev:  52,479  /  Drift: 55,1  /  Raw Mean: 1437,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1287,1 kcps
+Raw Std Dev:  60,102  /  Filtered Std Dev:  46,253  /  Drift: 30,686  /  Raw Mean: 1400,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1309,8 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,0037 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 924,3 kcps
+Raw Std Dev:  47,769  /  Filtered Std Dev:  34,991  /  Drift: 20,992  /  Raw Mean: 1054,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 961,3 kcps
+Raw Std Dev:  47,34  /  Filtered Std Dev:  35,908  /  Drift: 18,753  /  Raw Mean: 1040,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 966,0 kcps
+Raw Std Dev:  57,206  /  Filtered Std Dev:  45,294  /  Drift: 80,994  /  Raw Mean: 1050,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 929,1 kcps
+Raw Std Dev:  46,18  /  Filtered Std Dev:  34,311  /  Drift: 1,0987  /  Raw Mean: 1031,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 954,1 kcps
+Raw Std Dev:  45,533  /  Filtered Std Dev:  33,525  /  Drift: 30,097  /  Raw Mean: 1044,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 974,9 kcps
+Raw Std Dev:  53,216  /  Filtered Std Dev:  40,762  /  Drift: 30,193  /  Raw Mean: 1055,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 976,0 kcps
+Raw Std Dev:  82,781  /  Filtered Std Dev:  76,212  /  Drift: 177,23  /  Raw Mean: 1087,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 981,2 kcps
+Raw Std Dev:  61,169  /  Filtered Std Dev:  50,775  /  Drift: 49,387  /  Raw Mean: 1080,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1003,1 kcps
+Raw Std Dev:  64,779  /  Filtered Std Dev:  49,494  /  Drift: 56,917  /  Raw Mean: 1093,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 984,8 kcps
+Raw Std Dev:  51,186  /  Filtered Std Dev:  39,989  /  Drift: 15,129  /  Raw Mean: 1066
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 975,7 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,00194 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 503,7 kcps
+Raw Std Dev:  34,637  /  Filtered Std Dev:  27,8  /  Drift: 55,749  /  Raw Mean: 556,09
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 512,1 kcps
+Raw Std Dev:  30,609  /  Filtered Std Dev:  25,001  /  Drift: 5,2056  /  Raw Mean: 549,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 500,5 kcps
+Raw Std Dev:  37,389  /  Filtered Std Dev:  32,379  /  Drift: 50,783  /  Raw Mean: 546,24
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 509,0 kcps
+Raw Std Dev:  33,121  /  Filtered Std Dev:  26,842  /  Drift: 4,3466  /  Raw Mean: 555
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 517,6 kcps
+Raw Std Dev:  2186,5  /  Filtered Std Dev:  2147,8  /  Drift: 1938  /  Raw Mean: 1647,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 493,2 kcps
+Raw Std Dev:  31,325  /  Filtered Std Dev:  24,717  /  Drift: 12,609  /  Raw Mean: 554,85
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 511,8 kcps
+Raw Std Dev:  54,857  /  Filtered Std Dev:  49,157  /  Drift: 6,3471  /  Raw Mean: 575,02
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 520,1 kcps
+Raw Std Dev:  30,071  /  Filtered Std Dev:  22,811  /  Drift: 13,639  /  Raw Mean: 551,79
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 528,1 kcps
+Raw Std Dev:  45,104  /  Filtered Std Dev:  37,959  /  Drift: 8,2412  /  Raw Mean: 580,26
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 513,9 kcps
+Raw Std Dev:  27,643  /  Filtered Std Dev:  20,579  /  Drift: 11,054  /  Raw Mean: 557,39
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 509,3 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,01202 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 533,5 kcps
+Raw Std Dev:  33,027  /  Filtered Std Dev:  26,865  /  Drift: 13,537  /  Raw Mean: 581,34
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 525,5 kcps
+Raw Std Dev:  32,31  /  Filtered Std Dev:  25,559  /  Drift: 57,249  /  Raw Mean: 575,45
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 523,4 kcps
+Raw Std Dev:  27,799  /  Filtered Std Dev:  21,789  /  Drift: 48,072  /  Raw Mean: 562,95
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 542,2 kcps
+Raw Std Dev:  37,542  /  Filtered Std Dev:  26,742  /  Drift: 43,254  /  Raw Mean: 599,15
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 562,4 kcps
+Raw Std Dev:  37,722  /  Filtered Std Dev:  26,834  /  Drift: 4,7691  /  Raw Mean: 607,05
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 521,2 kcps
+Raw Std Dev:  33,23  /  Filtered Std Dev:  24  /  Drift: 3,5116  /  Raw Mean: 602,36
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 532,5 kcps
+Raw Std Dev:  37,37  /  Filtered Std Dev:  29,439  /  Drift: 33,137  /  Raw Mean: 586,21
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 527,7 kcps
+Raw Std Dev:  30,246  /  Filtered Std Dev:  23,345  /  Drift: 10,249  /  Raw Mean: 569,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 531,5 kcps
+Raw Std Dev:  25,504  /  Filtered Std Dev:  17,809  /  Drift: 1,9075  /  Raw Mean: 563,37
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 511,2 kcps
+Raw Std Dev:  27,803  /  Filtered Std Dev:  19,403  /  Drift: 5,672  /  Raw Mean: 565,84
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 526,4 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,01303 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 825,8 kcps
+Raw Std Dev:  59,997  /  Filtered Std Dev:  45,377  /  Drift: 3,3545  /  Raw Mean: 923,31
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 809,6 kcps
+Raw Std Dev:  48,055  /  Filtered Std Dev:  36,552  /  Drift: 36,728  /  Raw Mean: 902,64
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 833,6 kcps
+Raw Std Dev:  69,508  /  Filtered Std Dev:  54,865  /  Drift: 70,328  /  Raw Mean: 911,29
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 830,5 kcps
+Raw Std Dev:  215,55  /  Filtered Std Dev:  202,13  /  Drift: 449,42  /  Raw Mean: 984,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 808,5 kcps
+Raw Std Dev:  50,66  /  Filtered Std Dev:  40,147  /  Drift: 25,079  /  Raw Mean: 882,22
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 797,8 kcps
+Raw Std Dev:  49,122  /  Filtered Std Dev:  37,368  /  Drift: 37,779  /  Raw Mean: 871,64
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 824,0 kcps
+Raw Std Dev:  51,417  /  Filtered Std Dev:  38,83  /  Drift: 34,218  /  Raw Mean: 894,54
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 784,2 kcps
+Raw Std Dev:  51,143  /  Filtered Std Dev:  38,908  /  Drift: 62,855  /  Raw Mean: 895,45
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 817,1 kcps
+Raw Std Dev:  56,661  /  Filtered Std Dev:  44,551  /  Drift: 37,159  /  Raw Mean: 913,79
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 836,7 kcps
+Raw Std Dev:  55,245  /  Filtered Std Dev:  43,45  /  Drift: 65,092  /  Raw Mean: 923,53
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 772,4 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,01404 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 1048,6 kcps
+Raw Std Dev:  51,665  /  Filtered Std Dev:  39,386  /  Drift: 32,459  /  Raw Mean: 1143,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1064,5 kcps
+Raw Std Dev:  54,646  /  Filtered Std Dev:  40,258  /  Drift: 25,683  /  Raw Mean: 1159,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1025,8 kcps
+Raw Std Dev:  64,931  /  Filtered Std Dev:  49,861  /  Drift: 77,692  /  Raw Mean: 1156,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1056,2 kcps
+Raw Std Dev:  53,545  /  Filtered Std Dev:  40,022  /  Drift: 20,752  /  Raw Mean: 1141,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1062,3 kcps
+Raw Std Dev:  85,237  /  Filtered Std Dev:  72,342  /  Drift: 85,396  /  Raw Mean: 1173,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1066,8 kcps
+Raw Std Dev:  55,359  /  Filtered Std Dev:  41,346  /  Drift: 25,656  /  Raw Mean: 1157,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1054,8 kcps
+Raw Std Dev:  56,138  /  Filtered Std Dev:  43,987  /  Drift: 8,381  /  Raw Mean: 1155,1
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1063,8 kcps
+Raw Std Dev:  101,63  /  Filtered Std Dev:  86,559  /  Drift: 144,84  /  Raw Mean: 1197,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1035,4 kcps
+Raw Std Dev:  55,199  /  Filtered Std Dev:  41,369  /  Drift: 15,082  /  Raw Mean: 1148
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1029,4 kcps
+Raw Std Dev:  56,062  /  Filtered Std Dev:  41,904  /  Drift: 16,114  /  Raw Mean: 1152,8
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1044,3 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,01506 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 1296,8 kcps
+Raw Std Dev:  69,404  /  Filtered Std Dev:  52,709  /  Drift: 6,4506  /  Raw Mean: 1406,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1276,6 kcps
+Raw Std Dev:  178,17  /  Filtered Std Dev:  166,64  /  Drift: 186,28  /  Raw Mean: 1446,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1298,6 kcps
+Raw Std Dev:  66,266  /  Filtered Std Dev:  45,533  /  Drift: 11,266  /  Raw Mean: 1408,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1312,3 kcps
+Raw Std Dev:  239,53  /  Filtered Std Dev:  219,1  /  Drift: 198,85  /  Raw Mean: 1549,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1070,8 kcps
+Raw Std Dev:  115,86  /  Filtered Std Dev:  103,33  /  Drift: 35,101  /  Raw Mean: 1378,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1284,5 kcps
+Raw Std Dev:  67,882  /  Filtered Std Dev:  49,699  /  Drift: 53,696  /  Raw Mean: 1406,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1293,5 kcps
+Raw Std Dev:  72,787  /  Filtered Std Dev:  56,086  /  Drift: 10,952  /  Raw Mean: 1411,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1284,9 kcps
+Raw Std Dev:  73,65  /  Filtered Std Dev:  57,388  /  Drift: 102,52  /  Raw Mean: 1413,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1238,2 kcps
+Raw Std Dev:  101,04  /  Filtered Std Dev:  89,034  /  Drift: 50,396  /  Raw Mean: 1396,8
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1298,1 kcps
+Raw Std Dev:  142,19  /  Filtered Std Dev:  126,54  /  Drift: 215,95  /  Raw Mean: 1435,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1264,8 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,01607 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 1546,9 kcps
+Raw Std Dev:  66,32  /  Filtered Std Dev:  47,845  /  Drift: 11,752  /  Raw Mean: 1667,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1544,4 kcps
+Raw Std Dev:  67,721  /  Filtered Std Dev:  49,186  /  Drift: 16,266  /  Raw Mean: 1666,9
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1518,7 kcps
+Raw Std Dev:  72,571  /  Filtered Std Dev:  48,021  /  Drift: 1,1452  /  Raw Mean: 1670,8
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1559,3 kcps
+Raw Std Dev:  73,958  /  Filtered Std Dev:  53,82  /  Drift: 67,546  /  Raw Mean: 1672,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1571,3 kcps
+Raw Std Dev:  88,427  /  Filtered Std Dev:  64,97  /  Drift: 33,066  /  Raw Mean: 1713,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1541,0 kcps
+Raw Std Dev:  85,512  /  Filtered Std Dev:  65,051  /  Drift: 98,086  /  Raw Mean: 1727,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1576,9 kcps
+Raw Std Dev:  86,118  /  Filtered Std Dev:  63,671  /  Drift: 14,71  /  Raw Mean: 1715,8
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1571,9 kcps
+Raw Std Dev:  85,537  /  Filtered Std Dev:  62,2  /  Drift: 72,766  /  Raw Mean: 1712,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1490,3 kcps
+Raw Std Dev:  84,638  /  Filtered Std Dev:  56,796  /  Drift: 15,934  /  Raw Mean: 1735,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1599,9 kcps
+Raw Std Dev:  3089,9  /  Filtered Std Dev:  3024,6  /  Drift: 5001,5  /  Raw Mean: 4056,1
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to filtered deviation, Drift to Mean
+Sample scattering count: 1554,5 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
+Sample concentration: 0,01708 g/mL
+
+Equilibrating sample for 180 seconds...
+Sample scattering count: 1872,6 kcps
+Raw Std Dev:  1446,8  /  Filtered Std Dev:  1421,9  /  Drift: 928,68  /  Raw Mean: 2507,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1857,3 kcps
+Raw Std Dev:  385,18  /  Filtered Std Dev:  370,08  /  Drift: 189,03  /  Raw Mean: 2125,2
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1851,4 kcps
+Raw Std Dev:  82,068  /  Filtered Std Dev:  61,285  /  Drift: 25,815  /  Raw Mean: 2011,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1888,1 kcps
+Raw Std Dev:  99,197  /  Filtered Std Dev:  76,436  /  Drift: 8,6807  /  Raw Mean: 2040,7
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1811,9 kcps
+Raw Std Dev:  91,63  /  Filtered Std Dev:  70,961  /  Drift: 63,02  /  Raw Mean: 2021,3
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1880,2 kcps
+Raw Std Dev:  90,653  /  Filtered Std Dev:  66,305  /  Drift: 23,005  /  Raw Mean: 2023
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1790,9 kcps
+Raw Std Dev:  88,437  /  Filtered Std Dev:  64,496  /  Drift: 20,99  /  Raw Mean: 2027,4
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean, Drift to Mean
+Sample scattering count: 1866,5 kcps
+Raw Std Dev:  100,9  /  Filtered Std Dev:  79,374  /  Drift: 5,3321  /  Raw Mean: 2029,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1897,8 kcps
+Raw Std Dev:  91,441  /  Filtered Std Dev:  64,15  /  Drift: 6,2907  /  Raw Mean: 2043,6
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to Mean
+Sample scattering count: 1856,8 kcps
+Raw Std Dev:  83,786  /  Filtered Std Dev:  66,312  /  Drift: 5,8753  /  Raw Mean: 2016,5
+Repeating measurement as the check criteria for the following items failed:  Filtered deviation to statistical deviation, Filtered deviation to Mean
+Sample scattering count: 1883,7 kcps
+
+-----------------------------------------------------------------
+Sample measurement
+-----------------------------------------------------------------
