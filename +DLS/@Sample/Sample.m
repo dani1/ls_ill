@@ -55,7 +55,7 @@ classdef Sample
    end
 
    self.raw_data_path = a.Path;
-   [ s e nc] = self.find_start_end( a.Path );
+   [ s e nc] = self.Instrument.find_start_end( a.Path );
 	disp(['load: ' a.Path '[' num2str(s, '%4.4u') ':' num2str(e, '%4.4u') ']' ]);
    
    self.Point	= DLS.Point;
