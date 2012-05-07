@@ -29,16 +29,22 @@ function [ s e nc] = find_start_end ( path )
 	i_a = s;
 	flag = 1;
 	% check whether every angle has same amount of counts 
+	index_of_different_count_numbers = 1
 	for i_a = s : e
-		i = 1;
-		while flag ~= 0 && i <= nc
-			flag = exist( [ path num2str(i_a, '%4.4u') '_' num2str(i, '%4.4u') '.ASC' ]);
+		i = 0;
+		while flag ~= 0
 			i = i + 1;
+			flag = exist( [ path num2str(i_a, '%4.4u') '_' num2str(i, '%4.4u') '.ASC' ]);
 		end
 		if flag == 0
-			e = i_a - 1;
+			if (i_a < e)
+				s_array(index_of_different_count_numbers + 1) = i_a
+			e_array(index_of_different_count_numbers) = i_a - 1;
+			nc_array(index_of_different_count_numbers) = i - 1;
 			% exit for cycle
-			break;
 		end
 	end
+	s = s_array;
+	e = e_array;
+	nc = nc_array;
 end
