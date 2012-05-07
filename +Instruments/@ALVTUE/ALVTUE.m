@@ -21,31 +21,31 @@ end
 function self = ALVTUE ( self )
 	self.attenuator(1).monitor_intensity = 1;
 	self.attenuator(1).intensity_correction = 1.06;
-	self.attenuator(1).percent_throughput = 0.1;
+	self.attenuator(1).percent_transmission = 0.1;
 
 	self.attenuator(2).monitor_intensity = 5700;
 	self.attenuator(2).intensity_correction = 1.06;
-	self.attenuator(2).percent_throughput = 0.3;
+	self.attenuator(2).percent_transmission = 0.3;
 
 	self.attenuator(3).monitor_intensity = 31200;
 	self.attenuator(3).intensity_correction = 1.06;
-	self.attenuator(3).percent_throughput = 0.1;
+	self.attenuator(3).percent_transmission = 1;
 
 	self.attenuator(4).monitor_intensity = 120657;
-	self.attenuator(4).intensity_correction = 1.06;
-	self.attenuator(4).percent_throughput = 0.1;
+	self.attenuator(4).intensity_correction = 1.15;
+	self.attenuator(4).percent_transmission = 3;
 
 	self.attenuator(5).monitor_intensity = 315000;
-	self.attenuator(5).intensity_correction = 1.06;
-	self.attenuator(5).percent_throughput = 0.1;
+	self.attenuator(5).intensity_correction = 1.1;
+	self.attenuator(5).percent_transmission = 10;
 
 	self.attenuator(6).monitor_intensity = 870000;
 	self.attenuator(6).intensity_correction = 1.06;
-	self.attenuator(6).percent_throughput = 0.1;
+	self.attenuator(6).percent_transmission = 33;
 
 	self.attenuator(7).monitor_intensity = 2960000;
-	self.attenuator(7).intensity_correction = 1.06;
-	self.attenuator(7).percent_throughput = 0.1;
+	self.attenuator(7).intensity_correction = 1;
+	self.attenuator(7).percent_transmission = 100;
  end
  end
  methods ( Static )

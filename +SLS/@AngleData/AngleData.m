@@ -5,7 +5,7 @@
 %==============================================================================
 % raw SLS data at one angle, calculate KcR
 %==============================================================================
-classdef AngleData < handle
+classdef AngleData < dynamicprops
 	properties
 		scatt_angle;
 		% allocate count to 0x0 array of struct
@@ -109,16 +109,19 @@ classdef AngleData < handle
 		% TODO: error propagation
 		%======================================================================
 		function calc_kc_over_r(self, standard, solvent, protein_conc, dn_over_dc, instrument)
-			self.calc_mean();
+			if(isempty(self.mean_count_rate) || isempty(self.mean_monitor_intensity))
+				self.calc_mean();
+			end
             angle_tolerance = 1e-5;
             angle_index = find(abs(standard.scatt_angle-self.scatt_angle) < angle_tolerance);
+			% protein concentration from mg/ml in g/ml
 			protein_conc = protein_conc * 1e-3;
 			wavelength = instrument.Lambda * 1e-8;% A to cm
 			%wavelength = 0.00006328 ; % cm
 			number_avogadro = Constants.Na; 
 			
 			% calculate optical constant : using correction for cylindrical cuvettes
-			% multiplication by n_std ^2 / n_solv ^2
+			% -> multiplication by n_std ^2 / n_solv ^2
 			K = (2 * pi * dn_over_dc * standard.refraction_index )^2 /...
 				(wavelength^4 * number_avogadro);
 			%sample_excess_count_rate = (count_rate - solvent.count_rate(angle_index)) ...

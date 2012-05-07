@@ -29,6 +29,7 @@
 
 /*  define max_length of correlation data */
 #define MAX_CORR_VECTOR_LENGTH 1000
+int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,  char *path);
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  mexFunction 
@@ -61,6 +62,8 @@ void mexFunction(int nlhs,
 
 	/*  read data from file: */
 	i = read_data(&count_rate1, &count_rate2,&monitor_intensity,&temperature,&angle, path);
+	if (i == 0)
+	mexWarnMsgTxt("File not existent / errors during evaluation of function read_data");
 	
 	/*  allocate Matlab memory: 3 vectors t,gt, dgt*/
 	plhs[0] = mxCreateDoubleMatrix(1, 1 , mxREAL);
@@ -97,7 +100,11 @@ int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,
 {
 	FILE* file_pointer;
 	char *str = (char*) malloc(1000 * sizeof(char));
-	file_pointer = fopen(path, "r+");
+	
+	if((file_pointer = fopen(path, "r+")) == NULL)
+	{
+		return 0;
+	}
 	/*find temperature*/
 	while( strcmp(str, "Temperature") != 0)
 	{

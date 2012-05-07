@@ -42,7 +42,7 @@ classdef Sample
 
   function self = Sample( varargin )
 
-   a	= Args(varargin{:});% get the args
+   a	= Args(varargin{:});% get  the args
    try		self.Instrument	= Instruments.(a.Instrument);				% get the instrument
    catch ; error('Instrument not found!');
    end
@@ -58,14 +58,22 @@ classdef Sample
    end
 
    self.raw_data_path = a.Path;
-[s e nc] = self.Instrument.find_start_end( self.raw_data_path );
- if any(strcmp('start_index', properties(a)) & a.start_index > 0)
-	 s = a.start_index;
+if any(strcmp('filegroup_index', properties(a)))
+	filegroup_index = a.filegroup_index;
+else
+	filegroup_index = 1;
+end
+[s_array e_array nc_array] = self.Instrument.find_start_end( self.raw_data_path );
+s = s_array(filegroup_index);
+e = e_array(filegroup_index);
+nc = nc_array(filegroup_index);
+ if any(strcmp('start_index', properties(a))) && a.start_index > 0
+     s = a.start_index;
  end
- if any(strcmp('end_index', properties(a)) &a.end_index > 0)
-	 e = a.end_index;
+ if any(strcmp('end_index', properties(a))) &&a.end_index > 0
+     e = a.end_index;
  end
- if any(strcmp('number_of_counts', properties(a)) & a.number_of_counts > 0)
+ if any(strcmp('number_of_counts', properties(a))) && a.number_of_counts > 0
 	 nc = a.number_of_counts;
  end
  self.Point = DLS.Point;
@@ -75,7 +83,7 @@ classdef Sample
    if nc < 0
 	   for i = s : e
 		file		= [ self.raw_data_path num2str(i,'%4.4u') '.ASC' ];
-		%self.Point(i-s+1)	= self.Instrument.invoke_read_dynamic_file_fast( file );
+		self.Point(i-s+1)	= self.Instrument.invoke_read_dynamic_file_fast( file );
 		%self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
 	   end
    else
