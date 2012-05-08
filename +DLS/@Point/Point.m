@@ -43,6 +43,7 @@ classdef Point < dynamicprops
   Tau_raw
   G_raw
   dG_raw
+  datetime
 
  end
 

@@ -14,7 +14,7 @@ function point = invoke_read_dynamic_file_fast( path )
 	% get data from dynamic file
 	%==========================================================================
 	
-	[tau g dg angle T] = Instruments.ALV.read_dynamic_file_fast( path );
+	[tau g dg angle T datetime] = Instruments.ALV.read_dynamic_file_fast( path );
 	
 	%==========================================================================
 	% save data in DLS.Point class and correct correlation function
@@ -27,4 +27,5 @@ function point = invoke_read_dynamic_file_fast( path )
 	point.G_raw = g;
 	point.dG_raw = dg;		% this triggers the event in Point
 	point.correct_G; % is function !
+	point.datetime = datenum(datetime);
 end

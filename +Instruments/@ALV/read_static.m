@@ -38,32 +38,17 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 		%disp(path);
 		%path = '/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC';
 	end
-	if count_number < 1
-		for i = start_index : end_index
-			index = index + 1;
-			file = [ path_file num2str(i,'%4.4u') '.ASC' ];
-			[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature]...
-		   	= Instruments.ALV.read_static_from_autosave_fast(file);
-			%point(index).cr1 = count_rate1;
-			%point(index).cr2 = count_rate2;
-			point(index).count_rate = count_rate1 + count_rate2;
-			point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
-			point(index).file_index = index;
-		end
-	else
-		for i = start_index : end_index
-			for j = 1 : count_number
-				index = index + 1;
-				file = [ path_file num2str(i,'%4.4u') '_' num2str(j,'%4.4u') '.ASC' ];
-				[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature]...
-				= Instruments.ALV.read_static_from_autosave_fast(file);
-				%point(index).cr1 = count_rate1;
-				%point(index).cr2 = count_rate2;
-				point(index).count_rate = count_rate1 + count_rate2;
-				point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
-				point(index).file_index = [i j];
-			end
-		end
+	for i = start_index : end_index
+		index = index + 1;
+		file = [ path_file num2str(i,'%4.4u') '.ASC' ];
+		[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature datetime]...
+		= Instruments.ALV.read_static_from_autosave_fast(file);
+		%point(index).cr1 = count_rate1;
+		%point(index).cr2 = count_rate2;
+		point(index).count_rate = count_rate1 + count_rate2;
+		point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
+		point(index).file_index = index;
+		point(index).datetime = datenum(datetime);
 	end
 
 	%[KcR] = calc_kc_over_r(scatt_angle, standard, solvent,cr_mean,0.001, Imean);
@@ -103,6 +88,7 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 		sls_point(i).Angle = SlsData(i).scatt_angle;
 		sls_point(i).KcR_raw = SlsData(i).KcR;
 		sls_point(i).dKcR_raw = SlsData(i).dKcR;
+		sls_point(i).datetime = mean([SlsData(i).count(1:end).datetime]);
     end
 	RawData.SlsData = SlsData;
 	RawData.solvent = solvent;

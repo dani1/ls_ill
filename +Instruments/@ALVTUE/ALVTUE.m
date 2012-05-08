@@ -60,7 +60,7 @@ function self = ALVTUE ( self )
   % read dynamic files
   Point	= read_dynamic_file	( path )
   Point	= invoke_read_dynamic_file_fast( path )
-  [t gt dgt Angle temperature] = read_dynamic_file_fast( path );
+  [t gt dgt Angle temperature datetime] = read_dynamic_file_fast( path );
   [ s e nc] = find_start_end ( path )
   
  end
