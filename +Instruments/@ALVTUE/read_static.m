@@ -9,7 +9,6 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 	%
 	%output : [Point SlsData]
 	%SlsData is AngleData class array with single file-data info
-
 %******************************************************************************
 % Written By: Daniel Soraruf
 % last change : 19/02/2012
@@ -25,8 +24,8 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 	%------------------------------------------------------------------------------
 	% get solvent and standard data
 	%------------------------------------------------------------------------------
-	solvent = Instruments.ALV.read_tol_file(path_solvent);
-	standard = Instruments.ALV.read_tol_file(path_standard);
+	solvent = Instruments.ALVTUE.read_tol_file(path_solvent);
+	standard = Instruments.ALVTUE.read_tol_file(path_standard);
 	index = 0;
 	point(end_index - start_index + 1) = struct('scatt_angle', 0, 'count_rate', 0, 'monitor_intensity', 0, 'error_count_rate', 0);
 	%------------------------------------------------------------------------------
@@ -38,36 +37,19 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 		%disp(path);
 		%path = '/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC';
 	end
-	if count_number < 1
-		for i = start_index : end_index
+	for i = start_index : end_index
+		for j = 1 : count_number
 			index = index + 1;
-			file = [ path_file num2str(i,'%4.4u') '.ASC' ];
-			[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature]...
-		   	= Instruments.ALV.read_static_from_autosave_fast(file);
-			%point(index).cr1 = count_rate1;
-			%point(index).cr2 = count_rate2;
+			file = [ path_file num2str(i,'%4.4u') '_' num2str(j,'%4.4u') '.ASC' ];
+			[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature point(index).datetime]...
+			= Instruments.ALVTUE.read_static_from_autosave_fast(file);
+			%point(index).cr1 = count_rate1; %point(index).cr2 = count_rate2;
 			point(index).count_rate = count_rate1 + count_rate2;
 			point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
-			point(index).file_index = index;
-		end
-	else
-		for i = start_index : end_index
-			for j = 1 : count_number
-				index = index + 1;
-				file = [ path_file num2str(i,'%4.4u') '_' num2str(j,'%4.4u') '.ASC' ];
-				[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature]...
-				= Instruments.ALV.read_static_from_autosave_fast(file);
-				%point(index).cr1 = count_rate1;
-				%point(index).cr2 = count_rate2;
-				point(index).count_rate = count_rate1 + count_rate2;
-				point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
-				point(index).file_index = [i j];
-			end
+			point(index).file_index = [i j];
 		end
 	end
-
 	%[KcR] = calc_kc_over_r(scatt_angle, standard, solvent,cr_mean,0.001, Imean);
-
 	% find all angles in file
 	a = unique([point.scatt_angle]);
 	% sort them ( to be consistent with the program generated file)
@@ -76,7 +58,6 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 	SlsData = SLS.AngleData.empty(length(angles),0);
 	angle_tolerance = 1e-3;
 	for index = 1 : length(angles)
-		
 		SlsData(index) = SLS.AngleData(angles(index));
 		for index_1 = 1 : length(point);
 			% save data at one ANGLE in SlsData
@@ -89,7 +70,7 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 	% calc Kc over R
 	%--------------------------------------------------------------------------
 	for i = 1 : length(SlsData)
-		SlsData(i).calc_kc_over_r(standard, solvent, protein_conc, dn_over_dc,Instruments.ALV);
+		SlsData(i).calc_kc_over_r(standard, solvent, protein_conc, dn_over_dc,Instruments.ALVTUE);
 		%SlsData(i).show_cr();
 	end
 	%--------------------------------------------------------------------------
@@ -98,7 +79,7 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 	%disp(SlsData(1).KcR)
 	for i = 1 : length(SlsData)
 		sls_point(i) = SLS.Point;
-		sls_point(i).Instrument = Instruments.ALV;
+		sls_point(i).Instrument = Instruments.ALVTUE;
 		sls_point(i).T = SlsData(i).mean_temperature;
 		sls_point(i).Angle = SlsData(i).scatt_angle;
 		sls_point(i).KcR_raw = SlsData(i).KcR;

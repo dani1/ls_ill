@@ -56,7 +56,7 @@ function self = ALVTUE ( self )
   [Point SlsData RawData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number)
   s = read_tol_file(path_of_tol_file)
   [count_rate1 count_rate2 I_mon angle temperature] = read_static_from_autosave(path_of_autosave_file)
-  [count_rate1 count_rate2 I_mon angle temperature] = read_static_from_autosave_fast(path_of_autosave_file)
+  [count_rate1 count_rate2 I_mon angle temperature datetime] = read_static_from_autosave_fast(path_of_autosave_file)
   % read dynamic files
   Point	= read_dynamic_file	( path )
   Point	= invoke_read_dynamic_file_fast( path )
