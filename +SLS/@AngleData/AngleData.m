@@ -37,6 +37,7 @@ classdef AngleData < dynamicprops
 				self.count(len + 1).error_count_rate = count_struct.error_count_rate;
 				self.count(len + 1).file_index = count_struct.file_index;
 				self.count(len + 1).temperature = count_struct.temperature;
+				self.count(len + 1).datetime = count_struct.datetime;
 			end
 		end
 
