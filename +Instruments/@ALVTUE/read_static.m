@@ -42,7 +42,7 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 			index = index + 1;
 			file = [ path_file num2str(i,'%4.4u') '_' num2str(j,'%4.4u') '.ASC' ];
 			[count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature datetime]...
-			= Instruments.ALVTUE.read_static_from_autosave_fast(file);
+			= Instruments.ALVTUE.read_static_from_autosave(file);
 			%point(index).cr1 = count_rate1; %point(index).cr2 = count_rate2;
 			point(index).count_rate = count_rate1 + count_rate2;
 			point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);

@@ -77,6 +77,9 @@ classdef AngleData < dynamicprops
 					error_mean_i_mon = error_mean_i_mon + dev_i_mon * dev_i_mon;
 					
 				end
+				if mean_i_mon < 0
+					mean_i_mon = 1;
+				end
 				self.mean_monitor_intensity = mean_i_mon;
 				self.mean_count_rate = mean_cr;
 				self.error_mean_count_rate = sqrt(error_mean_cr / (len -1));
@@ -119,7 +122,7 @@ classdef AngleData < dynamicprops
 			protein_conc = protein_conc * 1e-3;
 			wavelength = instrument.Lambda * 1e-8;% A to cm
 			%wavelength = 0.00006328 ; % cm
-			number_avogadro = Constants.Na; 
+			number_avogadro = Constants.Na;
 			
 			% calculate optical constant : using correction for cylindrical cuvettes
 			% -> multiplication by n_std ^2 / n_solv ^2

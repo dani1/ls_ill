@@ -24,11 +24,11 @@ function self = ALVTUE ( self )
 	self.attenuator(1).percent_transmission = 0.1;
 
 	self.attenuator(2).monitor_intensity = 5700;
-	self.attenuator(2).intensity_correction = 1.06;
+	self.attenuator(2).intensity_correction = 1.15;
 	self.attenuator(2).percent_transmission = 0.3;
 
 	self.attenuator(3).monitor_intensity = 31200;
-	self.attenuator(3).intensity_correction = 1.06;
+	self.attenuator(3).intensity_correction = 1.15;
 	self.attenuator(3).percent_transmission = 1;
 
 	self.attenuator(4).monitor_intensity = 120657;
@@ -55,7 +55,7 @@ function self = ALVTUE ( self )
   % read static files from autosave
   [Point SlsData RawData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number)
   s = read_tol_file(path_of_tol_file)
-  [count_rate1 count_rate2 I_mon angle temperature] = read_static_from_autosave(path_of_autosave_file)
+  [count_rate1 count_rate2 I_mon angle temperature datetime] = read_static_from_autosave(path_of_autosave_file)
   [count_rate1 count_rate2 I_mon angle temperature datetime] = read_static_from_autosave_fast(path_of_autosave_file)
   % read dynamic files
   Point	= read_dynamic_file	( path )

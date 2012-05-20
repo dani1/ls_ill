@@ -12,11 +12,15 @@ function point	= read_dynamic_file ( path )
   if strfind(str,'Temperature')
    [ tmp tmp tmp T ] = strread(str, '%s %s %s %f'); 
   elseif strfind(str,'Angle')
-   [ tmp tmp tmp angle ] = strread(str, '%s %s %s %f'); 
+   [ tmp tmp tmp angle ] = strread(str, '%s %s %s %f');
+   elseif strfind(str, 'Date')
+   [ tmp tmp expdate ] = strread(str, '%s %s %s');
+   elseif strfind(str, 'Time')
+   [ tmp tmp exptime ] = strread(str, '%s %s %s');
   end
   str = fgetl(fid);
  end
- 
+datetime = sprintf('%s %s',expdate{1}, exptime{1});
  % read tau and g
  while ~strcmp(str,'')
   str=fgetl(fid);
@@ -43,6 +47,7 @@ function point	= read_dynamic_file ( path )
  point.G_raw		= g;
  point.dG_raw		= dg;		% this triggers the event in Point
  point.correct_G;
+ point.datetime = datenum(datetime, '"dd.mm.yyyy" "HH:MM:SS"');
 
 end
 

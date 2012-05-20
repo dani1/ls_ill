@@ -30,6 +30,7 @@ classdef Sample < dynamicprops
   raw_data_path
   date_experiment
   RawData
+  KcR_corr
  end
  methods
   function self = Sample( varargin )
@@ -84,7 +85,7 @@ else
      [ self.Point.(pointprops{i}) ]	= deal(a.(pointprops{i}));			% the deal function rocks!
    end
   end
-  function correct_attenuator( self )
+  function [KcR_corr dKcR_corr] = get.KcR_corr( self )
 	  if isfield(self.RawData, 'SlsData' )
 		sls_data = self.RawData.SlsData;
 		for i_angle = 1 : length(sls_data)
@@ -95,9 +96,9 @@ else
 					% 	', Att=' num2str(i_att) ...
 					% 	', corr=' num2str(correction_factor) ...
 					% 	', trans=' num2str(self.Instrument.attenuator(i_att).percent_transmission)]);
-					self.Point(i_angle).KcR_raw = sls_data(i_angle).KcR * correction_factor;
-					disp(self.Point(i_angle).KcR_raw);
-					self.Point(i_angle).dKcR_raw = sls_data(i_angle).dKcR* correction_factor;
+					KcR_corr(i_angle) = sls_data(i_angle).KcR * correction_factor;
+					% disp(self.Point(i_angle).KcR_raw);
+					dKcR_corr(i_angle) = sls_data(i_angle).dKcR* correction_factor;
 					break
 				end
 			end

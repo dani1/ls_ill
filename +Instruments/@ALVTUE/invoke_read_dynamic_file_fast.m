@@ -26,7 +26,7 @@ function point = invoke_read_dynamic_file_fast( path )
 	point.Tau_raw = tau;
 	point.G_raw = g;
 	point.dG_raw = dg;		% this triggers the event in Point
-	point.correct_G; % is function !
+	point.correct_G(); % is function !
 	point.datetime = datenum(datetime, '"dd.mm.yyyy" "HH:MM:SS"');
 
 end
