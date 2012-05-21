@@ -21,7 +21,7 @@ function [ s e nc] = find_start_end ( path )
 	e = i - 1;
 	flag = 1;
 	i = 0;
-	while flag ~= 0 && i < 200
+	while flag ~= 0 && i < 3000
 		i = i + 1;
 		flag = exist( [ path num2str(s, '%4.4u') '_' num2str(i, '%4.4u') '.ASC' ]);
 	end
@@ -37,7 +37,7 @@ function [ s e nc] = find_start_end ( path )
 			i = i + 1;
 			flag = exist( [ path num2str(i_a, '%4.4u') '_' num2str(i, '%4.4u') '.ASC' ]);
 		end
-		if i~=nc_array(index_of_different_count_numbers)+1;
+		if i~=nc_array(index_of_different_count_numbers)+1
 			if (i_a < e)
 				s_array(index_of_different_count_numbers + 1) = i_a;
 			end
