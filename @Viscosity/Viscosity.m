@@ -38,7 +38,7 @@ classdef Viscosity
 
     DT	= T -T0;	% Delta T
 
-    eta = A * ( DT + a*DT^2 + b*DT^3 + c*DT^4 )^(-g);
+    eta = A .* ( DT + a*DT.^2 + b*DT.^3 + c*DT.^4 ).^(-g);
 
   end % }}}2
 

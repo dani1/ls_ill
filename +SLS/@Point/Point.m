@@ -1,5 +1,6 @@
 classdef Point
 % This class describes a single SLS datapoint
+
  properties
 
   Protein					% what protein?
@@ -43,7 +44,7 @@ classdef Point
   dndc_set
   KcR_raw
   dKcR_raw
-  SlsData
+  datetime
 
  end
 
@@ -75,6 +76,7 @@ classdef Point
   function dKcR = get.dKcR ( self )
    dKcR		= self.KcR / self.KcR_raw * self.dKcR_raw;
   end
+
   function X_T = get.X_T ( self )
   % the osmotic isothermal compressibility is related to the structure factor at
   % vanishing Q by the following formula:
@@ -92,13 +94,6 @@ classdef Point
 
   function dX_T = get.dX_T ( self )
    dX_T = self.X_T .* self.dKcR ./ self.KcR;			% TODO: errors only come from KcR
-  end
-  %============================================================================
-  % correct intensity values based on comparison
-  %============================================================================
-  function correct_attenuator_intensity ( self )
-	  attenuators = self.Instrument.attenuators;
-	  RawData = SlsData;
   end
 
  end

@@ -32,6 +32,12 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
    upperbond	= [ 1.2		Max_Gamma1	];
    startpoint	= [ 1.0		Start_Gamma1	];
 
+  case 'SingleFree'
+   fit_function	= 'Ae * exp( - 2 * Gammae * t )';
+   coeffnames	= { 'Ae'	'Gammae'	};
+   lowerbond	= [ 0.1		0	]; 
+   upperbond	= [	10		Max_Gamma1	];
+   startpoint	= [ 1.0		Start_Gamma1	];
    case 'Streched'										% single streched decay
    fit_function	= 'As * exp( - 2 * (Gammas * t)^b )';
    coeffnames	= { 'As'	'Gammas'	'b'	};
@@ -43,6 +49,12 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
    fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
    coeffnames	= { 'A1'	'Gamma1'	'A2'	'Gamma2'	};
    lowerbond	= [ 0.5		Min_Gamma1 	0	Min_Gamma2 	];
+   upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	]; %changed 3 from 0.5 to 1
+   startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	];
+  case 'DoubleFree'											% double exponential decay
+   fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
+   coeffnames	= { 'A1'	'Gamma1'	'A2'	'Gamma2'	};
+   lowerbond	= [ 0		0 	0	0 	];
    upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	]; %changed 3 from 0.5 to 1
    startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	];
 
