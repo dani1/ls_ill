@@ -1,10 +1,16 @@
 classdef ALVTUE
-% This class describes the features of the ALV light scattering instrument at ILL
+% This class describes the features of the ALV light scattering instrument at IAP Tübingen
+<<<<<<< HEAD
 properties
 	attenuator;
 end
  properties ( Constant )
 
+=======
+ properties ( Constant )
+
+  attenuator ;
+>>>>>>> new_experimental
   Goniometer	= 'ALV-CGS3';
   Correlator	= 'ALV-7004/FAST';
   Lambda	= 6328;
@@ -19,6 +25,7 @@ end
  methods
 function self = ALVTUE ( self )
 	self.attenuator(1).monitor_intensity = 1;
+<<<<<<< HEAD
 	self.attenuator(1).intensity_correction = 1.38;
 	self.attenuator(1).percent_transmission = 0.1;
 
@@ -28,6 +35,17 @@ function self = ALVTUE ( self )
 
 	self.attenuator(3).monitor_intensity = 31200;
 	self.attenuator(3).intensity_correction = 1.38;
+=======
+	self.attenuator(1).intensity_correction = 1.06;
+	self.attenuator(1).percent_transmission = 0.1;
+
+	self.attenuator(2).monitor_intensity = 5700;
+	self.attenuator(2).intensity_correction = 1.15;
+	self.attenuator(2).percent_transmission = 0.3;
+
+	self.attenuator(3).monitor_intensity = 31200;
+	self.attenuator(3).intensity_correction = 1.15 * 1.2;
+>>>>>>> new_experimental
 	self.attenuator(3).percent_transmission = 1;
 
 	self.attenuator(4).monitor_intensity = 120657;
