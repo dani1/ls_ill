@@ -29,7 +29,7 @@
 
 /*  define max_length of correlation data */
 #define MAX_CORR_VECTOR_LENGTH 1000
-int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  char *path);
+int read_data(double *t, double *gt, double *dgt,double *temp,double *angle  ,char *time, char *date, char *path);
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  mexFunction 
@@ -43,7 +43,7 @@ void mexFunction(int nlhs,
 		const mxArray *prhs[])
 {
 
-	char *path;
+	char *path, *time, *date, *datetime;
 	int buflen;
 	double *gt, *plhs_gt;
 	double *dgt, *plhs_dgt;
@@ -66,12 +66,16 @@ void mexFunction(int nlhs,
 	t   = calloc(MAX_CORR_VECTOR_LENGTH, sizeof(double));
 	gt  = calloc(MAX_CORR_VECTOR_LENGTH, sizeof(double));
 	dgt = calloc(MAX_CORR_VECTOR_LENGTH, sizeof(double));
+	time = (char*) malloc( 50 * sizeof(char));
+	date = (char*) malloc( 50 * sizeof(char));
+	datetime = (char*) malloc(100 * sizeof(char));
 	/*  read data from file: */
 	/*  buf_out_len = length of correlation data vectors */
-	buf_out_len = read_data(t,gt,dgt,&temperature,&angle, path);
+	buf_out_len = read_data(t,gt,dgt,&temperature,&angle,time,date, path);
 	if (buf_out_len == 0)
 		mexWarnMsgTxt("File not existent / errors during evaluation of function read_data");
 
+	sprintf(datetime,"%s %s", date,time);
 			
 	/*  allocate Matlab memory: 3 vectors t,gt, dgt*/
 	plhs[0] = mxCreateDoubleMatrix(buf_out_len, 1 , mxREAL);
@@ -80,6 +84,8 @@ void mexFunction(int nlhs,
 	/*  allocate Matlab memory: 2 variables angle,temperature */
 	plhs[3] = mxCreateDoubleMatrix(1, 1, mxREAL);
 	plhs[4] = mxCreateDoubleMatrix(1, 1, mxREAL);
+	/* return strings time and date  */
+	plhs[5] = mxCreateString(datetime); 
 	/*  get pointer to Matlab angle and temparature variables */
 	plhs_angle = mxGetPr(plhs[3]);
 	plhs_temperature = mxGetPr(plhs[4]);
@@ -105,7 +111,7 @@ void mexFunction(int nlhs,
  *  Description:  read dynamic data from DLS instrument ALV autosave
  * =====================================================================================
  */
-int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  char *path)
+int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,char *time, char *date, char *path)
 {
 	FILE* file_pointer;
 	char *str = (char*) malloc(1000 * sizeof(char));
@@ -126,6 +132,24 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 	{
 		return 0;
 	}
+	/* find Date */
+	while( strcmp(str, "Date") != 0)
+	{
+		fscanf(file_pointer, "%s", str);
+	}
+	fscanf(file_pointer, "%s", str);
+	/* save Date */
+	fscanf(file_pointer, "%s", date);
+	/* find Time */
+	while( strcmp(str, "Time") != 0)
+	{
+		fscanf(file_pointer, "%s", str);
+	}
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", time);
+	/*  save Time*/
+	fscanf(file_pointer, "%s", str);
+	sprintf(time, "%s %s", time,str);
 	/*find temperature*/
 	while( strcmp(str, "Temperature") != 0)
 	{
@@ -223,14 +247,18 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,  ch
 main ( int argc, char *argv[] )
 {
 	
-	char *path = "/Users/daniel/Documents/tesi/data/data_raw/LS/2012_03_02/BSA_5gl_Nosalt0000_0001.ASC";
+	char *path = "/home/data/daniel/tesi/data/LS/2012_03_02/BSA_5gl_Nosalt0000_0001.ASC";
+	char *time, *date;
 	double *t = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
 	double *gt = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
 	double *dgt = (double * ) malloc(MAX_CORR_VECTOR_LENGTH * sizeof(double));
 	double angle, temperature;
+	time = (char*) malloc( 20 * sizeof(char) );
+	date = (char*) malloc( 20 * sizeof(char) );
 	int len, i;
 	i = 1;
-	len = read_data(t,gt,dgt,&temperature, &angle,path);
+	len = read_data(t,gt,dgt,&temperature, &angle,time, date,path);
+	printf("\n\ntime: %s \ndate: %s", time, date);
 	printf("\n\nangle : %lf \ntemperature: %lf\nlen : %d\n", angle, temperature, len);
 	/*  head   */
 	for ( i = 0 ; i < 5 ; i++) 

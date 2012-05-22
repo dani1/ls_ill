@@ -29,7 +29,7 @@
 
 /*  define max_length of correlation data */
 #define MAX_CORR_VECTOR_LENGTH 1000
-int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,  char *path);
+int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle, char *time , char *date, char *path);
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  mexFunction 
@@ -43,7 +43,7 @@ void mexFunction(int nlhs,
 		const mxArray *prhs[])
 {
 
-	char *path;
+	char *path, *time, *date, *datetime;
 	int buflen;
 	double angle, *plhs_angle, temperature, *plhs_temperature;
 	double count_rate1, *plhs_cr1, count_rate2,*plhs_cr2 , monitor_intensity, *plhs_imon;
@@ -60,18 +60,25 @@ void mexFunction(int nlhs,
 	if (status != 0)
 		mexWarnMsgTxt("Not enough space. String is truncated."); 
 
+	time = (char*) malloc( 50 * sizeof(char));
+	date = (char*) malloc( 50 * sizeof(char));
+	datetime = (char*) malloc(200 * sizeof(char));
 	/*  read data from file: */
-	i = read_data(&count_rate1, &count_rate2,&monitor_intensity,&temperature,&angle, path);
+	i = read_data(&count_rate1, &count_rate2,&monitor_intensity,&temperature,&angle,time, date, path);
 	if (i == 0)
 	mexWarnMsgTxt("File not existent / errors during evaluation of function read_data");
-	
-	/*  allocate Matlab memory: 3 vectors t,gt, dgt*/
+
+	sprintf(datetime,"%s %s", date,time);
+
+	/*  allocate Matlab memory: 3 variables cr1 cr2 Imon*/
 	plhs[0] = mxCreateDoubleMatrix(1, 1 , mxREAL);
 	plhs[1] = mxCreateDoubleMatrix(1, 1 , mxREAL);
 	plhs[2] = mxCreateDoubleMatrix(1, 1 , mxREAL);
 	/*  allocate Matlab memory: 2 variables angle,temperature */
 	plhs[3] = mxCreateDoubleMatrix(1, 1, mxREAL);
 	plhs[4] = mxCreateDoubleMatrix(1, 1, mxREAL);
+	/* return strings time and date  */
+	plhs[5] = mxCreateString(datetime); 
 	/*  get pointer to Matlab angle and temparature variables */
 	plhs_angle       = mxGetPr(plhs[3]);
 	plhs_temperature = mxGetPr(plhs[4]);
@@ -96,7 +103,7 @@ void mexFunction(int nlhs,
  *  Description:  read dynamic data from DLS instrument ALV autosave
  * =====================================================================================
  */
-int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,  char *path)
+int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle, char *time , char *date, char *path)
 {
 	FILE* file_pointer;
 	char *str = (char*) malloc(1000 * sizeof(char));
@@ -105,6 +112,25 @@ int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,
 	{
 		return 0;
 	}
+	/* find Date */
+	while( strcmp(str, "Date") != 0)
+	{
+		fscanf(file_pointer, "%s", str);
+	}
+	fscanf(file_pointer, "%s", str);
+	/* save Date */
+	fscanf(file_pointer, "%s", date);
+	/* find Time */
+	while( strcmp(str, "Time") != 0)
+	{
+		fscanf(file_pointer, "%s", str);
+	}
+	fscanf(file_pointer, "%s", str);
+	fscanf(file_pointer, "%s", time);
+	/*  save Time*/
+	fscanf(file_pointer, "%s", str);
+	sprintf(time, "%s %s", time,str);
+	/*find temperature*/
 	/*find temperature*/
 	while( strcmp(str, "Temperature") != 0)
 	{
@@ -175,8 +201,11 @@ main ( int argc, char *argv[] )
 	double cr2;
 	double imon; 
 	double angle, temperature;
+	char * date, *time;
 	int len;
-	len = read_data(&cr1,&cr2,&imon,&temperature, &angle,path);
+	time = (char*) malloc( 20 * sizeof(char));
+	date = (char*) malloc( 20 * sizeof(char));
+	len = read_data(&cr1,&cr2,&imon,&temperature, &angle,time,date,path);
 	printf("results: %f %f %f %f %f", cr1, cr2, imon, temperature, angle);
 	return 0;
 }				/* ----------  end of function main  ---------- */
