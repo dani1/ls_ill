@@ -47,7 +47,8 @@ datetime = sprintf('%s %s',expdate{1}, exptime{1});
  point.G_raw		= g;
  point.dG_raw		= dg;		% this triggers the event in Point
  point.correct_G;
- point.datetime = datenum(datetime, '"dd.mm.yyyy" "HH:MM:SS"');
+ point.datetime = datenum(datetime);%
+ % , '"dd.mm.yyyy" "HH:MM:SS"');
 
 end
 

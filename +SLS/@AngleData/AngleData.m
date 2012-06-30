@@ -41,7 +41,7 @@ classdef AngleData < dynamicprops
 			end
 		end
 
-		% calculate mean count rate and monitor intensity with errors (std_dev)
+		
 		function e = calc_error(self)
 			e = 0;
 			for i = 1 : length(self.count)
@@ -49,7 +49,8 @@ classdef AngleData < dynamicprops
 			end
 			e = sqrt(e) / length(self.count);
 			
-		end
+        end
+        % calculate mean count rate and monitor intensity with errors (std_dev)
 		function calc_mean(self)
 			%self.check_cr();
 			if ~isempty(self.count)
@@ -96,9 +97,10 @@ classdef AngleData < dynamicprops
 		%----------------------------------------------------------------------
 		function dR = R_error_propagation(self, standard, solvent, R_solution, dR_solution, angle_index)
 			R_tol = standard.ratio(angle_index);
-			dR_tol = standard.error_ratio(angle_index)* R_tol / 100;
+            standard.error_ratio(angle_index);
+			dR_tol = standard.error_ratio(angle_index).* R_tol / 100;
 			R_solv = solvent.ratio(angle_index);
-			dR_solv = solvent.error_ratio(angle_index)* R_solv / 100;
+			dR_solv = solvent.error_ratio(angle_index).* R_solv / 100;
 			RR = standard.rayleigh_ratio(angle_index);
 
 			% calculate error of 1 over R using gaussian error propagation
@@ -110,14 +112,18 @@ classdef AngleData < dynamicprops
 		% calculate Kc/R at certain angle
 		% protein_conc in mg/ml !!!
 		% dn_over_dc normally in [0.1:0.3] ml/g
-		% TODO: error propagation
+		% TODO: error propagation and make usable for len(standard) != len(solvent)
 		%======================================================================
 		function calc_kc_over_r(self, standard, solvent, protein_conc, dn_over_dc, instrument)
 			if(isempty(self.mean_count_rate) || isempty(self.mean_monitor_intensity))
 				self.calc_mean();
 			end
             angle_tolerance = 1e-5;
+			
             angle_index = find(abs(standard.scatt_angle-self.scatt_angle) < angle_tolerance);
+			if(isempty(angle_index))
+				[aval angle_index] = min(abs(standard.scatt_angle - self.scatt_angle));
+			end
 			% protein concentration from mg/ml in g/ml
 			protein_conc = protein_conc * 1e-3;
 			wavelength = instrument.Lambda * 1e-8;% A to cm

@@ -31,7 +31,7 @@ classdef Sample
   Instrument
   C_set
   n_set
-  date_experiment
+  datetime
   number_of_counts
   start_index
   end_index
@@ -108,6 +108,7 @@ nc = nc_array(filegroup_index);
    for i = 1 : length(pointprops)
      [ self.Point.(pointprops{i}) ]	= deal(self.(pointprops{i}));			% the deal function rocks!
    end
+   self.datetime = mean(horzcat(self.Point(1:end).datetime));
 
   end
 

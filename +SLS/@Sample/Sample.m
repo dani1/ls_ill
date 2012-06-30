@@ -18,7 +18,8 @@ classdef Sample < dynamicprops
  properties ( SetAccess = private, Dependent )
   Angle
   Q
-  KcR dKcR
+  KcR 
+  dKcR
   X_T
   dX_T
  end
@@ -61,15 +62,17 @@ else
 	% get data from table
 	if ~bool_get_data_from_autosave
 	   try		self.Point	= self.Instrument.read_static_file ( a.Path );  	% get the KcR and angles
-	   catch disp(self)
+	   catch disp(a.Path)
 	       error('Error loading the static file!');
 	   end
     else
-        disp(['Load SLS:' a.Path])
 		[s_array, e_array, nc_array] = self.Instrument.find_start_end( a.Path );
 		start_index = s_array(filegroup_index);
 		end_index = e_array(filegroup_index);
 		nc = nc_array(filegroup_index);
+
+		disp(['Load SLS:' a.Path '[' num2str(start_index,'%4.4u') ':' num2str(end_index,'%4.4u') ']' ])
+
 		path_standard = a.path_standard;
 		path_solvent  = a.path_solvent;
 		[self.Point self.RawData] = self.Instrument.read_static(path_standard, path_solvent, ...
@@ -85,7 +88,7 @@ else
      [ self.Point.(pointprops{i}) ]	= deal(a.(pointprops{i}));			% the deal function rocks!
    end
   end
-  function [KcR_corr dKcR_corr] = get.KcR_corr( self )
+  function [KcR_corr] = get.KcR_corr( self )
 	  if isfield(self.RawData, 'SlsData' )
 		sls_data = self.RawData.SlsData;
 		for i_angle = 1 : length(sls_data)

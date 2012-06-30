@@ -47,7 +47,7 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
    fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
    coeffnames	= { 'A1'	'Gamma1'	'A2'	'Gamma2'	};
    lowerbond	= [ 0		0 	0	0 	];
-   upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	]; %changed 3 from 0.5 to 1
+   upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	]; %
    startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	];
   case 'DoubleBKG'										% double exponential decay (with background)
    fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2 + b';
@@ -58,7 +58,7 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
   case 'SingleStreched'										% double decay, exp + streched
    fit_function	= '( Ae * exp( - Gammae * t ) + As * exp(-( Gammas *t).^b )) .^2';
    coeffnames	= { 'Ae'	'Gammae'	'As'	'Gammas'	'b'	};
-   lowerbond	= [ 0.5		Min_Gamma1 	0	Min_Gamma2 	0	];
+   lowerbond	= [ 0.01		Min_Gamma1 	0	Min_Gamma2 	0	];
    upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	1	];
    startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	0.8	];
   case 'DoubleStreched'										% double decay, exp + streched
@@ -77,18 +77,36 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
    dg		= dg ( ind );
    yc		= log( sqrt( g ) );					% Get the straight line for cumulants!
    dyc		= dg ./ ( 2 * g );
-   case 'Cumulants3' % cumulants (Pursey, Frisken) with nonlinear fit methodwhich is also stable for higher taus
+   case 'Cumulants3' 
+   % cumulants (Pursey, Frisken) with nonlinear fit method which is also stable for higher taus
 	fit_function = 'A * exp( - 2 * Gammac * t) .*( 1 + mu2 / 2 * t .^2 - mu3 / 6 * t .^3 ).^2';
    coeffnames	= { 'A'	'Gammac'	'mu2'	'mu3'};
    lowerbond	= [ 0.8		Min_Gamma2 	-1e3	 -1e3 ];
    upperbond	= [ 1.2		Max_Gamma1 	1e3	1e3 ];
    startpoint	= [ 1		Start_Gamma1	0.1	 0];
+
    case 'Cumulants2' % cumulants (Pursey, Frisken) with nonlinear fit methodwhich is also stable for higher taus
 	fit_function = 'A * exp( - 2 * Gammac * t) .*( 1 + mu2 / 2 * t .^2 ).^2';
    coeffnames	= { 'A'	'Gammac'	'mu2'};
    lowerbond	= [ 0.8		Min_Gamma2 	-1e3];
    upperbond	= [ 1.2		Max_Gamma1 	1e3];
    startpoint	= [ 1		Start_Gamma1	0.1];
+
+   case 'DoubleCumulants2'
+	fit_function = '(A1 * exp( - Gamma1 *t) + A2 * exp( - Gammac * t) .*( 1 + mu2 / 2 * t .^2 )).^2';
+   coeffnames	= {'A1'	 'Gamma1'	'A2'	'Gammac'	'mu2'};
+   lowerbond	= [0.01	Min_Gamma1	 0.1		Min_Gamma2 	-10];
+   upperbond	= [1	Max_Gamma1	 1.2		Max_Gamma2 	10];
+   startpoint	= [0.1	Start_Gamma1	 1		Start_Gamma2	0.0];
+
+   case 'DoubleCumulants3' 
+   % cumulants (Pursey, Frisken) with nonlinear fit method which is also stable for higher taus
+	fit_function = '(A1 * exp( - Gamma1 *t) + A2 * exp( - Gammac * t) .*( 1 + mu2 / 2 * t .^2 - mu3 / 6 * t .^3 )).^2';
+   coeffnames	= {'A1'	'Gamma1'	'A2'	'Gammac'	'mu2'	'mu3'};
+   lowerbond	= [ 0.01	Min_Gamma1 / 10	0.1	Min_Gamma2 	-1e3	 -1e3 ];
+   upperbond	= [ 1	Max_Gamma1	1.2	Max_Gamma2 	1e3	1e3 ];
+   startpoint	= [ 0.1	Start_Gamma1	0.8	Start_Gamma2	0.1	 0];
+
   otherwise
    error('Method not recognized!');
  end

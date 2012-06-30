@@ -50,7 +50,10 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 			point(index).count_rate = count_rate1 + count_rate2;
 			point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
 			point(index).file_index = [i j];
-			point(index).datetime = datenum(datetime, '"dd.mm.yyyy" "HH:MM:SS"');
+			datetime(4) = '/';
+			datetime(7) = '/';
+			point(index).datetime = datenum(datetime,'"dd/mm/yyyy" "HH:MM:SS"');
+			% , '"dd.mm.yyyy" "HH:MM:SS"');
 		end
 	end
 	%[KcR] = calc_kc_over_r(scatt_angle, standard, solvent,cr_mean,0.001, Imean);

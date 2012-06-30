@@ -129,7 +129,7 @@ int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,
 	fscanf(file_pointer, "%s", time);
 	/*  save Time*/
 	fscanf(file_pointer, "%s", str);
-	sprintf(time, "%s %s", time,str);
+	/* sprintf(time, "%s %s", time,str); */
 	/*find temperature*/
 	/*find temperature*/
 	while( strcmp(str, "Temperature") != 0)
