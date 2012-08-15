@@ -28,10 +28,12 @@ function point = invoke_read_dynamic_file_fast( path )
 	point.dG_raw = dg;		% this triggers the event in Point
 	point.correct_G(); % is function !
 	% datetime
-	datetime(4) = '/';
-	datetime(7) = '/';
-	point.datetime = datenum(datetime,'"dd/mm/yyyy" "HH:MM:SS"');
-
+	datetime = strrep(datetime, '.', '/');
+	try
+		point.datetime = datenum(datetime,'"dd/mm/yyyy" "HH:MM:SS"');
+	catch
+		point.datetime = datenum(datetime);%&,'"dd/mm/yyyy" "HH:MM:SS"')
+	end
 	%, '"dd.mm.yyyy" "HH:MM:SS"');
 	% try
 	% 	point.datetime = datenum(datetime)%, '"dd.mm.yyyy" "HH:MM:SS"');

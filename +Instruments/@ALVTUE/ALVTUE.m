@@ -19,44 +19,7 @@ end
 
  methods
 function self = ALVTUE ( self )
-	self.attenuator(1).monitor_intensity = 1;
-    
-	self.attenuator(1).intensity_correction = 1.38;
-	self.attenuator(1).percent_transmission = 0.1;
-
-	self.attenuator(2).monitor_intensity = 5700;
-	self.attenuator(2).intensity_correction = 1.38;
-	self.attenuator(2).percent_transmission = 0.3;
-
-	self.attenuator(3).monitor_intensity = 31200;
-	self.attenuator(3).intensity_correction = 1.38;
-
-	self.attenuator(1).intensity_correction = 1.06;
-	self.attenuator(1).percent_transmission = 0.1;
-
-	self.attenuator(2).monitor_intensity = 5700;
-	self.attenuator(2).intensity_correction = 1.15;
-	self.attenuator(2).percent_transmission = 0.3;
-
-	self.attenuator(3).monitor_intensity = 31200;
-	self.attenuator(3).intensity_correction = 1.15 * 1.2;
-	self.attenuator(3).percent_transmission = 1;
-
-	self.attenuator(4).monitor_intensity = 120657;
-	self.attenuator(4).intensity_correction = 1.15;
-	self.attenuator(4).percent_transmission = 3;
-
-	self.attenuator(5).monitor_intensity = 315000;
-	self.attenuator(5).intensity_correction = 1.1;
-	self.attenuator(5).percent_transmission = 10;
-
-	self.attenuator(6).monitor_intensity = 870000;
-	self.attenuator(6).intensity_correction = 1.06;
-	self.attenuator(6).percent_transmission = 33;
-
-	self.attenuator(7).monitor_intensity = 2960000;
-	self.attenuator(7).intensity_correction = 1;
-	self.attenuator(7).percent_transmission = 100;
+	self.attenuator = self.get_attenuator_corrections();
  end
  end
  methods ( Static )
@@ -74,6 +37,37 @@ function self = ALVTUE ( self )
   [t gt dgt Angle temperature datetime] = read_dynamic_file_fast( path );
   [ s e nc] = find_start_end ( path )
   
+%TODO : do not set it as property, but leave it as method, so that it can be updated
+function [att] = get_attenuator_corrections()
+	att(7).monitor_intensity = 2960000;
+	att(7).intensity_correction = 1;
+	att(7).percent_transmission = 100;
+	
+	att(6).monitor_intensity = 870000;
+	att(6).intensity_correction = 1.06   * att(7).intensity_correction;
+	att(6).percent_transmission = 33;
+
+	att(5).monitor_intensity = 315000;
+	att(5).intensity_correction = 1.039   * att(6).intensity_correction;
+	att(5).percent_transmission = 10;
+
+	att(4).monitor_intensity = 120657;
+	att(4).intensity_correction = 1.0713 * att(5).intensity_correction;
+	att(4).percent_transmission = 3;
+
+	att(3).monitor_intensity = 31200;
+	att(3).intensity_correction = 1.169    * att(4).intensity_correction;
+	att(3).percent_transmission = 1;
+
+	att(2).monitor_intensity = 5700;
+	att(2).intensity_correction = 1.8      * att(3).intensity_correction;
+	att(2).percent_transmission = 0.3;
+
+	att(1).monitor_intensity = 1;
+	att(1).intensity_correction = 1.06   * att(2).intensity_correction;
+	att(1).percent_transmission = 0.1;
+
+end
  end
 
 end

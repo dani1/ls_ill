@@ -45,6 +45,8 @@ classdef Point
   KcR_raw
   dKcR_raw
   datetime
+  Imon
+  dImon
 
  end
 

@@ -17,6 +17,8 @@ function point = read_static_file ( path )
    angle	= tmp{1};
    T		= tmp{7};
    kcr		= tmp{9};
+   imon		= tmp{5};
+   dimon	= tmp{6};
    dkcr		= tmp{10};
    dkcr		= max(dkcr,min_error);
 
@@ -27,6 +29,8 @@ function point = read_static_file ( path )
    point(i).Angle	= angle;
    point(i).KcR_raw	= kcr;
    point(i).dKcR_raw	= 0.01 * dkcr * kcr;					% percentual errors!
+   point(i).Imon = imon;
+   point(i).dImon = dimon;
 
   end
 

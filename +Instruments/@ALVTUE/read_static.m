@@ -50,9 +50,17 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 			point(index).count_rate = count_rate1 + count_rate2;
 			point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
 			point(index).file_index = [i j];
-			datetime(4) = '/';
-			datetime(7) = '/';
-			point(index).datetime = datenum(datetime,'"dd/mm/yyyy" "HH:MM:SS"');
+            if datetime(4) == '.'
+                datetime(4) = '/';
+            end
+            if datetime(7) == '.';
+                datetime(7) = '/';
+            end
+            try
+                point(index).datetime = datenum(datetime,'"dd/mm/yyyy" "HH:MM:SS"');
+            catch
+                point(index).datetime = datenum(datetime);%&,'"dd/mm/yyyy" "HH:MM:SS"');
+            end
 			% , '"dd.mm.yyyy" "HH:MM:SS"');
 		end
 	end
@@ -91,6 +99,8 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 		sls_point(i).Angle = SlsData(i).scatt_angle;
 		sls_point(i).KcR_raw = SlsData(i).KcR;
 		sls_point(i).dKcR_raw = SlsData(i).dKcR;
+		sls_point(i).Imon = SlsData(i).mean_monitor_intensity;
+		sls_point(i).dImon = SlsData(i).error_mean_monitor_intensity;
 		sls_point(i).datetime = mean([SlsData(i).count(1:end).datetime]);
     end
 	RawData.SlsData = SlsData;

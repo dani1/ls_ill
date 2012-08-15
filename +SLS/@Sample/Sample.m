@@ -70,6 +70,11 @@ else
 		start_index = s_array(filegroup_index);
 		end_index = e_array(filegroup_index);
 		nc = nc_array(filegroup_index);
+		if any(strcmp('start_index', properties(a))) && any(strcmp('end_index', properties(a))) && any(strcmp('number_of_counts', properties(a)));
+			start_index = a.start_index;
+			end_index = a.end_index;
+			nc = a.number_of_counts;
+		end
 
 		disp(['Load SLS:' a.Path '[' num2str(start_index,'%4.4u') ':' num2str(end_index,'%4.4u') ']' ])
 
@@ -89,26 +94,37 @@ else
    end
   end
   function [KcR_corr] = get.KcR_corr( self )
-	  if isfield(self.RawData, 'SlsData' )
-		sls_data = self.RawData.SlsData;
-		for i_angle = 1 : length(sls_data)
-			for i_att = 1 : length(self.Instrument.attenuator)
-				if ( round(sls_data(i_angle).count(1).monitor_intensity / self.Instrument.attenuator(i_att).monitor_intensity) == 1)
-					correction_factor = self.Instrument.attenuator(i_att).intensity_correction;
+		  point = self.Point;
+		  if any(strcmp('Imon', properties(point)))
+			  point(1).Imon;
+			  simon = 'Imon';
+		  else
+			  try
+			  point = self.RawData.SlsData;
+			  simon = 'mean_monitor_intensity';
+			  % disp('no data found');
+			  catch
+			  KcR_corr = NaN;
+			  disp('no data found');
+			  return
+              end
+          end
+		for i_angle = 1 : length(point)
+			attenuator = self.Instrument.get_attenuator_corrections();
+			for i_att = 1 : length(attenuator)
+				if ( round(point(i_angle).(simon) / attenuator(i_att).monitor_intensity) == 1)
+					correction_factor = attenuator(i_att).intensity_correction;
 					% disp(['angle=' num2str(sls_data(i_angle).scatt_angle)...
 					% 	', Att=' num2str(i_att) ...
 					% 	', corr=' num2str(correction_factor) ...
-					% 	', trans=' num2str(self.Instrument.attenuator(i_att).percent_transmission)]);
-					KcR_corr(i_angle) = sls_data(i_angle).KcR * correction_factor;
+					% 	', trans=' num2str(attenuator(i_att).percent_transmission)]);
+					KcR_corr(i_angle) = point(i_angle).KcR * correction_factor;
 					% disp(self.Point(i_angle).KcR_raw);
-					dKcR_corr(i_angle) = sls_data(i_angle).dKcR* correction_factor;
+					dKcR_corr(i_angle) = point(i_angle).dKcR* correction_factor;
 					break
 				end
 			end
-		end
-	  else
-		  disp('no raw data from autosave available ! -> exit')
-	  end
+        end
   end
   function KcR	= get.KcR ( self )
    y	= [ self.Point.KcR ];

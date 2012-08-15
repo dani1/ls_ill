@@ -47,8 +47,14 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
    fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
    coeffnames	= { 'A1'	'Gamma1'	'A2'	'Gamma2'	};
    lowerbond	= [ 0		0 	0	0 	];
-   upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma2 	]; %
+   upperbond	= [ 1		Max_Gamma1 	1	Max_Gamma1 	]; %
    startpoint	= [ 0.9		Start_Gamma1	0.1	Start_Gamma2	];
+  case 'DoubleBKG3p'										% double exponential decay (with background)
+   fit_function	= '( A1 * exp( - Gamma1 * t ) + (A1-1) * exp( - Gamma2 * t ) ).^2 + b';
+   coeffnames	= { 'A1'	'Gamma1'	'Gamma2'	'b'	};
+   lowerbond	= [ 0.0		Min_Gamma1 Min_Gamma2 	-1e-3	]; %changed 1 from 0.1 to 0 
+   upperbond	= [ 1		Max_Gamma1 Max_Gamma2 	1e-3	]; %changed 3 from 0.5 to 1
+   startpoint	= [ 0.7		Start_Gamma1	Start_Gamma2	0	]; % changed 1 from 0.9 to 1
   case 'DoubleBKG'										% double exponential decay (with background)
    fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2 + b';
    coeffnames	= { 'A1'	'Gamma1'	'A2'	'Gamma2'	'b'	};
