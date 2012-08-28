@@ -43,6 +43,7 @@ classdef Point < dynamicprops
   Tau_raw
   G_raw
   dG_raw
+  norm_raw
   datetime
 
  end
@@ -63,7 +64,7 @@ classdef Point < dynamicprops
 
   function correct_G ( self )
 
-   i	= ( self.Tau_raw < 0.4e-3 & self.Tau_raw > 1e-5);			% limit time: 10 ns
+   i	= ( self.Tau_raw < 1e-4 & self.Tau_raw > 1e-5);			% limit time: 10 ns
    norm	= abs(mean( self.G_raw( i ) ));
 
    i	= ( self.Tau_raw > 1e-3	);			% shortest time: 1 mus
@@ -72,6 +73,7 @@ classdef Point < dynamicprops
    self.Tau	= self.Tau_raw (i);
    self.G	= self.G_raw(i)		/ norm;		% normalize
    self.dG	= self.dG_raw(i)	/ norm;
+   self.norm_raw = norm;
 
   end
 
