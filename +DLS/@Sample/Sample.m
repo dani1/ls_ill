@@ -137,6 +137,11 @@ nc = nc_array(filegroup_index);
    end
   end
 
+  function fit_raw ( self , model )
+   for i = 1 : length( self.Point )
+    self.Point(i).fit_raw( model );
+   end
+  end
   function invert_laplace ( self )
    for i = 1 : length( self.Point )
     fprintf([num2str(i) ': ']);

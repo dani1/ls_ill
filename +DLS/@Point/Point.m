@@ -80,9 +80,10 @@ classdef Point < dynamicprops
  % STATIC METHODS
  methods ( Static )
 
-  fit_obj 	= fit_discrete ( t, g, dg, method, q, protein)
-  [s, g, b] 	= contin  ( t, y, var, s0, s1, m, alpha, kernel)
-  [ s g ]	= contin2 ( t, gt, dg, smin, smax, m, alpha, cycles )
+  fit_obj 	= fit_discrete ( t, g, dg, method, q, protein);
+  fit_obj 	= fit_discrete_raw ( t, g, dg, method, q, protein);
+  [s, g, b] 	= contin  ( t, y, var, s0, s1, m, alpha, kernel);
+  [ s g ]	= contin2 ( t, gt, dg, smin, smax, m, alpha, cycles );
 
  end
 
@@ -96,6 +97,12 @@ classdef Point < dynamicprops
    try self.addprop(['Fit_' method]);	end
    self.(['Fit_' method])	= fit_obj;
 
+  end
+  function fit_raw ( self, method )
+   fit_obj	= self.fit_discrete_raw ( self.Tau_raw, self.G_raw, self.dG_raw, method, self.Q, self.Protein );
+   
+   try self.addprop(['Fit_' method]);	end
+   self.(['Fit_' method])	= fit_obj;
   end
 
   function invert_laplace ( self )

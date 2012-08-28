@@ -95,20 +95,21 @@ else
   end
   function [KcR_corr] = get.KcR_corr( self )
 		  point = self.Point;
-		  if any(strcmp('Imon', properties(point)))
-			  point(1).Imon;
-			  simon = 'Imon';
-		  else
+		  % if any(strcmp('Imon', properties(point)))
+			  % point(1).Imon;
+		  % else
 			  try
 			  point = self.RawData.SlsData;
 			  simon = 'mean_monitor_intensity';
 			  % disp('no data found');
 			  catch
-			  KcR_corr = NaN;
-			  disp('no data found');
-			  return
+			  % KcR_corr = NaN;
+			  % disp('no data found');
+			  point = self.Point;
+			  simon = 'Imon';
+			  % return
               end
-          end
+          % end
 		for i_angle = 1 : length(point)
 			attenuator = self.Instrument.get_attenuator_corrections();
 			for i_att = 1 : length(attenuator)
