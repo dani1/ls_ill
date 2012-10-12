@@ -36,6 +36,7 @@ function self = ALVTUE ( self )
   Point	= invoke_read_dynamic_file_fast( path )
   [t gt dgt Angle temperature datetime] = read_dynamic_file_fast( path );
   [ s e nc] = find_start_end ( path )
+  fname = generate_filename(path_file, angle_index, count_index)
   
 %TODO : do not set it as property, but leave it as method, so that it can be updated
 function [att] = get_attenuator_corrections()

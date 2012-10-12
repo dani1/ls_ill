@@ -11,10 +11,10 @@ classdef AngleData < dynamicprops
 		% allocate count to 0x0 array of struct
 		count = struct([]);
 		mean_count_rate;
-        error_mean_count_rate;
+		error_mean_count_rate;
 		mean_monitor_intensity;
 		error_mean_monitor_intensity;
-        mean_temperature;
+		mean_temperature;
 		KcR;
 		dKcR;
 	end
@@ -49,8 +49,8 @@ classdef AngleData < dynamicprops
 			end
 			e = sqrt(e) / length(self.count);
 			
-        end
-        % calculate mean count rate and monitor intensity with errors (std_dev)
+		end
+		% calculate mean count rate and monitor intensity with errors (std_dev)
 		function calc_mean(self)
 			%self.check_cr();
 			if ~isempty(self.count)
@@ -97,7 +97,7 @@ classdef AngleData < dynamicprops
 		%----------------------------------------------------------------------
 		function dR = R_error_propagation(self, standard, solvent, R_solution, dR_solution, angle_index)
 			R_tol = standard.ratio(angle_index);
-            standard.error_ratio(angle_index);
+			standard.error_ratio(angle_index);
 			dR_tol = standard.error_ratio(angle_index).* R_tol / 100;
 			R_solv = solvent.ratio(angle_index);
 			dR_solv = solvent.error_ratio(angle_index).* R_solv / 100;
@@ -105,8 +105,8 @@ classdef AngleData < dynamicprops
 
 			% calculate error of 1 over R using gaussian error propagation
 			dR =sqrt((dR_tol / (R_solution - R_solv))^2 + (R_tol * dR_solv /...
-			   	(R_solution -R_solv)^2)^2 + (R_tol * dR_solution /...
-			   	(R_solution - R_solv)^2)^2)/RR;
+				(R_solution -R_solv)^2)^2 + (R_tol * dR_solution /...
+				(R_solution - R_solv)^2)^2)/RR;
 		end
 		%======================================================================
 		% calculate Kc/R at certain angle
@@ -118,11 +118,11 @@ classdef AngleData < dynamicprops
 			if(isempty(self.mean_count_rate) || isempty(self.mean_monitor_intensity))
 				self.calc_mean();
 			end
-            angle_tolerance = 1e-5;
+			angle_tolerance = 1e-5;
 			
-            angle_index = find(abs(standard.scatt_angle-self.scatt_angle) < angle_tolerance);
+			angle_index = find(abs(standard.scatt_angle-self.scatt_angle) < angle_tolerance);
 			if(isempty(angle_index))
-				[aval angle_index] = min(abs(standard.scatt_angle - self.scatt_angle));
+				[tmp angle_index] = min(abs(standard.scatt_angle - self.scatt_angle));
 			end
 			% protein concentration from mg/ml in g/ml
 			protein_conc = protein_conc * 1e-3;
@@ -139,7 +139,7 @@ classdef AngleData < dynamicprops
 
 			% calculate ratio of solution
 			R_solution =  self.mean_count_rate * sin( self.scatt_angle * pi/180)...
-			   	/ self.mean_monitor_intensity;
+				/ self.mean_monitor_intensity;
 			dR_solution = sqrt((self.error_mean_count_rate / self.mean_monitor_intensity...
 				)^2 + (self.mean_count_rate * self.error_mean_monitor_intensity /...
 				self.mean_monitor_intensity^2)^2)*sin(self.scatt_angle * pi/180);
@@ -147,13 +147,13 @@ classdef AngleData < dynamicprops
 			% R needed for Kc/R, calculated using ratios saved in solvent
 			% and standard file
 			R = (R_solution - solvent.ratio(angle_index) ) / standard.ratio(angle_index)...
-			   	* standard.rayleigh_ratio(angle_index);
+				* standard.rayleigh_ratio(angle_index);
 			dR = self.R_error_propagation(standard, solvent, R_solution, dR_solution, angle_index);
 			one_over_R = 1 / R;
 			rel_error = dR / one_over_R;
 
 			% calculate KcR and relative error
-			% TODO: calculate errors and check standard deviations
+			% TODO: check standard deviations eventually 
 			self.KcR = K * protein_conc/ R;
 			self.dKcR = K * protein_conc * dR;
 			%disp(self.dKcR / self.KcR)

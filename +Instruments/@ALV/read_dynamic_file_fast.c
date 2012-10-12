@@ -113,6 +113,8 @@ void mexFunction(int nlhs,
  */
 int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,char *time, char *date, char *path)
 {
+	//TODO: change all comments // to /**/ for compiler without -c99 flag (stupid matlab-mex) 
+	//implement additional checks, i.e. check for eof at every while loop, etc
 	FILE* file_pointer;
 	char *str = (char*) malloc(1000 * sizeof(char));
 	float tmp_float;
@@ -133,7 +135,7 @@ int read_data(double *t, double *gt, double *dgt,double *temp,double *angle,char
 		return 0;
 	}
 	/* find Date */
-	while( strcmp(str, "Date") != 0)
+	while( strcmp(str, "Date") != 0 )
 	{
 		fscanf(file_pointer, "%s", str);
 	}

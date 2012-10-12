@@ -40,15 +40,12 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 	for i = start_index : end_index
 		for j = 1 : count_number
 			index = index + 1;
-			file = [ path_file num2str(i,'%4.4u') '_' num2str(j,'%4.4u') '.ASC' ];
+			file = Instruments.ALVTUE.generate_filename(path_file, i, j);
 			 [count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature datetime]...
 			 = Instruments.ALVTUE.read_static_from_autosave_fast(file);
-			% [count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature datetime]...
-			% = Instruments.ALVTUE.read_static_from_autosave_fast(file);
-
-			%point(index).cr1 = count_rate1; %point(index).cr2 = count_rate2;
 			point(index).count_rate = count_rate1 + count_rate2;
 			point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
+			% TODO: write a decent datetime conversion function
 			point(index).file_index = [i j];
             if datetime(4) == '.'
                 datetime(4) = '/';
