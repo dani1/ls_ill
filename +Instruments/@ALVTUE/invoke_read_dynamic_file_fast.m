@@ -35,6 +35,7 @@ function point = invoke_read_dynamic_file_fast( path )
     point.correct_G(); % is function !
     % datetime
     point.datetime_raw = datetime;
+
     %, '"dd.mm.yyyy" "HH:MM:SS"');
     % try
     % 	point.datetime = datenum(datetime)%, '"dd.mm.yyyy" "HH:MM:SS"');

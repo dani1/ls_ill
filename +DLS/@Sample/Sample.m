@@ -100,6 +100,12 @@ methods
         self.end_index = e;
         self.number_of_counts = nc;
         
+        regexpstr = Instruments.get_datetime_format(self.Point(1).datetime_raw);
+        if ~isempty(regexpstr)
+            for i = 1 : length(self.Point)
+                self.Point(i).datetime = datenum(self.Point(i).datetime_raw, regexpstr);
+            end
+        end
         pointprops	= {'Protein','Salt',...
                     'C' , 'C_set'    , ...
                     'Cs', ...
@@ -153,7 +159,6 @@ methods
             self.Point(i).fit( model );
         end
     end
-
     function fit_raw ( self , model )
         for i = 1 : length( self.Point )
             self.Point(i).fit_raw( model );

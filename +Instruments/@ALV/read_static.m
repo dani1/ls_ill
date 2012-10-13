@@ -56,10 +56,6 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
         for i = 1 : length(point)
             point(i).datetime = datenum(point(i).datetime_raw, regexpstr)
         end
-    else
-        for i = 1 : length(point)
-            point(i).datetime = false;
-        end
     end
 end
 
@@ -103,7 +99,7 @@ end
         sls_point(i).KcR_raw = SlsData(i).KcR;
         sls_point(i).dKcR_raw = SlsData(i).dKcR;
         sls_point(i).datetime_raw = SlsData(i).count(1).datetime_raw;
-        sls_point(i).datetime = mean(SlsData(i).count(1:end).datetime);
+        sls_point(i).datetime = mean([SlsData(i).count(1:end).datetime]);
     end
     RawData.SlsData = SlsData;
     RawData.solvent = solvent;
