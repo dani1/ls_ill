@@ -45,6 +45,7 @@ properties ( Hidden )
     dG_raw
     norm_raw
     datetime
+    datetime_raw
 
 end
 

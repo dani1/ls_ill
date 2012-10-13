@@ -1,4 +1,4 @@
-function point	= read_dynamic_file ( path )
+function point = read_dynamic_file ( path )
 
  fid	= fopen( path );
 % disp(path);

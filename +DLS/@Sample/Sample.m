@@ -40,76 +40,74 @@ end
 
 methods
 
+    %constructor
     function self = Sample( varargin )
-
-    a = Args(varargin{:});% get  the args
-    try self.Instrument = Instruments.(a.Instrument); % get the instrument
-    catch ; error('Instrument not found!');
-    end
-
-    props = {	'Protein',	'Salt',		...
-            'C' , 'C_set', ...
-            'Cs', 'T'    , ...
-            'n' ,  'n_set'  };
-    for i = 1 : length(props)
-        try		self.(props{i})		= a.(props{i});
-        catch ;	warning(['Property ' props{i} ' not found!']);
+        a = Args(varargin{:});% get  the args
+        try self.Instrument = Instruments.(a.Instrument); % get the instrument
+        catch err; error('Instrument not found!');
         end
-    end
 
-    self.raw_data_path = a.Path;
-    if any(strcmp('filegroup_index', properties(a)))
-        filegroup_index = a.filegroup_index;
-    else
-        filegroup_index = 1;
-    end
-    [s_array e_array nc_array] = self.Instrument.find_start_end( self.raw_data_path );
-    s = s_array(filegroup_index);
-    e = e_array(filegroup_index);
-    nc = nc_array(filegroup_index);
-    if any(strcmp('start_index', properties(a))) && a.start_index > 0
-        s = a.start_index;
-    end
-    if any(strcmp('end_index', properties(a))) &&a.end_index > 0
-        e = a.end_index;
-    end
-    if any(strcmp('number_of_counts', properties(a))) && a.number_of_counts > 0
-        nc = a.number_of_counts;
-    end
-    self.Point = DLS.Point;
-    disp(['load: ' self.raw_data_path '[' num2str(s, '%4.4u') ':' num2str(e, '%4.4u') ']' ]);
-   
-    self.Point = DLS.Point;
-    counter = 0;
-    for i = s : e
-        flag = true;
-        i_c = 1;
-        while flag
-            counter = counter + 1;
-            file = self.Instrument.generate_filename(self.raw_data_path, i, i_c);
-            self.Point(counter)	= self.Instrument.invoke_read_dynamic_file_fast( file );
-            % self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
-            % condition here used as do - while of C.
-            if i_c >= nc
-                flag = false;
-            else
-                i_c = i_c + 1;
+        props = {	'Protein',	'Salt',		...
+                'C' , 'C_set', ...
+                'Cs', 'T'    , ...
+                'n' ,  'n_set'  };
+        for i = 1 : length(props)
+            try		self.(props{i})		= a.(props{i});
+            catch ;	warning(['Property ' props{i} ' not found!']);
             end
         end
-    end
-    self.start_index = s;
-    self.end_index = e;
-    self.number_of_counts = nc;
-    
-    pointprops	= {'Protein','Salt',...
-                'C' , 'C_set'    , ...
-                'Cs', ...
-                'n' , 'n_set'  };
-    for i = 1 : length(pointprops)
-        [ self.Point.(pointprops{i}) ]	= deal(self.(pointprops{i})); % the deal function rocks!
-    end
-    self.datetime = mean(horzcat(self.Point(1:end).datetime));
 
+        self.raw_data_path = a.Path;
+        if any(strcmp('filegroup_index', properties(a)))
+            filegroup_index = a.filegroup_index;
+        else
+            filegroup_index = 1;
+        end
+        [s_array e_array nc_array] = self.Instrument.find_start_end( self.raw_data_path );
+        s = s_array(filegroup_index);
+        e = e_array(filegroup_index);
+        nc = nc_array(filegroup_index);
+        if any(strcmp('start_index', properties(a))) && a.start_index > 0
+            s = a.start_index;
+        end
+        if any(strcmp('end_index', properties(a))) &&a.end_index > 0
+            e = a.end_index;
+        end
+        if any(strcmp('number_of_counts', properties(a))) && a.number_of_counts > 0
+            nc = a.number_of_counts;
+        end
+        self.Point = DLS.Point;
+        disp(['load: ' self.raw_data_path '[' num2str(s, '%4.4u') ':' num2str(e, '%4.4u') ']' ]);
+        self.Point = DLS.Point;
+        counter = 0;
+        for i = s : e
+            flag = true;
+            i_c = 1;
+            while flag
+                counter = counter + 1;
+                file = self.Instrument.generate_filename(self.raw_data_path, i, i_c);
+                self.Point(counter)	= self.Instrument.invoke_read_dynamic_file_fast( file );
+                % self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
+                % condition here used to simulate behavior of do - while loop of C.
+                if i_c >= nc
+                    flag = false;
+                else
+                    i_c = i_c + 1;
+                end
+            end
+        end
+        self.start_index = s;
+        self.end_index = e;
+        self.number_of_counts = nc;
+        
+        pointprops	= {'Protein','Salt',...
+                    'C' , 'C_set'    , ...
+                    'Cs', ...
+                    'n' , 'n_set'  };
+        for i = 1 : length(pointprops)
+            [ self.Point.(pointprops{i}) ]	= deal(self.(pointprops{i})); % the deal function rocks!
+        end
+        self.datetime = mean(horzcat(self.Point(1:end).datetime));
     end
 
     function Angle= get.Angle ( self )
@@ -124,8 +122,8 @@ methods
         Q = [self.Point.Q];
     end
     function [fit_val, error_fit_val] = get_fit(self, method, parameter)
-    % get_fit : function to retrieve fit values and errors of 95% confidence interval
-    % input : method (e.g. 'DoubleBKG') , parameter (e.g. 'Gamma1')
+        % get_fit : function to retrieve fit values and errors of 95% confidence interval
+        % input : method (e.g. 'DoubleBKG') , parameter (e.g. 'Gamma1')
         fitmethod = ['Fit_' method];
         varnames  = coeffnames(self.Point(1).(fitmethod));
         ind       = strcmp(varnames, parameter);

@@ -1,9 +1,14 @@
 function example()
     %example file to understand how to load data with the program.
 
- main_dir = '~/Documents/tesi/Matlab/ls-ill/'; % !!! INSERT HERE THE PATH OF ls-ill  !!!
+ main_dir = '~/Documents/Dropbox/Matlab_LS/ls-ill'; % !!! INSERT HERE THE PATH OF ls-ill  !!!
+ data_dir = [main_dir '/example/example-data/LS']
  addpath('../') %access parent folder with all class-definitions
  addpath(main_dir)
+
+ % UNCOMMENT NEXT ROW FOR GENERAL PURPOSE TEMPLATE AND MODIFY Config Class
+ % [main_dir,data_dir] = Config.addpaths();
+
  
  
  Name		= 'dY8';
@@ -18,9 +23,9 @@ function example()
 T		= -Constants.T0 + 22;
  % LS paths 
 
- DLSpath{1}	= [main_dir '/' 'example/example-data/LS/2010_03_27_FZ/BSA_100m_1gl_8.3mMYCl3'];
- DLSpath{3}	= [main_dir '/' 'example/example-data/LS/2010_03_27_FZ/BSA_100m_4gl_8.3mMYCl3'];
- DLSpath{2}	= [main_dir '/' 'example/example-data/LS/2010_03_28_FZ/BSA_100m_15gl_8.3mMYCl3'];
+ DLSpath{1}	= [data_dir '/2010_03_27_FZ/BSA_100m_1gl_8.3mMYCl3'];
+ DLSpath{3}	= [data_dir '/2010_03_27_FZ/BSA_100m_4gl_8.3mMYCl3'];
+ DLSpath{2}	= [data_dir '/2010_03_28_FZ/BSA_100m_15gl_8.3mMYCl3'];
  disp(DLSpath{1})
  % concentrations set in the LS instrument
  c_set(1) = 1;
@@ -87,12 +92,12 @@ end
                 'dndc_set', 0.175 , ...
                 'dndc',     0.175);
  end
-  fit_example(sample_dls)
+  % fit_example(sample_dls)
  assignin('caller',['s' Name],sample_sls);
 end % end of example function, how to load data from DLS and SLS files
 
 
-function fit_example(sample_dls)
+function fit_example(sample_dls) % EXAMPLE HOW TO FIT DLS DATA.
 	for i = 1 : length(sample_dls)
 		sample_dls(i).fit('Single') % other options instead of Single are (see Point): Double, Cumulants
 	end
