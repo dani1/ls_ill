@@ -1,4 +1,4 @@
-function [sls_point RawData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number, varargin)
+function [sls_point RawData] = read_static(self,path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number, varargin)
     %input: (path_standard, path_solvent, path_file, protein_conc,
     %dn_over_dc, start_index {autosave file} , end_index {autosave file})
     %
@@ -13,19 +13,11 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
 % Written By: Daniel Soraruf
 % last change : 19/02/2012
 %******************************************************************************
-    % for debug purpose commented variable definitions
-    %path_solvent = '~/Documents/tesi/data/data_raw/LS/2011_11_04/Water.tol';
-    %path_standard = '~/Documents/tesi/data/data_raw/LS/2011_11_04/Toluene.tol';
-    %path_file = '~/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM';
-    %protein_conc = 0.001;
-    %dn_over_dc = 0.1;
-    %start_index = 0;
-    %end_index = 37;
     %------------------------------------------------------------------------------
     % get solvent and standard data
     %------------------------------------------------------------------------------
-    solvent  = Instruments.ALVTUE.read_tol_file(path_solvent);
-    standard = Instruments.ALVTUE.read_tol_file(path_standard);
+    solvent  = self.read_tol_file(path_solvent);
+    standard = self.read_tol_file(path_standard);
     index    = 0;
     point(end_index - start_index + 1) = struct('scatt_angle', 0, 'count_rate', 0, 'monitor_intensity', 0, 'error_count_rate', 0);
     %------------------------------------------------------------------------------
@@ -38,15 +30,22 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
         %path = '/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC';
     end
     for i = start_index : end_index
-        for j = 1 : count_number
+        flag = true;
+        j = 1;
+        while flag
             index = index + 1;
-            file = Instruments.ALVTUE.generate_filename(path_file, i, j);
+            file  = self.generate_filename(path_file, i, j);
              [count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature datetime]...
-             = Instruments.ALVTUE.read_static_from_autosave_fast(file);
+             = self.read_static_from_autosave_fast(file);
             point(index).count_rate       = count_rate1 + count_rate2;
             point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
             point(index).file_index       = [i j];
             point(index).datetime_raw     = datetime;
+            if j >= count_number
+                flag = false;
+            else
+                j = j + 1;
+            end
         end
     end
     regexpstr = Instruments.get_datetime_format(point(1).datetime_raw);
@@ -80,7 +79,7 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
     % calc Kc over R
     %--------------------------------------------------------------------------
     for i = 1 : length(SlsData)
-        SlsData(i).calc_kc_over_r(standard, solvent, protein_conc, dn_over_dc,Instruments.ALVTUE);
+        SlsData(i).calc_kc_over_r(standard, solvent, protein_conc, dn_over_dc,self);
         %SlsData(i).show_cr();
     end
     %--------------------------------------------------------------------------
@@ -89,7 +88,7 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
     %disp(SlsData(1).KcR)
     for i = 1 : length(SlsData)
         sls_point(i)              = SLS.Point;
-        sls_point(i).Instrument   = Instruments.ALVTUE;
+        sls_point(i).Instrument   = self;
         sls_point(i).T            = SlsData(i).mean_temperature;
         sls_point(i).Angle        = SlsData(i).scatt_angle;
         sls_point(i).KcR_raw      = SlsData(i).KcR;

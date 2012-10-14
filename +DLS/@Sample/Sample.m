@@ -137,10 +137,13 @@ methods
         i_err     = 2 * index - 1;
         for i = 1 : length(self.Point)
             p = self.Point(i).(fitmethod);
-            fit_val(i) = p.(parameter);
-            errors = confint(p);
-            error_fit_val(i) = abs((errors(i_err+1) - errors(i_err))) / 2;
-            disp('bla')
+            fit_val(i)       = p.(parameter);
+            errors           = confint(p);
+            error_fit_val(i) = abs((errors(i_err+1) - errors(i_err))) * 0.5;
+            if isnan(error_fit_val(i))
+                disp(['confidence value not defined at: ' num2str(i)])
+                error_fit_val(i) = fit_val(i);
+            end
         end
     end
 end
@@ -172,5 +175,4 @@ methods
         end
     end
 end
-
 end
