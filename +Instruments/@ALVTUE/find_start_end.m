@@ -7,7 +7,7 @@ function [ s e nc] = find_start_end ( path )
         flag = exist( [ path num2str(i,'%4.4u') '_0001' '.ASC'] );
     end
     if flag == 0
-        error('DLS files not found');
+        error(['DLS files: "' path '" not found']);
         s = -1;
         return
     else
