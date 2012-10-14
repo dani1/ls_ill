@@ -56,6 +56,9 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
         for i = 1 : length(point)
             point(i).datetime = datenum(point(i).datetime_raw, regexpstr)
         end
+    else
+        for i = 1 : length(point)
+            point(i).datetime = false;
     end
 end
 

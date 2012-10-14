@@ -49,11 +49,14 @@ function [sls_point RawData] = read_static(path_standard, path_solvent, path_fil
             point(index).datetime_raw     = datetime;
         end
     end
-    regexpstr = Instruments.get_datetime_format(point(1).datetime_raw)
+    regexpstr = Instruments.get_datetime_format(point(1).datetime_raw);
     if ~isempty(regexpstr)
         for i = 1 : length(point)
-            point(i).datetime = datenum(point(i).datetime_raw)
+            point(i).datetime = datenum(point(i).datetime_raw);
         end
+    else
+        for i = 1 : length(point)
+            point(i).datetime = false;
     end
     %[KcR] = calc_kc_over_r(scatt_angle, standard, solvent,cr_mean,0.001, Imean);
     % find all angles in file
