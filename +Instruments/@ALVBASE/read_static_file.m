@@ -1,6 +1,5 @@
-function point = read_static_file ( path )
+function point = read_static_file (self, path )
 % read SLS data from files for the ALV CGS3 goniometer at ILL, Grenoble
-
  i		= 0;
  point		= SLS.Point;
  min_error	= 1e-4;								% smallest accepted relative error
@@ -22,7 +21,7 @@ function point = read_static_file ( path )
 
    i		= i+1;
    point(i)		= SLS.Point;
-   point(i).Instrument	= Instruments.ALV;
+   point(i).Instrument	= self;
    point(i).T		= T;
    point(i).Angle	= angle;
    point(i).KcR_raw	= kcr;

@@ -1,4 +1,4 @@
-function point = invoke_read_dynamic_file_fast( path )
+function point = invoke_read_dynamic_file_fast(self, path )
     % launch read_dynamic_file_fast( written in c), and save results in DLS.Point class.
     %--------------------------------------------------------------------------
     % change home directory to full path, since fopen does not recognize
@@ -20,13 +20,13 @@ function point = invoke_read_dynamic_file_fast( path )
     % get data from dynamic file
     %==========================================================================
     
-    [tau g dg angle T datetime] = Instruments.ALVTUE.read_dynamic_file_fast( path );
+    [tau g dg angle T datetime] = self.read_dynamic_file_fast( path );
     
     %==========================================================================
     % save data in DLS.Point class and correct correlation function
     %==========================================================================
     point = DLS.Point;
-    point.Instrument = Instruments.ALVTUE;
+    point.Instrument = self;
     point.T = T;
     point.Angle = angle;
     point.Tau_raw = tau;

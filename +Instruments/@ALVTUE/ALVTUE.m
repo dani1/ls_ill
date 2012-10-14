@@ -1,4 +1,4 @@
-classdef ALVTUE
+classdef ALVTUE < Instruments.ALVBASE
 % This class describes the features of the ALV light scattering instrument at IAP Tübingen
 properties
 	attenuator;
@@ -17,28 +17,25 @@ end
 %attenuators values	
  end
 
- methods
-function self = ALVTUE ( self )
-	self.attenuator = self.get_attenuator_corrections();
- end
- end
+%  methods
+% function self = ALVTUE ( self )
+% 	self.attenuator = self.get_attenuator_corrections();
+%  end
+%  end
  methods ( Static )
 
 	 % read static from table
-  Point	= read_static_file 	( path )
+  [Point RawData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number, varargin)
   % read static files from autosave
-  [Point SlsData RawData] = read_static(path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number)
-  s = read_tol_file(path_of_tol_file)
-  [count_rate1 count_rate2 I_mon angle temperature datetime] = read_static_from_autosave(path_of_autosave_file)
-  [count_rate1 count_rate2 I_mon angle temperature datetime] = read_static_from_autosave_fast(path_of_autosave_file)
+  % s = read_tol_file(path_of_tol_file)
+  % [count_rate1 count_rate2 I_mon angle temperature datetime] = read_static_from_autosave(path_of_autosave_file)
+  % [count_rate1 count_rate2 I_mon angle temperature datetime] = read_static_from_autosave_fast(path_of_autosave_file)
   % read dynamic files
-  Point	= read_dynamic_file	( path )
-  Point	= invoke_read_dynamic_file_fast( path )
-  [t gt dgt Angle temperature datetime] = read_dynamic_file_fast( path );
+  % Point	= read_dynamic_file	( path )
+  % Point	= invoke_read_dynamic_file_fast( path )
+  % [t gt dgt Angle temperature datetime] = read_dynamic_file_fast( path );
   [ s e nc] = find_start_end ( path )
   fname = generate_filename(path_file, angle_index, count_index)
-  
-%TODO : do not set it as property, but leave it as method, so that it can be updated
 function [att] = get_attenuator_corrections()
 	att(7).monitor_intensity = 2960000;
 	att(7).intensity_correction = 1;

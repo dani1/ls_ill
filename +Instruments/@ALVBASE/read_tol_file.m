@@ -1,5 +1,6 @@
 function s = read_tol_file(path_of_tol_file)
 %        path_of_tol_file = '~/Documents/tesi/data/data_raw/LS/2011_10_31/Water2.tol'
+    %path_of_tol_file
 	tol = importdata(path_of_tol_file,'\t', 3);
 	s.scatt_angle = tol.data(:,1); % in degrees
 	s.q2_scatt = tol.data(:,2); % in 1/m^2

@@ -1,4 +1,4 @@
-function point	= read_dynamic_file ( path )
+function point	= read_dynamic_file ( self, path)
 
  fid	= fopen( path );
 % disp(path);
@@ -40,7 +40,7 @@ datetime = sprintf('%s %s',expdate{1}, exptime{1});
  fclose(fid);				% close the dynamic file
 
  point			= DLS.Point;
- point.Instrument	= Instruments.ALV;
+ point.Instrument	= self;
  point.T		= T;
  point.Angle		= angle;
  point.Tau_raw		= tau;

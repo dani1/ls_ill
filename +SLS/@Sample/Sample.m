@@ -61,8 +61,9 @@ methods
     end
     % get data from table
     if ~bool_get_data_from_autosave
-       try self.Point = self.Instrument.read_static_file ( a.Path );  % get the KcR and angles
-       catch disp(a.Path)
+       try
+           self.Point = self.Instrument.read_static_file ( a.Path );  % get the KcR and angles
+       catch err ;disp(a.Path)
            error('Error loading the static file!');
        end
     else
