@@ -131,7 +131,7 @@ methods
     end
     function Q = Qv ( self )
     % function which return full Q vector of the length of self.Point
-        Q = [self.Point.Q];
+        Q = [self.Point.Q]';
     end
     function [fit_val, error_fit_val] = get_fit(self, method, parameter, varargin)
         % get_fit : function to retrieve fit values and errors of 95% confidence interval
