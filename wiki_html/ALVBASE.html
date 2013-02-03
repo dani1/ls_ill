@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<link rel="Stylesheet" type="text/css" href="style.css">
+<title>ALVBASE</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+
+<h3 id="toc_0.0.1">ALVBASE</h3>
+<p>
+Class defining basic methods used for the ALV SLS/DLS instrument</br>
+Purpose: to be inherited by a specific instrument
+</p>
+<h3 id="toc_0.0.2">Methods</h3>
+<ul>
+<li>
+read_dynamic_file(self, path)   : get dls data from autosave
+
+<li>
+read_static_file(self, path)    : get sls data from table
+
+<li>
+read_static(self, path)         : get and calculate sls data from autosave
+
+</ul>
+<h3 id="toc_0.0.3">Static Methods</h3>
+<ul>
+<li>
+read_tol_file(path)             : get data from TOL file / BKG,STD for sls / invoked by read_static
+
+<li>
+read_static_from_autosave(path) : get sls data from autosave /invoked by read_static
+
+</ul>
+
+</body>
+</html>

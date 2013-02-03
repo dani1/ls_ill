@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<link rel="Stylesheet" type="text/css" href="style.css">
+<title>ALVTUE</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+
+<h3 id="toc_0.0.1">ALVTUE</h3>
+<p>
+Exemplar Instrument Class : inherits from <a href="ALVBASE.html">ALVBASE</a>
+defines specifics for data extraction / filename looping and attenuator correction.
+</p>
+<h3 id="toc_0.0.2">Properties</h3>
+<ul>
+<li>
+ALV version description
+
+<li>
+Lambda : wavelength of the laser [A]
+
+</ul>
+<h3 id="toc_0.0.3">Static Methods</h3>
+<ul>
+<li>
+find_start_end(path)                                   : find start and end number for files of a certain sample
+
+<li>
+generate_filename(path_file, angle_index, count_index) : generates filename, given certain indexes of the files
+
+<li>
+get_attenuator_corrections()							 : returns struct of corrections attributed to certain intensty
+
+</ul>
+
+</body>
+</html>

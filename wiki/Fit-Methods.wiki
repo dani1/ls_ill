@@ -1,0 +1,19 @@
+=== Fit-Methods ===
+Basic implemented Fit methods : These can be easily added or modified for own needs and purposes.
+=== Fit Methods of `DLS.Point.fit('Method')` ===
+    * `Single` : Single exponential.</br>
+      `Ae * exp( - 2 * Gammae * t )`
+    * `Double` : Double exponential. </br>
+     `( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2`
+    * `DoubleBKG` : Double + Background.
+	 `( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2 + b`   
+	* `Streched` : Streched Exponential
+	 `A1 * exp(( - Gammas * t)^b)^2`
+	* Further Methods are available : please refer to `'+DLS/@Point/fit_discrete.m'`
+=== Fit Methods of `DLS.Point.fit_raw('Method')` ===
+    This method fits the raw data which has not been scaled to `1` at `tau=0`
+	* `SingleBeta`: Single Exponential</br>
+	`beta * (Ae * exp( - Gammae * t )) .^2`
+	* DoubleFreeBeta: Double Exponential</br>
+	`beta *( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2
+	* To modify the fit methods please refer to `'+DLS/@Point/fit_discrete'`

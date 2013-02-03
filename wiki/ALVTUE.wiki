@@ -1,0 +1,10 @@
+=== ALVTUE ===
+Exemplar Instrument Class : inherits from [[ALVBASE]]
+defines specifics for data extraction / filename looping and attenuator correction.
+=== Properties ===
+	* ALV version description
+	* Lambda : wavelength of the laser [A]
+=== Static Methods ===
+	* find_start_end(path)                                   : find start and end number for files of a certain sample
+	* generate_filename(path_file, angle_index, count_index) : generates filename, given certain indexes of the files
+	* get_attenuator_corrections()							 : returns struct of corrections attributed to certain intensty

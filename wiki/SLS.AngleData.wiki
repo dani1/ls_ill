@@ -1,0 +1,19 @@
+== SLS.AngleData ==
+%title SLS.AngleData
+Class to save relevant static data obtained at single scattering angle and calculate Kc/R.
+%toc
+=== Properties ===
+    * `count`                        : struct array with relevant data of every single count
+    * `mean_count_rate`              : 
+    * `error_mean_count_rate`        : 
+    * `mean_monitor_intensity`       : 
+    * `error_mean_monitor_intensity` : 
+    * `mean_temperature`             : 
+    * `KcR`                          : Kc/R calculated from other quantities
+    * `dKcR`                         : error of previous
+
+=== Methods ===
+    * `AngleData(scatt_angle)` : Constructor
+    * `add(count_struct)`      : adds a single count struct to the array `count`.
+    * `calc_mean()`            : calc the mean propety values
+    * `calc_kc_over_r(standard,solvent,protein_conc, dn_over_dc, instrument)` : calculate `KcR,dKcR` from input and data saved in Properties.

@@ -1,0 +1,7 @@
+=== Instrument === 
+Cointainer for classes, which define (constant) properties inherent of the LS instrument.
+=== Properties ===
+	* [[ALVBASE]]
+	* [[ALVTUE]] : class, inherits from [[ALVBASE]]
+	* ALV    : class, inherits from [[ALVBASE]]
+	* get_datetime_format() : Function which tries different regular expression for the date and time format extracted from the file

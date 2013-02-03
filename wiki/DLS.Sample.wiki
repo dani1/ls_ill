@@ -1,0 +1,23 @@
+%title DLS.Sample
+== SLS.Sample ==
+
+This class handles dynamic information taken at every angle. <br/>
+The most important property is `Point` a vector of [[DLS.Point]].
+%toc
+
+=== Properties of Sample : assigned in Constructor ===
+    * `Protein`       : Protein name.
+    * `Salt`          : Salt name.
+    * `C_set` [mg/ml] : protein concentration set in the ALV program.
+    * `C`     [mg/ml] : real protein concentration.
+    * `Cs`    [mM]    : salt concentration.
+    * `n_set`         : refractive index set at measurement.
+    * `n`             : refractive index -> for correction purpose.
+    * `T`             : Temperature Set for experiment.
+    * `Instrument`	  : Class of Type [[Instrument]].
+=== Array Properties or Methods of all Points ===
+    * `Point`              : Array of [[DLS.Point]].
+    * `Q` [A^-1^]          : Array of unique scattering vector norm.
+    * `Qv`[A^-1^]          : As above, assuring length of Point.
+    * `Angle`              : Array of unique scattering angles.
+

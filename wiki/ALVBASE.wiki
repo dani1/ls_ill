@@ -1,0 +1,10 @@
+=== ALVBASE === 
+Class defining basic methods used for the ALV SLS/DLS instrument</br>
+Purpose: to be inherited by a specific instrument
+=== Methods ===
+	* read_dynamic_file(self, path)   : get dls data from autosave
+	* read_static_file(self, path)    : get sls data from table
+	* read_static(self, path)         : get and calculate sls data from autosave
+=== Static Methods ===
+	* read_tol_file(path)             : get data from TOL file / BKG,STD for sls / invoked by read_static
+	* read_static_from_autosave(path) : get sls data from autosave /invoked by read_static

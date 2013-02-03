@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<link rel="Stylesheet" type="text/css" href="style.css">
+<title>DLS.Point</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+
+<h2 id="toc_0.1">DLS.Point</h2>
+<p>
+Class which saves the DLS informations of a single count at a defined scattering angle <code>Angle</code>.
+</p>
+<h3 id="toc_0.1.1">Sample Properties</h3>
+<ul>
+<li>
+Refer to <a href="SLS.Point.html">SLS.Point</a>
+
+</ul>
+<h3 id="toc_0.1.2">Properties</h3>
+<ul>
+<li>
+<code>G</code> : Intensity Correlation - 1 (array).
+
+<li>
+<code>dG</code>: Error of previous (array).
+
+<li>
+<code>Tau</code> [ms] : Lag Time array.
+
+<li>
+Instrument : Class of type [[<code>Instrument</code>]]
+
+</ul>
+<h3 id="toc_0.1.3">Methods</h3>
+<ul>
+<li>
+<code>fit('Method')</code>: Fit correlogram with <a href="Fit-Methods.html">Fit-Methods</a>.
+
+<li>
+<code>fit_raw('Method')</code> : Fit raw correlogram with <a href="Fit-Methods.html">Fit-Methods</a>.
+
+<li>
+<code>correct_G()</code> : normalizes G(t) to yield G(0) = 1.
+
+<li>
+<code>invert_laplace()</code>: inverse laplace -&gt; call C-code by M. Hennig.
+
+</ul>
+<h3 id="toc_0.1.4">Create Instance example</h3>
+<pre>
+sample = SLS.Sample('Path', path, ...
+'Protein'      , Protein      , ...
+'Salt'         , Salt         , ...
+'T'            , T            , ...
+'n'            , n            , ...
+'n_set'        , n_set        , ...
+'C'            , c            , ...
+'C_set'        , c_set        , ...
+'Cs'           , cs           , ...
+'Instrument'   , 'ALV'        );
+
+% possible additional arguments: 
+
+'filegroup_index' , filegroup_index , ...
+'start_index'     , start_index     , ...
+'end_index'       , end_index       , ...
+'number_of_counts', number_of_counts, ...  
+</pre>
+<p>
+The additional arguments can be supplied but are not necessary.<br /> <code>filegroup_index</code> defines the block of data with the same amount of counts per angle (integer).<br />
+The <code>number_of_counts</code> variable defines the number of counts per angle which are to be used from the autosave data.<br />
+</p>
+
+</body>
+</html>

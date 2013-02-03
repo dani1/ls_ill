@@ -1,0 +1,29 @@
+== SLS.Point ==
+%title SLS.Point
+This class saves the values of static light scattering at one single angle as well as important properties of the sample. <br />
+Constructor is empty, i.e. an instance can be created by <br />
+`p = SLS.Point()`.<br />
+Once the Properties are defined they can be called by
+`prop = SLS.<property>`
+where `<property>` stands for the property name
+
+%toc
+=== Properties of Sample ===
+    * `C_set` [mg/ml] : protein concentration set in the ALV program
+    * `C`     [mg/ml] : real protein concentration
+    * `Cs`    [mM]    : salt concentration
+    * `dndc_set`      : dn/dc set at measurement
+    * `dndc`          : real dn/dc -> for correction purpose
+    * `n_set`         : refractive index set at measurement
+    * `n`             : refractive index -> for correction purpose
+=== Properties different for every Point ===
+    * `KcR`     [Da^-1^] : Kc/R values, this value is recalculated on call depending on C,C_set,dndc,dndc_set...
+    * `dKcR`    [Da^-1^] : error attributed to KcR
+    * `Q`       [A^-1^]  : norm of Scattering vector
+    * `Angle`            : scattering angle
+    * `T`       [K]      : temperature
+    * `datetime`         : date and time as number -> convert to string by `datestr()`
+=== Further Properties ===
+    * `X_T`       [l * J^-1^]  : calc isothermal compressibility
+    * `dX_T`       [l * J^-1^] : calc its error
+    * `Phi`                    : calc volume fraction

@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<link rel="Stylesheet" type="text/css" href="style.css">
+<title>SLS.AngleData</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+
+<h2 id="toc_0.1">SLS.AngleData</h2>
+<p>
+Class to save relevant static data obtained at single scattering angle and calculate Kc/R.
+<div class="toc">
+<ul>
+<li><a href="#toc_0.1">SLS.AngleData</a>
+<ul>
+<li><a href="#toc_0.1.1">Properties</a>
+<li><a href="#toc_0.1.2">Methods</a>
+</ul>
+</ul>
+</ul>
+</div>
+</p>
+<h3 id="toc_0.1.1">Properties</h3>
+<ul>
+<li>
+<code>count</code>                        : struct array with relevant data of every single count
+
+<li>
+<code>mean_count_rate</code>              : 
+
+<li>
+<code>error_mean_count_rate</code>        : 
+
+<li>
+<code>mean_monitor_intensity</code>       : 
+
+<li>
+<code>error_mean_monitor_intensity</code> : 
+
+<li>
+<code>mean_temperature</code>             : 
+
+<li>
+<code>KcR</code>                          : Kc/R calculated from other quantities
+
+<li>
+<code>dKcR</code>                         : error of previous
+
+</ul>
+
+<h3 id="toc_0.1.2">Methods</h3>
+<ul>
+<li>
+<code>AngleData(scatt_angle)</code> : Constructor
+
+<li>
+<code>add(count_struct)</code>      : adds a single count struct to the array <code>count</code>.
+
+<li>
+<code>calc_mean()</code>            : calc the mean propety values
+
+<li>
+<code>calc_kc_over_r(standard,solvent,protein_conc, dn_over_dc, instrument)</code> : calculate <code>KcR,dKcR</code> from input and data saved in Properties.
+
+</ul>
+
+</body>
+</html>

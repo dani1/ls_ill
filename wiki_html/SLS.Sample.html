@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<link rel="Stylesheet" type="text/css" href="style.css">
+<title>SLS.Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+
+<h2 id="toc_0.1">SLS.Sample</h2>
+
+<p>
+This class handles static information taken at every angle. <br />
+The most important property is <code>Point</code> a vector of <a href="SLS.Point.html">SLS.Point</a>.
+<div class="toc">
+<ul>
+<li><a href="#toc_0.1">SLS.Sample</a>
+<ul>
+<li><a href="#toc_0.1.1">Properties of Sample : assigned in Constructor</a>
+<li><a href="#toc_0.1.2">Array Properties or Methods of all Points</a>
+<li><a href="#toc_0.1.3">Mean Values of Point Properties</a>
+<li><a href="#toc_0.1.4">Create Instance example</a>
+<li><a href="#toc_0.1.5">Create Instance from autosave</a>
+</ul>
+</ul>
+</ul>
+</div>
+</p>
+
+<h3 id="toc_0.1.1">Properties of Sample : assigned in Constructor</h3>
+<ul>
+<li>
+<code>Protein</code>       : Protein name.
+
+<li>
+<code>Salt</code>          : Salt name.
+
+<li>
+<code>C_set</code> [mg/ml] : protein concentration set in the ALV program.
+
+<li>
+<code>C</code>     [mg/ml] : real protein concentration.
+
+<li>
+<code>Cs</code>    [mM]    : salt concentration.
+
+<li>
+<code>dndc_set</code>      : dn/dc set at measurement.
+
+<li>
+<code>dndc</code>          : real dn/dc -&gt; for correction purpose.
+
+<li>
+<code>n_set</code>         : refractive index set at measurement.
+
+<li>
+<code>n</code>             : refractive index -&gt; for correction purpose.
+
+<li>
+<code>T</code>             : Temperature Set for experiment.
+
+<li>
+<code>Instrument</code>	: Class of Type [[<code>Instrument</code>]]
+
+</ul>
+<h3 id="toc_0.1.2">Array Properties or Methods of all Points</h3>
+<ul>
+<li>
+<code>Point</code>              : Array of <a href="SLS.Point.html">SLS.Point</a>.
+
+<li>
+<code>Q</code> [A<sup><small>-1</small></sup>]          : Array of unique scattering vector norm.
+
+<li>
+<code>Qv</code>[A<sup><small>-1</small></sup>]          : As above, assuring length of Point.
+
+<li>
+<code>Angle</code>              : Array of unique scattering angles.
+
+<li>
+<code>KcRv</code> [Da <sup><small>-1</small></sup>]     : Arrays of Kc/R,dKc/R assuring length of Point.
+
+<li>
+<code>KcR_corr</code> [Da <sup><small>-1</small></sup>] : Array of corrected Kc/R values. Calls Instrument.get_attenuator_corrections().
+
+</ul>
+<h3 id="toc_0.1.3">Mean Values of Point Properties</h3>
+<ul>
+<li>
+<code>X_T</code> [l * J<sup><small>-1</small></sup>]  : Mean value of isothermal compressibility.
+
+<li>
+<code>dX_T</code> [l * J<sup><small>-1</small></sup>] : Error of previous.
+
+<li>
+<code>KcR</code> [Da <sup><small>-1</small></sup>]    : Mean value of Kc/R.
+
+<li>
+<code>dKcR</code> [Da <sup><small>-1</small></sup>]   : Error of previous.
+
+</ul>
+<h3 id="toc_0.1.4">Create Instance example</h3>
+<p>
+In this case it is intended, that the static file in <code>path</code> is given as a tabular given by the ALV instrument. In the example data folder such files can be found ending with <code>_bak.txt</code>.
+</p>
+<pre>
+sample = SLS.Sample('Path', path, ...
+'Protein'   , Protein, ...
+'Salt'      , Salt   , ...
+'T'         , T      , ...
+'n'         , n      , ...
+'n_set'     , n_set  , ...
+'C'         , c      , ...
+'C_set'     , c_set  , ...
+'Cs'        , cs     , ...
+'Instrument', 'ALV'  , ...
+'dndc_set'  , dndc   , ...
+'dndc'      , dndc);
+</pre>
+
+<h3 id="toc_0.1.5">Create Instance from autosave</h3>
+<p>
+!!! Still in development !!!<br />
+If the tabular is missing, it is possible to get the static values from the autosave files, generally used to extract the DLS correlograms. In this case some additional arguments to the above constructor have to be assigned:
+</p>
+<pre>
+sample = SLS.Sample('Path', path, ...
+'Protein'      , Protein      , ...
+'Salt'         , Salt         , ...
+'T'            , T            , ...
+'n'            , n            , ...
+'n_set'        , n_set        , ...
+'C'            , c            , ...
+'C_set'        , c_set        , ...
+'Cs'           , cs           , ...
+'Instrument'   , 'ALV'        , ...
+'dndc_set'     , dndc         , ...
+'dndc'         , dndc         , ...
+'path_solvent' , path_solvent , ...
+'path_standard', path_standard);
+
+% possible additional arguments: 
+
+'filegroup_index' , filegroup_index , ...
+'start_index'     , start_index     , ...
+'end_index'       , end_index       , ...
+'number_of_counts', number_of_counts, ...  
+</pre>
+<p>
+The additional arguments can be supplied but are not necessary.<br /> <code>filegroup_index</code> defines the block of data with the same amount of counts per angle (integer).<br />
+The <code>number_of_counts</code> variable defines the number of counts per angle which are to be used from the autosave data.<br />
+The <code>path_standard</code> and <code>path_solvent</code> variables define the path of the <code>.tol</code> files which define the standard and solvent scattering and information.<br />
+NB: No guarantee for the values from the static data calculation: the errors are calculated by simple gaussian propagation of the standard deviations. It is still in an alpha state.<br />
+NB2: An additional (hidden) argument <code>RawData</code> is saved to the SLS.Sample instance. It contains the info about solvent and standard as well as a vector of  <a href="SLS.AngleData.html">SLS.AngleData</a>, which saves all the information used to calculate Kc/R.
+</p>
+
+</body>
+</html>

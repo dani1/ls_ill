@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<link rel="Stylesheet" type="text/css" href="style.css">
+<title>Fit-Methods</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+
+<h3 id="toc_0.0.1">Fit-Methods</h3>
+<p>
+Basic implemented Fit methods : These can be easily added or modified for own needs and purposes.
+</p>
+<h3 id="toc_0.0.2">Fit Methods of <code>DLS.Point.fit('Method')</code></h3>
+<ul>
+<li>
+<code>Single</code> : Single exponential.</br>
+      <code>Ae * exp( - 2 * Gammae * t )</code>
+
+<li>
+<code>Double</code> : Double exponential. </br>
+     <code>( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2</code>
+
+<li>
+<code>DoubleBKG</code> : Double + Background.
+	 <code>( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2 + b</code>   
+
+<li>
+<code>Streched</code> : Streched Exponential
+	 <code>A1 * exp(( - Gammas * t)^b)^2</code>
+
+<li>
+Further Methods are available : please refer to <code>'+DLS/@Point/fit_discrete.m'</code>
+
+</ul>
+<h3 id="toc_0.0.3">Fit Methods of <code>DLS.Point.fit_raw('Method')</code></h3>
+<blockquote>
+This method fits the raw data which has not been scaled to <code>1</code> at <code>tau=0</code>
+</blockquote>
+<ul>
+<li>
+<code>SingleBeta</code>: Single Exponential</br>
+	<code>beta * (Ae * exp( - Gammae * t )) .^2</code>
+
+<li>
+DoubleFreeBeta: Double Exponential</br>
+	`beta *( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2
+
+<li>
+To modify the fit methods please refer to <code>'+DLS/@Point/fit_discrete'</code>
+
+</ul>
+
+</body>
+</html>

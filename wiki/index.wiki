@@ -1,0 +1,26 @@
+== Class Description ==
+	* SLS
+		- [[SLS.Point]]
+		- [[SLS.Sample]]
+		- [[SLS.AngleData]]
+	* DLS
+		- [[DLS.Point]]
+		- [[DLS.Sample]]
+	* [[Instrument]]
+== General Usage ==
+	* SLS:
+	* DLS:
+== Example and HOWTO start ==
+	* check out the example file: `example/example.m`
+	* change the path of `main_dir` to the path of the folder ls_ill
+	* execute the script `example.m` from within matlab.
+	* This procedure gives two array of Sample class instances denoted by the  `Name = BSAwY8p3` variable preceded by 'd' and 's' indicating the dynamic and static data, respectively.
+	* All correlograms of Sample 1 can be fitted e.g. by: </br> `dBSAwY8p3(1).fit('DoubleBKG')`.
+	* The helper function `get_fit` in [[DLS.Sample]] can be used to extract the results from the fit:</br> `[g, dg] = dBSAwY8p3(1).get_fit('DoubleBKG', 'Gamma1')`</br>
+	These results are the values of `g = Q^2*D` for all correlograms with its fit errors.
+	* Q^2 can be extracted by :</br>
+	`Q2 = [dBSAwY8p3.Qv()].^2`</br>
+	In this case `length(Q2) == length(g)` is satisfied.
+	* As example of this procedure look up the script `example/export_data.m`, where the fit data is exported to columns in a text file. </br>
+	This might be especially useful for people who are not comfortable in using MATLAB for further data analysis and plots/ to get in touch with the basics of the program.
+	
