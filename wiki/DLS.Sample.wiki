@@ -1,5 +1,5 @@
 %title DLS.Sample
-== SLS.Sample ==
+== DLS.Sample ==
 
 This class handles dynamic information taken at every angle. <br/>
 The most important property is `Point` a vector of [[DLS.Point]].
