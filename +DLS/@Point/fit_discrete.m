@@ -21,67 +21,67 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
     %==  PART 1: set the fit parameters ==
     switch method % depending on the method chosen, se the parameters
     case 'Single' % single exponential decay
-        fit_function	= 'Ae * exp( - 2 * Gammae * t )';
+        fit_function = 'Ae * exp( - 2 * Gammae * t )';
         coeffnames = { 'Ae' 'Gammae'     };
         lowerbond  = [ 0.99 Min_Gamma2   ]; %changed 2 to Min_Gamma2 from Min_Gamma3
         upperbond  = [ 1.01 Max_Gamma1   ];
         startpoint = [ 1.0  Start_Gamma1 ];
     case 'SingleBeta'
-        fit_function	= 'beta * (Ae * exp( - Gammae * t )) .^2';
+        fit_function = 'beta * (Ae * exp( - Gammae * t )) .^2';
         coeffnames = {'beta' 'Ae' 'Gammae'     };
         lowerbond  = [0      0    Min_Gamma2   ]; %changed 2 to Min_Gamma2 from Min_Gamma3
         upperbond  = [10     5    Max_Gamma1   ];
         startpoint = [1      1.0  Start_Gamma1 ];
     case 'SingleFree'
-        fit_function	= 'Ae * exp( - 2 * Gammae * t )';
+        fit_function = 'Ae * exp( - 2 * Gammae * t )';
         coeffnames = { 'Ae' 'Gammae'     };
         lowerbond  = [ 0.1  0            ];
         upperbond  = [ 10   Max_Gamma1   ];
         startpoint = [ 1.0  Start_Gamma1 ];
     case 'Streched' % single streched decay
-        fit_function	= 'As * exp( - 2 * (Gammas * t)^b )';
+        fit_function = 'As * exp( - 2 * (Gammas * t)^b )';
         coeffnames = { 'As' 'Gammas'     'b' };
         lowerbond  = [ 0.8  Min_Gamma1   0   ];
         upperbond  = [ 1.2  Max_Gamma1   1   ];
         startpoint = [ 1.1  Start_Gamma1 0.8 ];
     case 'Double' % double exponential decay
-        fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
+        fit_function = '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
         coeffnames = { 'A1' 'Gamma1'     'A2' 'Gamma2'     };
         lowerbond  = [ 0.5  Min_Gamma1   0    Min_Gamma2   ];
         upperbond  = [ 1    Max_Gamma1   1    Max_Gamma2   ]; 
         startpoint = [ 0.9  Start_Gamma1 0.1  Start_Gamma2 ];
     case 'DoubleFree' % double exponential decay
-        fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
+        fit_function = '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
         coeffnames = { 'A1' 'Gamma1'     'A2' 'Gamma2'     };
         lowerbond  = [ 0    0            0    0            ];
         upperbond  = [ 1    Max_Gamma1   1    Max_Gamma1   ];
         startpoint = [ 0.1  Start_Gamma1 0.9  Start_Gamma2 ];
     case 'DoubleFreeBKG' % double exponential decay (with background)
-        fit_function	= 'b + ( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
+        fit_function = 'b + ( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2';
         coeffnames = {'b'   'A1' 'Gamma1'     'A2' 'Gamma2'     };
         lowerbond  = [-1e-3 0    Min_Gamma1            0    0            ];
         upperbond  = [1e-3  1    Max_Gamma1   1    Max_Gamma1   ];
         startpoint = [0     0.1  Start_Gamma1 0.9  Start_Gamma2 ];
     case 'DoubleBKG3p' % double exponential decay (with background)
-        fit_function	= '( A1 * exp( - Gamma1 * t ) + (A1-1) * exp( - Gamma2 * t ) ).^2 + b';
+        fit_function = '( A1 * exp( - Gamma1 * t ) + (A1-1) * exp( - Gamma2 * t ) ).^2 + b';
         coeffnames = { 'A1' 'Gamma1'     'Gamma2'     'b'   };
         lowerbond  = [ 0.0  Min_Gamma1   Min_Gamma2   -1e-3 ]; 
         upperbond  = [ 1    Max_Gamma1   Max_Gamma2   1e-3  ];
         startpoint = [ 0.7  Start_Gamma1 Start_Gamma2 0     ];
     case 'DoubleBKG' % double exponential decay (with background)
-        fit_function	= '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2 + b';
+        fit_function = '( A1 * exp( - Gamma1 * t ) + A2 * exp( - Gamma2 * t ) ).^2 + b';
         coeffnames = { 'A1' 'Gamma1'     'A2' 'Gamma2'     'b'   };
         lowerbond  = [ 0.0  Min_Gamma1   0    Min_Gamma2   -1e-3 ];
         upperbond  = [ 1    Max_Gamma1   1    Max_Gamma2   1e-3  ];
         startpoint = [ 0.9  Start_Gamma1 0.1  Start_Gamma2 0     ];
-    case 'SingleStreched'										% double decay, exp + streched
-        fit_function	= '( Ae * exp( - Gammae * t ) + As * exp(-( Gammas *t).^b )) .^2';
+    case 'SingleStreched'          % double decay, exp + streched
+        fit_function = '( Ae * exp( - Gammae * t ) + As * exp(-( Gammas *t).^b )) .^2';
         coeffnames = { 'Ae' 'Gammae'     'As' 'Gammas'     'b' };
         lowerbond  = [ 0.01 Min_Gamma1   0    Min_Gamma2   0   ];
         upperbond  = [ 1    Max_Gamma1   1    Max_Gamma2   1   ];
         startpoint = [ 0.9  Start_Gamma1 0.1  Start_Gamma2 0.8 ];
-    case 'DoubleStreched'										% double decay, exp + streched
-        fit_function	= '( As1 * exp( - ( Gammas1 * t).^b1 ) + As2 * exp(-( Gammas2 *t).^b2 )) .^2';
+    case 'DoubleStreched'          % double decay, exp + streched
+        fit_function = '( As1 * exp( - ( Gammas1 * t).^b1 ) + As2 * exp(-( Gammas2 *t).^b2 )) .^2';
         coeffnames = { 'As1' 'Gammas1'    'As2' 'Gammas2'    'b1' 'b2' };
         lowerbond  = [ 0.5   Min_Gamma1   0     Min_Gamma2   0    0    ];
         upperbond  = [ 1     Max_Gamma1   1     Max_Gamma2   1    1    ];
@@ -136,30 +136,30 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
         error('Method not recognized!');
     end
     %==  PART 2: perform the fit ==
-    switch method									% depending on the method chosen, perform the fit
+    switch method         % depending on the method chosen, perform the fit
     case 'Cumulants'
-        weights =  1 ./ dyc .^ 2;					% set the weights for the fit
+        weights =  1 ./ dyc .^ 2;     % set the weights for the fit
         % set other fit options
-        fit_options	= fitoptions( 'Method', 'LinearLeastSquares', ...
+        fit_options = fitoptions( 'Method', 'LinearLeastSquares', ...
                 'Weights', weights );
-        fit_type = fittype( fit_function,			...
-                'coefficients',	{'loga','gamma'},	...
-                'dependent',	'logg1',		...
-                'independent',	't',			...
-                'options',	fit_options		);	% a linear model is ok
+        fit_type = fittype( fit_function,   ...
+                'coefficients', {'loga', 'gamma'}, ...
+                'dependent'   , 'logg1'          , ...
+                'independent' , 't'    , ...
+                'options', fit_options  ); % a linear model is ok
         fit_obj = fit( t, yc, fit_type );
     otherwise
-        weights =  1 ./ dg .^ 2;					% set the weights for the fit
+        weights =  1 ./ dg .^ 2;     % set the weights for the fit
         % set other fit options
         fit_options = fitoptions( 'Method','NonLinearLeastSquares',...
                     'Weights'    , weights         , ...
                     'MaxFunEvals', 100000          , ...
                     'Lower'      , lowerbond       , ...
                     'Upper'      , upperbond       , ...
-                    'Startpoint' , startpoint				);
-        fit_type = fittype(fit_function, 'independent','t', 	...
+                    'Startpoint' , startpoint    );
+        fit_type = fittype(fit_function, 'independent','t',  ...
                     'options'     , fit_options    , ...
-                    'coefficients', coeffnames			);
+                    'coefficients', coeffnames   );
         % perform the numerical fit
         % TODO: control the behaviour of the correlations at 100 times higher than the
         %        first decay time. If there is still something important, do not fit
@@ -167,4 +167,4 @@ function fit_obj = fit_discrete ( t, g, dg, method, q, protein)
         %        scorpions is his bed!
         fit_obj = fit( t, g, fit_type );
     end
-end	% fit_discrete
+end % fit_discrete

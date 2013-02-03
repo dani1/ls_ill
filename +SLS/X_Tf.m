@@ -11,11 +11,11 @@ function [ X_T f ] = X_Tf( T, C, KcR )
 %
 % Please note that X(c) is independent on Q (because it is defined for Q-->0) and on M.
 
- Na	= Constants.Na;
- kb	= Constants.kb;
+ Na  = Constants.Na;
+ kb  = Constants.kb;
 
- f	= inline(	'1 ./ ( Na .* kb .* T .* C .* KcR )', 'Na','kb','T','C','KcR');
+ f   = inline(    '1 ./ ( Na .* kb .* T .* C .* KcR )', 'Na','kb','T','C','KcR');
 
- X_T	= f(Na,kb,T,C,KcR);
+ X_T = f(Na,kb,T,C,KcR);
 
 end

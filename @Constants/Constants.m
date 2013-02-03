@@ -7,13 +7,13 @@
 %
 %============================================================================
 classdef Constants
-properties ( Access = public, Constant )					% with the 'Constant' attribute, they can be called from outside without an instance
+properties ( Access = public, Constant )          % with the 'Constant' attribute, they can be called from outside without an instance
 
     % conversion factors
-    Na		=	6.02214179e23;						% Avogadro number
-    u_in_Kg	=	1.660538782e-27;					% unit of atomic mass
-    kb		=	1.3806504e-23;						% Boltzmann constant in J/K
-    T0		=	-273.15;						% absolute zero in °C
+    Na      = 6.02214179e23;                      % Avogadro number
+    u_in_Kg = 1.660538782e-27;                    % unit of atomic mass
+    kb      = 1.3806504e-23;                      % Boltzmann constant in J/K
+    T0      = -273.15;                            % absolute zero in °C
 
     %end of properties
 end

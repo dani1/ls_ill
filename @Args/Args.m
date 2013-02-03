@@ -5,7 +5,7 @@ methods
 
     function args = Args( varargin )
 
-    cellargs	= varargin;				% get the cell array
+    cellargs = varargin;                % get the cell array
 
     l = length(cellargs);
 

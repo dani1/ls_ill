@@ -153,7 +153,6 @@ classdef AngleData < dynamicprops
             rel_error = dR / one_over_R;
 
             % calculate KcR and relative error
-            % TODO: check standard deviations eventually 
             self.KcR = K * protein_conc/ R;
             self.dKcR = K * protein_conc * dR;
             %disp(self.dKcR / self.KcR)

@@ -13,13 +13,13 @@ function point	= read_dynamic_file ( self, path)
         elseif strfind(str,'Angle')
             [ tmp tmp tmp angle ] = strread(str, '%s %s %s %f');
         elseif strfind(str, 'Date')
-            [ tmp tmp expdate ]   = strread(str, '%s %s %s');
+            [ tmp expdate tmp]   = strread(str, '%s %s %s', 'delimiter', '"');
         elseif strfind(str, 'Time')
-            [ tmp tmp exptime ]   = strread(str, '%s %s %s');
+            [ tmp exptime tmp]   = strread(str, '%s %s %s', 'delimiter', '"');
         end
         str = fgetl(fid);
     end
-    datetime = sprintf('%s %s',expdate{1}, exptime{1});
+    datetime = sprintf('"%s" "%s"',expdate{1}, exptime{1});
     % read tau and g
     while ~strcmp(str,'')
         str=fgetl(fid);
@@ -38,15 +38,13 @@ function point	= read_dynamic_file ( self, path)
     
     fclose(fid);				% close the dynamic file
 
-    point            = DLS.Point;
-    point.Instrument = self;
-    point.T          = T;
-    point.Angle      = angle;
-    point.Tau_raw    = tau;
-    point.G_raw      = g;
-    point.dG_raw     = dg;     % this triggers the event in Point
+    point              = DLS.Point;
+    point.Instrument   = self;
+    point.T            = T;
+    point.Angle        = angle;
+    point.Tau_raw      = tau;
+    point.G_raw        = g;
+    point.dG_raw       = dg;     % this triggers the event in Point
     point.correct_G;
-    point.datetime   = datenum(datetime);
-
+    point.datetime_raw = datetime;
 end
-

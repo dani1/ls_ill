@@ -24,10 +24,14 @@ function [sls_point RawData] = read_static(self,path_standard, path_solvent, pat
     % get data from autosave ALV files
     %------------------------------------------------------------------------------
     if path_file(1) == '~'
-        homepath  = getenv('HOME'); % !!! works only on unix systems
-        path_file = [homepath path_file(2:end)];
-        %disp(path);
-        %path = '/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC';
+        if ispc %not tested
+            homepath = winqueryreg('HKEY_CURRENT_USER',...
+                ['Software\Microsoft\Windows\CurrentVersion\' ...
+                'Explorer\Shell Folders'],'Personal');
+        else
+            homepath = getenv('HOME');
+        end
+            path_file     = [homepath path_file(2:end)];
     end
     for i = start_index : end_index
         flag = true;
@@ -35,8 +39,10 @@ function [sls_point RawData] = read_static(self,path_standard, path_solvent, pat
         while flag
             index = index + 1;
             file  = self.generate_filename(path_file, i, j);
+             % [count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature datetime]...
+             % = self.read_static_from_autosave_fast(file);
              [count_rate1 count_rate2 point(index).monitor_intensity point(index).scatt_angle point(index).temperature datetime]...
-             = self.read_static_from_autosave_fast(file);
+             = self.read_static_from_autosave(file);
             point(index).count_rate       = count_rate1 + count_rate2;
             point(index).error_count_rate = sqrt(count_rate1 * 1000) + sqrt(count_rate2 * 1000);
             point(index).file_index       = [i j];
@@ -48,15 +54,19 @@ function [sls_point RawData] = read_static(self,path_standard, path_solvent, pat
             end
         end
     end
-    regexpstr = Instruments.get_datetime_format(point(1).datetime_raw);
+    regexpstr = Instruments.get_datetime_format(point(1).datetime_raw)
+    point(1).datetime_raw
     if ~isempty(regexpstr)
         for i = 1 : length(point)
             point(i).datetime = datenum(point(i).datetime_raw, regexpstr);
         end
+        datetime_bool = true;
     else
         for i = 1 : length(point)
             point(i).datetime = false;
         end
+        datetime_bool = false;
+        warning('wrong format regular expression for datetime extraction: change Instrument.get_datetime_format to correct format please')
     end
     %[KcR] = calc_kc_over_r(scatt_angle, standard, solvent,cr_mean,0.001, Imean);
     % find all angles in file
@@ -69,7 +79,7 @@ function [sls_point RawData] = read_static(self,path_standard, path_solvent, pat
     for index = 1 : length(angles)
         SlsData(index) = SLS.AngleData(angles(index));
         for index_1 = 1 : length(point);
-            % save data at one ANGLE in SlsData
+            % save data at ONE ANGLE in SlsData
             if abs(point(index_1).scatt_angle - angles(index)) < angle_tolerance
                 SlsData(index).add(point(index_1));
             end
@@ -96,7 +106,9 @@ function [sls_point RawData] = read_static(self,path_standard, path_solvent, pat
         sls_point(i).Imon         = SlsData(i).mean_monitor_intensity;
         sls_point(i).dImon        = SlsData(i).error_mean_monitor_intensity;
         sls_point(i).datetime_raw = SlsData(i).count(1).datetime_raw;
-        sls_point(i).datetime     = mean([SlsData(i).count(1:end).datetime]);
+        if datetime_bool
+            sls_point(i).datetime     = mean([SlsData(i).count(1:end).datetime]);
+        end
     end
     RawData.SlsData  = SlsData;
     RawData.solvent  = solvent;

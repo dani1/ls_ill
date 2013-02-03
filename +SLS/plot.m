@@ -3,7 +3,7 @@ function plot ( varargin )
  a	= varargin;				% options for the fit
 
  if ishandle(a{1}) & ~ismember(class(a{1}),{	'SLS.Sample',		'Sample',	...
-						'SLS.Experiment',	'Experiment'	})
+                        'SLS.Experiment',	'Experiment'	})
   ax = a{1};	a(1) = [];
  else
   ax = axes;
@@ -29,9 +29,9 @@ function plot ( varargin )
   options = a(5:length(a));
 
   plot(ax,	x,	y,	s,	...
- 		'LineWidth',	4,	...
- 		'MarkerSize',	10,	...
- 		options{:}		);
+        'LineWidth',	4,	...
+        'MarkerSize',	10,	...
+        options{:}		);
  end
 
  legend('show');

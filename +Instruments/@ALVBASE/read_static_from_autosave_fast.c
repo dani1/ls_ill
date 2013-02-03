@@ -38,63 +38,63 @@ int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,
  */
 #ifdef MATLAB_MEX_FILE
 void mexFunction(int nlhs, 
-		mxArray *plhs[], 
-		int nrhs, 
-		const mxArray *prhs[])
+        mxArray *plhs[], 
+        int nrhs, 
+        const mxArray *prhs[])
 {
 
-	char *path, *time, *date, *datetime;
-	int buflen;
-	double angle, *plhs_angle, temperature, *plhs_temperature;
-	double count_rate1, *plhs_cr1, count_rate2,*plhs_cr2 , monitor_intensity, *plhs_imon;
-	int buf_out_len;
-	int status;
-	int i ;
-	
- 	/*  get length of input string */
-	buflen = (mxGetM(prhs[0]) * mxGetN(prhs[0])) + 1;
-	/*  allocate memory for path */
-	path   = mxMalloc(buflen * sizeof(char));
-	/*  get path string from input prhs[0]  */
-	status = mxGetString(prhs[0], path, buflen); 
-	if (status != 0)
-		mexWarnMsgTxt("Not enough space. String is truncated."); 
+    char *path, *time, *date, *datetime;
+    int buflen;
+    double angle, *plhs_angle, temperature, *plhs_temperature;
+    double count_rate1, *plhs_cr1, count_rate2,*plhs_cr2 , monitor_intensity, *plhs_imon;
+    int buf_out_len;
+    int status;
+    int i ;
+    
+    /*  get length of input string */
+    buflen = (mxGetM(prhs[0]) * mxGetN(prhs[0])) + 1;
+    /*  allocate memory for path */
+    path   = mxMalloc(buflen * sizeof(char));
+    /*  get path string from input prhs[0]  */
+    status = mxGetString(prhs[0], path, buflen); 
+    if (status != 0)
+        mexWarnMsgTxt("Not enough space. String is truncated."); 
 
-	time = (char*) malloc( 50 * sizeof(char));
-	date = (char*) malloc( 50 * sizeof(char));
-	datetime = (char*) malloc(200 * sizeof(char));
-	/*  read data from file: */
-	i = read_data(&count_rate1, &count_rate2,&monitor_intensity,&temperature,&angle,time, date, path);
-	if (i == 0)
-	mexWarnMsgTxt("File not existent / errors during evaluation of function read_data");
+    time = (char*) malloc( 50 * sizeof(char));
+    date = (char*) malloc( 50 * sizeof(char));
+    datetime = (char*) malloc(200 * sizeof(char));
+    /*  read data from file: */
+    i = read_data(&count_rate1, &count_rate2,&monitor_intensity,&temperature,&angle,time, date, path);
+    if (i == 0)
+    mexWarnMsgTxt("File not existent / errors during evaluation of function read_data");
 
-	sprintf(datetime,"%s %s", date,time);
+    sprintf(datetime,"%s %s", date,time);
 
-	/*  allocate Matlab memory: 3 variables cr1 cr2 Imon*/
-	plhs[0] = mxCreateDoubleMatrix(1, 1 , mxREAL);
-	plhs[1] = mxCreateDoubleMatrix(1, 1 , mxREAL);
-	plhs[2] = mxCreateDoubleMatrix(1, 1 , mxREAL);
-	/*  allocate Matlab memory: 2 variables angle,temperature */
-	plhs[3] = mxCreateDoubleMatrix(1, 1, mxREAL);
-	plhs[4] = mxCreateDoubleMatrix(1, 1, mxREAL);
-	/* return strings time and date  */
-	plhs[5] = mxCreateString(datetime); 
-	/*  get pointer to Matlab angle and temparature variables */
-	plhs_angle       = mxGetPr(plhs[3]);
-	plhs_temperature = mxGetPr(plhs[4]);
-	/*  populate Matlab angle and temperature variables */
-	*plhs_angle       = angle;
-	*plhs_temperature = temperature;
-	/*  get pointer to 3 Matlab vectors t,gt, dgt */
-	plhs_cr1  = mxGetPr(plhs[0]);
-	plhs_cr2  = mxGetPr(plhs[1]);
-	plhs_imon = mxGetPr(plhs[2]);
-	/*  populate  3 Matlab count rates and monitor intensity*/
-	*plhs_cr1  = count_rate1;
-	*plhs_cr2  = count_rate2;
-	*plhs_imon = monitor_intensity;
+    /*  allocate Matlab memory: 3 variables cr1 cr2 Imon*/
+    plhs[0] = mxCreateDoubleMatrix(1, 1 , mxREAL);
+    plhs[1] = mxCreateDoubleMatrix(1, 1 , mxREAL);
+    plhs[2] = mxCreateDoubleMatrix(1, 1 , mxREAL);
+    /*  allocate Matlab memory: 2 variables angle,temperature */
+    plhs[3] = mxCreateDoubleMatrix(1, 1, mxREAL);
+    plhs[4] = mxCreateDoubleMatrix(1, 1, mxREAL);
+    /* return strings time and date  */
+    plhs[5] = mxCreateString(datetime); 
+    /*  get pointer to Matlab angle and temparature variables */
+    plhs_angle       = mxGetPr(plhs[3]);
+    plhs_temperature = mxGetPr(plhs[4]);
+    /*  populate Matlab angle and temperature variables */
+    *plhs_angle       = angle;
+    *plhs_temperature = temperature;
+    /*  get pointer to 3 Matlab vectors t,gt, dgt */
+    plhs_cr1  = mxGetPr(plhs[0]);
+    plhs_cr2  = mxGetPr(plhs[1]);
+    plhs_imon = mxGetPr(plhs[2]);
+    /*  populate  3 Matlab count rates and monitor intensity*/
+    *plhs_cr1  = count_rate1;
+    *plhs_cr2  = count_rate2;
+    *plhs_imon = monitor_intensity;
 
-	
+    
 }				/* ----------  end of function mexFunction  ---------- */
 #endif
 /* 
@@ -105,85 +105,85 @@ void mexFunction(int nlhs,
  */
 int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle, char *time , char *date, char *path)
 {
-	FILE* file_pointer;
-	char *str = (char*) malloc(1000 * sizeof(char));
-	
-	if((file_pointer = fopen(path, "r+")) == NULL)
-	{
-		return 0;
-	}
-	/* find Date */
-	while( strcmp(str, "Date") != 0)
-	{
-		fscanf(file_pointer, "%s", str);
-	}
-	fscanf(file_pointer, "%s", str);
-	/* save Date */
-	fscanf(file_pointer, "%s", date);
-	/* find Time */
-	while( strcmp(str, "Time") != 0)
-	{
-		fscanf(file_pointer, "%s", str);
-	}
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", time);
-	/*  save Time*/
-	fscanf(file_pointer, "%s", str);
-	sprintf(time, "%s %s", time,str);
-	/*find temperature*/
-	/*find temperature*/
-	while( strcmp(str, "Temperature") != 0)
-	{
-		fscanf(file_pointer, "%s", str);
-	}
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", str);
-	/*  save temperature */
-	*temp = atof(str);
+    FILE* file_pointer;
+    char *str = (char*) malloc(1000 * sizeof(char));
+    
+    if((file_pointer = fopen(path, "r+")) == NULL)
+    {
+        return 0;
+    }
+    /* find Date */
+    while( strcmp(str, "Date") != 0)
+    {
+        fscanf(file_pointer, "%s", str);
+    }
+    fscanf(file_pointer, "%s", str);
+    /* save Date */
+    fscanf(file_pointer, "%s", date);
+    /* find Time */
+    while( strcmp(str, "Time") != 0)
+    {
+        fscanf(file_pointer, "%s", str);
+    }
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", time);
+    /*  save Time*/
+    fscanf(file_pointer, "%s", str);
+    sprintf(time, "%s %s", time,str);
+    /*find temperature*/
+    /*find temperature*/
+    while( strcmp(str, "Temperature") != 0)
+    {
+        fscanf(file_pointer, "%s", str);
+    }
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", str);
+    /*  save temperature */
+    *temp = atof(str);
 //	printf("%lf\n", *temp);
-	/*  find angle */
-	while( strcmp(str, "Angle") != 0)
-	{
-		fscanf(file_pointer, "%s", str);
-	}
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", str);
-	/*  save angle   */
-	*angle = atof(str);
-	/*  find count_rate 1 */
-	while( strcmp(str, "MeanCR0") != 0)
-	{
-		fscanf(file_pointer, "%s", str);
-	}
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", str);
-	/*  save count_rate 1   */
-	*cr1 = atof(str);
-	/*  find count_rate 2 */
-	while( strcmp(str, "MeanCR1") != 0)
-	{
-		fscanf(file_pointer, "%s", str);
-	}
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", str);
-	/*  save count_rate 2   */
-	*cr2 = atof(str);
-	/*  find monitor diode */
-	while( strcmp(str, "Monitor") != 0)
-	{
-		fscanf(file_pointer, "%s", str);
-	}
-	fscanf(file_pointer, "%s", str);
-	fscanf(file_pointer, "%s", str);
-	/*  save monitor diode intensity   */
-	*imon = atof(str);
+    /*  find angle */
+    while( strcmp(str, "Angle") != 0)
+    {
+        fscanf(file_pointer, "%s", str);
+    }
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", str);
+    /*  save angle   */
+    *angle = atof(str);
+    /*  find count_rate 1 */
+    while( strcmp(str, "MeanCR0") != 0)
+    {
+        fscanf(file_pointer, "%s", str);
+    }
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", str);
+    /*  save count_rate 1   */
+    *cr1 = atof(str);
+    /*  find count_rate 2 */
+    while( strcmp(str, "MeanCR1") != 0)
+    {
+        fscanf(file_pointer, "%s", str);
+    }
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", str);
+    /*  save count_rate 2   */
+    *cr2 = atof(str);
+    /*  find monitor diode */
+    while( strcmp(str, "Monitor") != 0)
+    {
+        fscanf(file_pointer, "%s", str);
+    }
+    fscanf(file_pointer, "%s", str);
+    fscanf(file_pointer, "%s", str);
+    /*  save monitor diode intensity   */
+    *imon = atof(str);
 
-	fclose(file_pointer);
-	return 1;
+    fclose(file_pointer);
+    return 1;
 }				/* ----------  end of function read_data  ---------- */
 
 /* 
@@ -192,20 +192,20 @@ int read_data(double *cr1, double *cr2, double *imon,double *temp,double *angle,
  *  Description:  For test / launch purposes
  * =====================================================================================
  */
-	int
+    int
 main ( int argc, char *argv[] )
 {
-	
-	char *path = "/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC";
-	double cr1;
-	double cr2;
-	double imon; 
-	double angle, temperature;
-	char * date, *time;
-	int len;
-	time = (char*) malloc( 20 * sizeof(char));
-	date = (char*) malloc( 20 * sizeof(char));
-	len = read_data(&cr1,&cr2,&imon,&temperature, &angle,time,date,path);
-	printf("results: %f %f %f %f %f", cr1, cr2, imon, temperature, angle);
-	return 0;
+    
+    char *path = "/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC";
+    double cr1;
+    double cr2;
+    double imon; 
+    double angle, temperature;
+    char * date, *time;
+    int len;
+    time = (char*) malloc( 20 * sizeof(char));
+    date = (char*) malloc( 20 * sizeof(char));
+    len = read_data(&cr1,&cr2,&imon,&temperature, &angle,time,date,path);
+    printf("results: %f %f %f %f %f", cr1, cr2, imon, temperature, angle);
+    return 0;
 }				/* ----------  end of function main  ---------- */

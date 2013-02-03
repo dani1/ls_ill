@@ -7,12 +7,12 @@ function [count_rate1 count_rate2 I_mon angle temperature datetime] = read_stati
     while ~strcmp(str(1:4), 'Date')
        str = fgetl(fid);
     end
-    [ tmp tmp expdate ] = strread(str, '%s %s %s');
+    [ tmp expdate tmp] = strread(str, '%s %s %s', 'delimiter', '"');
     while ~strcmp(str(1:4), 'Time')
        str = fgetl(fid);
     end
-    [ tmp tmp exptime ] = strread(str, '%s %s %s');
-    datetime = [expdate{1} ' ' exptime{1}];
+    [ tmp exptime tmp] = strread(str, '%s %s %s', 'delimiter', '"');
+    datetime = ['"' expdate{1} '" "' exptime{1} '"'];
 
     while ~strcmp(str(1:11), 'Temperature')
         str = fgetl(fid);

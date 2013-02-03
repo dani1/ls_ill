@@ -12,8 +12,6 @@ function point = invoke_read_dynamic_file_fast(self, path )
         else
             homepath = getenv('HOME');
             path     = [homepath path(2:end)];
-            %disp(path);
-            %path = '/Users/daniel/Documents/tesi/data/data_raw/LS/2011_11_04/BSA_1gl_NaCl_200mM0003.ASC';
         end
     end
     %==========================================================================

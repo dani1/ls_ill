@@ -6,7 +6,7 @@ properties
     C                   % protein concentration
     Unit_C = 'g/l';
     Cs                  % salt concentration
-    Unit_Cs = 'mM'
+     Unit_Cs = 'mM'
     Unit_KcR = 'mol g^{-1}'
     Unit_X_T = 'l * J^{-1}';
     T
@@ -37,7 +37,7 @@ methods
     function self = Sample( varargin )
     a = Args(varargin{:}); % get the args
     try self.Instrument = Instruments.(a.Instrument); % get the instrument
-    catch error('Instrument not found!');
+    catch err; error('Instrument not found!');
     end
     props = {'Protein','Salt',...
                 'C'   , 'C_set'      , ...
@@ -45,8 +45,8 @@ methods
                 'n'   , 'n_set'      , ...
                 'dndc', 'dndc_set' };
     for i = 1 : length(props)
-        try		self.(props{i})		= a.(props{i});
-        catch	warning(['Property ' props{i} ' not found!']);
+        try self.(props{i})		= a.(props{i});
+        catch err; warning(['Property ' props{i} ' not found!']);
         end
     end
     if any(strcmp('filegroup_index', properties(a)))
@@ -94,7 +94,6 @@ methods
         [ self.Point.(pointprops{i}) ]	= deal(a.(pointprops{i}));			% the deal function rocks!
     end
     end
-  % TODO: modify function to fit besser the needs : eventually as function only
     function [KcR_corr] = get.KcR_corr( self )
         point = self.Point;
             try

@@ -86,8 +86,8 @@ methods
             while flag
                 counter = counter + 1;
                 file = self.Instrument.generate_filename(self.raw_data_path, i, i_c);
-                self.Point(counter)	= self.Instrument.invoke_read_dynamic_file_fast( file );
-                % self.Point(i-s+1)	= self.Instrument.read_dynamic_file(file);
+                % self.Point(counter) = self.Instrument.invoke_read_dynamic_file_fast( file );
+                self.Point(counter) = self.Instrument.read_dynamic_file(file);
                 % condition here used to simulate behavior of do - while loop of C.
                 if i_c >= nc
                     flag = false;
@@ -105,6 +105,10 @@ methods
             for i = 1 : length(self.Point)
                 self.Point(i).datetime = datenum(self.Point(i).datetime_raw, regexpstr);
             end
+            datetime_bool = true;
+        else
+            warning('datetime format not found, please add to +Instruments/get_datetime_format the right regexp')
+            datetime_bool = false;
         end
         pointprops	= {'Protein','Salt',...
                     'C' , 'C_set'    , ...
@@ -113,7 +117,9 @@ methods
         for i = 1 : length(pointprops)
             [ self.Point.(pointprops{i}) ]	= deal(self.(pointprops{i})); % the deal function rocks!
         end
-        self.datetime = mean(horzcat(self.Point(1:end).datetime));
+        if datetime_bool
+            self.datetime = mean(horzcat(self.Point(1:end).datetime));
+        end
     end
 
     function Angle= get.Angle ( self )
@@ -127,7 +133,7 @@ methods
     % function which return full Q vector of the length of self.Point
         Q = [self.Point.Q];
     end
-    function [fit_val, error_fit_val] = get_fit(self, method, parameter)
+    function [fit_val, error_fit_val] = get_fit(self, method, parameter, varargin)
         % get_fit : function to retrieve fit values and errors of 95% confidence interval
         % input : method (e.g. 'DoubleBKG') , parameter (e.g. 'Gamma1')
         fitmethod = ['Fit_' method];
