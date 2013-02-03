@@ -6,7 +6,7 @@ properties
     C                   % protein concentration
     Unit_C = 'g/l';
     Cs                  % salt concentration
-     Unit_Cs = 'mM'
+    Unit_Cs = 'mM'
     Unit_KcR = 'mol g^{-1}'
     Unit_X_T = 'l * J^{-1}';
     T

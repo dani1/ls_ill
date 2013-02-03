@@ -54,8 +54,7 @@ function [sls_point RawData] = read_static(self,path_standard, path_solvent, pat
             end
         end
     end
-    regexpstr = Instruments.get_datetime_format(point(1).datetime_raw)
-    point(1).datetime_raw
+    regexpstr = Instruments.get_datetime_format(point(1).datetime_raw);
     if ~isempty(regexpstr)
         for i = 1 : length(point)
             point(i).datetime = datenum(point(i).datetime_raw, regexpstr);

@@ -137,11 +137,14 @@ methods
         % get_fit : function to retrieve fit values and errors of 95% confidence interval
         % input : method (e.g. 'DoubleBKG') , parameter (e.g. 'Gamma1')
         fitmethod = ['Fit_' method];
+        len = length(self.Point);
         varnames  = coeffnames(self.Point(1).(fitmethod));
         ind       = strcmp(varnames, parameter);
         index     = find(ind, 1);
         i_err     = 2 * index - 1;
-        for i = 1 : length(self.Point)
+        fit_val        = zeros(len,1);
+        error_fit_val = zeros(len,1);
+        for i = 1 : len
             p = self.Point(i).(fitmethod);
             fit_val(i)       = p.(parameter);
             errors           = confint(p);

@@ -11,7 +11,7 @@ function example()
 
  
  
- Name		= 'dY8';
+ Name		= 'BSAwY8p3';
 
  Protein	= 'BSA';
  Salt		= 'YCl3';

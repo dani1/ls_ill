@@ -6,9 +6,9 @@ properties ( Constant )
 end
 methods
 
-    Point = invoke_read_dynamic_file_fast(self, path);
-    Point	= read_dynamic_file	(self, path );
-    Point	= read_static_file 	(self, path );
+    Point           = invoke_read_dynamic_file_fast(self, path);
+    Point           = read_dynamic_file   (self, path );
+    Point           = read_static_file    (self, path );
     [Point RawData] = read_static(self, path_standard, path_solvent, path_file, protein_conc, dn_over_dc, start_index, end_index, count_number);
 end
 
