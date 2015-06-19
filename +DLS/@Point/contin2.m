@@ -44,10 +44,10 @@ function g0 = initial_distr ( s0 );
      gamma	= 1e6 * D0 * q0^2;			% guessed gamma
      tau	= 1 / gamma;				% guessed tau
 
-     [tmp ind]	= min(s0 - tau);			% find the nearest element of s0 to tau
+     [tmp ind]	= min(abs(s0 - tau));			% find the nearest element of s0 to tau
      g0(ind)	= 1;
 
-     go(floor(length(g0)/2)) = 1;
+     g0(floor(length(g0)/2)) = 1;
      g0	= g0 / sum(g0);					% ...and normalize it
 
 end
